@@ -10,10 +10,10 @@
   "license": "MIT",
   "skills": [
     "./skills/business-product-business-analyst",
-    "./skills/business-product-confluence",
+    "./skills/confluence",
     "./skills/business-product-content-marketer",
     "./skills/business-product-customer-success-manager",
-    "./skills/business-product-jira",
+    "./skills/jira",
     "./skills/business-product-legal-advisor",
     "./skills/business-product-product-manager",
     "./skills/business-product-project-manager",

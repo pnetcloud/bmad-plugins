@@ -11,7 +11,7 @@
   "skills": [
     "./skills/core-development-api-designer",
     "./skills/core-development-backend-developer",
-    "./skills/core-development-data-pipeline-go",
+    "./skills/data-pipeline-go",
     "./skills/core-development-database-postgresql",
     "./skills/core-development-database-timescaledb",
     "./skills/core-development-docs-general",
@@ -32,7 +32,7 @@
     "./skills/core-development-react-standards",
     "./skills/core-development-stripe-best-practices",
     "./skills/core-development-ui-designer",
-    "./skills/core-development-ui-implement-design",
+    "./skills/implement-design",
     "./skills/core-development-web-design-guidelines",
     "./skills/core-development-websocket-engineer"
   ]

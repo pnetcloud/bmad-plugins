@@ -10,6 +10,6 @@
   "license": "MIT",
   "skills": [
     "./skills/agent-browser",
-    "./skills/playwright-skill"
+    "./skills/qa-playwright-skill"
   ]
 }

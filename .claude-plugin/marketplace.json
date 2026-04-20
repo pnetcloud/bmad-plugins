@@ -36,10 +36,10 @@
       },
       "skills": [
         "./plugins/business-product/skills/business-product-business-analyst",
-        "./plugins/business-product/skills/business-product-confluence",
+        "./plugins/business-product/skills/confluence",
         "./plugins/business-product/skills/business-product-content-marketer",
         "./plugins/business-product/skills/business-product-customer-success-manager",
-        "./plugins/business-product/skills/business-product-jira",
+        "./plugins/business-product/skills/jira",
         "./plugins/business-product/skills/business-product-legal-advisor",
         "./plugins/business-product/skills/business-product-product-manager",
         "./plugins/business-product/skills/business-product-project-manager",
@@ -73,7 +73,7 @@
       "skills": [
         "./plugins/core-development/skills/core-development-api-designer",
         "./plugins/core-development/skills/core-development-backend-developer",
-        "./plugins/core-development/skills/core-development-data-pipeline-go",
+        "./plugins/core-development/skills/data-pipeline-go",
         "./plugins/core-development/skills/core-development-database-postgresql",
         "./plugins/core-development/skills/core-development-database-timescaledb",
         "./plugins/core-development/skills/core-development-docs-general",
@@ -94,7 +94,7 @@
         "./plugins/core-development/skills/core-development-react-standards",
         "./plugins/core-development/skills/core-development-stripe-best-practices",
         "./plugins/core-development/skills/core-development-ui-designer",
-        "./plugins/core-development/skills/core-development-ui-implement-design",
+        "./plugins/core-development/skills/implement-design",
         "./plugins/core-development/skills/core-development-web-design-guidelines",
         "./plugins/core-development/skills/core-development-websocket-engineer"
       ],
@@ -118,7 +118,7 @@
       },
       "skills": [
         "./plugins/qa/skills/agent-browser",
-        "./plugins/qa/skills/playwright-skill"
+        "./plugins/qa/skills/qa-playwright-skill"
       ],
       "category": "quality",
       "keywords": [

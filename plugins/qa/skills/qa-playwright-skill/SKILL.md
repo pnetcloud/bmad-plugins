@@ -8,9 +8,9 @@ This skill can be installed in different locations (plugin system, manual instal
 
 Common installation paths:
 
-- Plugin system: `~/.codex/plugins/marketplaces/playwright-skill/skills/playwright-skill`
-- Manual global: `~/.codex/skills/playwright-skill`
-- Project-specific: `<project>/.codex/skills/playwright-skill`
+- Plugin system: `~/.codex/plugins/marketplaces/qa-playwright-skill/skills/qa-playwright-skill`
+- Manual global: `~/.codex/skills/qa-playwright-skill`
+- Project-specific: `<project>/.codex/skills/qa-playwright-skill`
 
 # Playwright Browser Automation
 

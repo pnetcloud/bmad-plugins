@@ -79,7 +79,7 @@ Business, product, planning, research, and documentation skills grouped into one
 - Publish path: `plugins/business-product`
 - Packaged skill path: `plugins/business-product/skills/*`
 - Included skills: 16
-- Examples: `business-product-business-analyst`, `business-product-project-planner`, `business-product-spec-to-backlog`
+- Examples: `business-product-business-analyst`, `confluence`, `jira`
 
 ### `pnet-core-development`
 
@@ -88,7 +88,7 @@ Core software development skills across architecture, APIs, backend, frontend, d
 - Publish path: `plugins/core-development`
 - Packaged skill path: `plugins/core-development/skills/*`
 - Included skills: 26
-- Examples: `core-development-api-designer`, `core-development-backend-developer`, `core-development-react-best-practices`
+- Examples: `core-development-api-designer`, `data-pipeline-go`, `implement-design`
 
 ### `pnet-infrastructure`
 
@@ -115,7 +115,7 @@ QA-oriented browser automation and testing skills.
 - Publish path: `plugins/qa`
 - Packaged skill path: `plugins/qa/skills/*`
 - Included skills: 2
-- Included tools: `agent-browser`, `playwright-skill`
+- Included skills: `agent-browser`, `qa-playwright-skill`
 
 ## Repository Scope
 
