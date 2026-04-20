@@ -1,0 +1,39 @@
+{
+  "name": "pnet-core-development",
+  "version": "0.1.0",
+  "description": "Core software development skills spanning architecture, APIs, backend, frontend, databases, UI, docs, and platform patterns.",
+  "author": {
+    "name": "pnetcloud",
+    "url": "https://github.com/pnetcloud"
+  },
+  "repository": "https://github.com/pnetcloud/bmad-plugins",
+  "license": "MIT",
+  "skills": [
+    "./skills/core-development-api-designer",
+    "./skills/core-development-backend-developer",
+    "./skills/core-development-data-pipeline-go",
+    "./skills/core-development-database-postgresql",
+    "./skills/core-development-database-timescaledb",
+    "./skills/core-development-docs-general",
+    "./skills/core-development-docusaurus-standards",
+    "./skills/core-development-electron-pro",
+    "./skills/core-development-frontend-dev-guidelines",
+    "./skills/core-development-frontend-developer",
+    "./skills/core-development-fullstack-developer",
+    "./skills/core-development-go-best-practices",
+    "./skills/core-development-graphql-architect",
+    "./skills/core-development-javascript-standards",
+    "./skills/core-development-messaging-kafka",
+    "./skills/core-development-microservices-architect",
+    "./skills/core-development-mobile-developer",
+    "./skills/core-development-nextjs-standards",
+    "./skills/core-development-openapi-standards",
+    "./skills/core-development-react-best-practices",
+    "./skills/core-development-react-standards",
+    "./skills/core-development-stripe-best-practices",
+    "./skills/core-development-ui-designer",
+    "./skills/core-development-ui-implement-design",
+    "./skills/core-development-web-design-guidelines",
+    "./skills/core-development-websocket-engineer"
+  ]
+}

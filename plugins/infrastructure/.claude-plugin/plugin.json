@@ -1,0 +1,21 @@
+{
+  "name": "pnet-infrastructure",
+  "version": "0.1.0",
+  "description": "Infrastructure and DevOps skills for cloud architecture, Kubernetes, Terraform, CI/CD, and platform operations.",
+  "author": {
+    "name": "pnetcloud",
+    "url": "https://github.com/pnetcloud"
+  },
+  "repository": "https://github.com/pnetcloud/bmad-plugins",
+  "license": "MIT",
+  "skills": [
+    "./skills/infrastructure-cloud-architect",
+    "./skills/infrastructure-container-orchestration",
+    "./skills/infrastructure-devops-engineer",
+    "./skills/infrastructure-devops-standards",
+    "./skills/infrastructure-gitlab-ci-standards",
+    "./skills/infrastructure-kubernetes-specialist",
+    "./skills/infrastructure-makefile-standards",
+    "./skills/infrastructure-terraform-engineer"
+  ]
+}

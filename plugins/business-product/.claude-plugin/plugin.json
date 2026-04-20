@@ -1,0 +1,29 @@
+{
+  "name": "pnet-business-product",
+  "version": "0.1.0",
+  "description": "Business and product skills for analysis, planning, documentation, research, and delivery coordination.",
+  "author": {
+    "name": "pnetcloud",
+    "url": "https://github.com/pnetcloud"
+  },
+  "repository": "https://github.com/pnetcloud/bmad-plugins",
+  "license": "MIT",
+  "skills": [
+    "./skills/business-product-business-analyst",
+    "./skills/business-product-confluence",
+    "./skills/business-product-content-marketer",
+    "./skills/business-product-customer-success-manager",
+    "./skills/business-product-jira",
+    "./skills/business-product-legal-advisor",
+    "./skills/business-product-product-manager",
+    "./skills/business-product-project-manager",
+    "./skills/business-product-project-planner",
+    "./skills/business-product-sales-engineer",
+    "./skills/business-product-scrum-master",
+    "./skills/business-product-search-company-knowledge",
+    "./skills/business-product-spec-to-backlog",
+    "./skills/business-product-technical-writer",
+    "./skills/business-product-ux-researcher",
+    "./skills/business-product-wordpress-master"
+  ]
+}

@@ -1,0 +1,119 @@
+# Project Makefile (Docker-first, grouped help)
+.PHONY: help up down restart logs watch \
+        build test lint format check \
+        deploy release publish \
+        clean clean-all \
+        status info version
+
+.DEFAULT_GOAL := help
+
+# -------- Color Aliases --------
+h1 := \033[1;36m
+h2 := \033[1;34m
+b  := \033[1;32m
+p  := \033[1;33m
+r  := \033[1;31m
+reset := \033[0m
+
+# -------- Variables (override in project.mk) --------
+PROJECT       ?= example-project
+VERSION       ?= 0.1.0
+
+COMPOSE       ?= docker compose
+COMPOSE_FILE  ?= compose.yaml
+DEV_SERVICE   ?= app
+
+CMD_DEV       ?= npm run dev
+CMD_BUILD     ?= npm run build
+CMD_TEST      ?= npm test
+CMD_LINT      ?= npm run lint
+CMD_FORMAT    ?= npm run format
+
+-include project.mk
+
+# -------- Help --------
+help: ## Utility: Show grouped help
+	@echo ""
+	@echo "$(h1)=====================================================$(reset)"
+	@echo "$(h2)   $(PROJECT) v$(VERSION) — Available Commands$(reset)"
+	@echo "$(h1)=====================================================$(reset)"
+	@echo ""
+	@echo "$(h2)Setup & Config$(reset)"
+	@grep -E '^[a-zA-Z0-9_.-]+:.*?## Setup ' $(MAKEFILE_LIST) | awk 'BEGIN{FS=":.*?## "}{printf "  $(b)%-18s$(reset) %s\n",$$1,$$2}'
+	@echo ""
+	@echo "$(h2)Development$(reset)"
+	@grep -E '^[a-zA-Z0-9_.-]+:.*?## Development ' $(MAKEFILE_LIST) | awk 'BEGIN{FS=":.*?## "}{printf "  $(b)%-18s$(reset) %s\n",$$1,$$2}'
+	@echo ""
+	@echo "$(h2)Quality$(reset)"
+	@grep -E '^[a-zA-Z0-9_.-]+:.*?## Quality ' $(MAKEFILE_LIST) | awk 'BEGIN{FS=":.*?## "}{printf "  $(b)%-18s$(reset) %s\n",$$1,$$2}'
+	@echo ""
+	@echo "$(h2)Build & Deploy$(reset)"
+	@grep -E '^[a-zA-Z0-9_.-]+:.*?## Build ' $(MAKEFILE_LIST) | awk 'BEGIN{FS=":.*?## "}{printf "  $(b)%-18s$(reset) %s\n",$$1,$$2}'
+	@echo ""
+	@echo "$(h2)Maintenance$(reset)"
+	@grep -E '^[a-zA-Z0-9_.-]+:.*?## Maintenance ' $(MAKEFILE_LIST) | awk 'BEGIN{FS=":.*?## "}{printf "  $(b)%-18s$(reset) %s\n",$$1,$$2}'
+	@echo ""
+	@echo "$(h2)Logs & Info$(reset)"
+	@grep -E '^[a-zA-Z0-9_.-]+:.*?## Logs ' $(MAKEFILE_LIST) | awk 'BEGIN{FS=":.*?## "}{printf "  $(b)%-18s$(reset) %s\n",$$1,$$2}'
+
+# -------- Setup --------
+up: ## Setup: Start Docker stack (compose)
+	@$(COMPOSE) -f $(COMPOSE_FILE) up -d
+
+down: ## Setup: Stop Docker stack (compose)
+	@$(COMPOSE) -f $(COMPOSE_FILE) down
+
+restart: ## Setup: Restart Docker stack (compose)
+	@$(COMPOSE) -f $(COMPOSE_FILE) down
+	@$(COMPOSE) -f $(COMPOSE_FILE) up -d
+
+logs: ## Setup: Tail Docker stack logs
+	@$(COMPOSE) -f $(COMPOSE_FILE) logs -f
+
+watch: ## Development: Run app in watch mode (container)
+	@$(COMPOSE) -f $(COMPOSE_FILE) exec $(DEV_SERVICE) $(CMD_DEV)
+
+# -------- Quality --------
+test: ## Quality: Run tests
+	@$(CMD_TEST)
+
+lint: ## Quality: Run linter
+	@$(CMD_LINT)
+
+format: ## Quality: Format code
+	@$(CMD_FORMAT)
+
+check: lint test ## Quality: Run lint + test
+	@echo "$(b)checks: ok$(reset)"
+
+# -------- Build & Deploy --------
+build: ## Build: Build project
+	@$(CMD_BUILD)
+
+deploy: ## Build: Deploy project
+	@echo "$(p)deploy: not implemented$(reset)"
+
+release: ## Build: Create release
+	@echo "$(b)release: $(VERSION)$(reset)"
+
+publish: ## Build: Publish artefact
+	@echo "$(b)publish: not implemented$(reset)"
+
+# -------- Maintenance --------
+clean: ## Maintenance: Clean build artefacts
+	@rm -rf dist
+
+clean-all: ## Maintenance: Full clean (artefacts + deps)
+	@rm -rf dist node_modules
+
+# -------- Logs & Info --------
+status: ## Logs: Show status
+	@$(COMPOSE) -f $(COMPOSE_FILE) ps
+
+info: ## Logs: Show info
+	@echo "Project: $(PROJECT)"
+	@echo "Version: $(VERSION)"
+	@echo "Compose: $(COMPOSE) -f $(COMPOSE_FILE)"
+
+version: ## Logs: Show version
+	@echo "$(VERSION)"

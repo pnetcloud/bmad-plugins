@@ -1,0 +1,16 @@
+{
+  "name": "pnet-language-specialists",
+  "version": "0.1.0",
+  "description": "Language and framework specialist skills for Go, React, and TypeScript implementation guidance.",
+  "author": {
+    "name": "pnetcloud",
+    "url": "https://github.com/pnetcloud"
+  },
+  "repository": "https://github.com/pnetcloud/bmad-plugins",
+  "license": "MIT",
+  "skills": [
+    "./skills/language-specialists-golang-pro",
+    "./skills/language-specialists-react-specialist",
+    "./skills/language-specialists-typescript-pro"
+  ]
+}
