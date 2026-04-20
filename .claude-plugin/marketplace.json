@@ -21,7 +21,7 @@
     "devops"
   ],
   "metadata": {
-    "version": "0.1.0",
+    "version": "0.1.1",
     "description": "Structured BMad plugin collection curated by pnetcloud."
   },
   "plugins": [
@@ -29,7 +29,7 @@
       "name": "pnet-business-product",
       "source": "./plugins/business-product",
       "description": "Business and product skills for analysis, planning, documentation, research, and delivery coordination.",
-      "version": "0.1.0",
+      "version": "0.1.1",
       "author": {
         "name": "pnetcloud",
         "url": "https://github.com/pnetcloud"
@@ -65,7 +65,7 @@
       "name": "pnet-core-development",
       "source": "./plugins/core-development",
       "description": "Core software development skills spanning architecture, APIs, backend, frontend, databases, UI, docs, and platform patterns.",
-      "version": "0.1.0",
+      "version": "0.1.1",
       "author": {
         "name": "pnetcloud",
         "url": "https://github.com/pnetcloud"
@@ -111,7 +111,7 @@
       "name": "pnet-qa",
       "source": "./plugins/qa",
       "description": "QA-focused skills for browser automation, Playwright workflows, and quality validation.",
-      "version": "0.1.0",
+      "version": "0.1.1",
       "author": {
         "name": "pnetcloud",
         "url": "https://github.com/pnetcloud"
@@ -134,7 +134,7 @@
       "name": "pnet-infrastructure",
       "source": "./plugins/infrastructure",
       "description": "Infrastructure and DevOps skills for cloud architecture, Kubernetes, Terraform, CI/CD, and platform operations.",
-      "version": "0.1.0",
+      "version": "0.1.1",
       "author": {
         "name": "pnetcloud",
         "url": "https://github.com/pnetcloud"
@@ -163,7 +163,7 @@
       "name": "pnet-language-specialists",
       "source": "./plugins/language-specialists",
       "description": "Language and framework specialist skills for Go, React, and TypeScript implementation guidance.",
-      "version": "0.1.0",
+      "version": "0.1.1",
       "author": {
         "name": "pnetcloud",
         "url": "https://github.com/pnetcloud"

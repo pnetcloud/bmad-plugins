@@ -1,6 +1,6 @@
 {
   "name": "pnet-infrastructure",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "Infrastructure and DevOps skills for cloud architecture, Kubernetes, Terraform, CI/CD, and platform operations.",
   "author": {
     "name": "pnetcloud",
