@@ -1,4 +1,4 @@
-# pnet BMad Plugins
+# pNet BMad Plugins
 
 Public distribution repository for installable BMad plugins maintained in [`pnetcloud/bmad-plugins`](https://github.com/pnetcloud/bmad-plugins).
 
