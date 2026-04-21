@@ -1,5 +1,5 @@
 ---
-name: jira
+name: business-product-jira
 description: Manage Jira issues, boards, sprints, and projects via the jira-cli. Search, create, update, and transition issues directly from the command line.
 homepage: https://github.com/ankitpokhrel/jira-cli
 metadata: {"clawdbot":{"emoji":"🎫","requires":{"bins":["jira"]},"install":[{"id":"brew","kind":"brew","formula":"jira-cli","bins":["jira"],"label":"Install jira-cli (brew)"}]}}

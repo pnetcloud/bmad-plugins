@@ -32,6 +32,44 @@ Each plugin directory contains:
 - `skills/` - packaged skill directories shipped to the installer
 - `README.md` - package-specific notes
 
+## Skill Naming
+
+Canonical skill IDs should use the folder name, the `name:` field inside `SKILL.md`, and the manifest entry path as the same exact slug.
+
+Standard format:
+
+- `<plugin-slug>-<skill-slug>`
+
+Examples:
+
+- `business-product-business-analyst`
+- `core-development-api-designer`
+- `infrastructure-terraform-engineer`
+- `language-specialists-react-specialist`
+- `qa-playwright-skill`
+
+This keeps the installed skill ID globally unique and makes it obvious which plugin owns the skill.
+
+### Canonicalized Skills
+
+The repository has been normalized so skill folders now use the canonical prefixed IDs everywhere.
+
+- `business-product-confluence`
+- `business-product-jira`
+- `core-development-data-pipeline-go`
+- `core-development-implement-design`
+- `qa-agent-browser`
+
+### Validation
+
+Run the repository validator before publishing or adding new skills:
+
+```bash
+python3 scripts/check_skill_names.py
+```
+
+The validator enforces the canonical convention for every packaged skill.
+
 ## Install
 
 ### 1. Install BMad
@@ -79,7 +117,7 @@ Business, product, planning, research, and documentation skills grouped into one
 - Publish path: `plugins/business-product`
 - Packaged skill path: `plugins/business-product/skills/*`
 - Included skills: 16
-- Examples: `business-product-business-analyst`, `confluence`, `jira`
+- Examples: `business-product-business-analyst`, `business-product-confluence`, `business-product-jira`
 
 ### `pnet-core-development`
 
@@ -88,7 +126,7 @@ Core software development skills across architecture, APIs, backend, frontend, d
 - Publish path: `plugins/core-development`
 - Packaged skill path: `plugins/core-development/skills/*`
 - Included skills: 26
-- Examples: `core-development-api-designer`, `data-pipeline-go`, `implement-design`
+- Examples: `core-development-api-designer`, `core-development-data-pipeline-go`, `core-development-implement-design`
 
 ### `pnet-infrastructure`
 
@@ -115,7 +153,7 @@ QA-oriented browser automation and testing skills.
 - Publish path: `plugins/qa`
 - Packaged skill path: `plugins/qa/skills/*`
 - Included skills: 2
-- Included skills: `agent-browser`, `qa-playwright-skill`
+- Included skills: `qa-agent-browser`, `qa-playwright-skill`
 
 ## Repository Scope
 

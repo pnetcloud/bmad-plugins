@@ -5,10 +5,10 @@ Installable BMad plugin package for business, product, planning, research, and d
 ## Included Skills
 
 - `business-product-business-analyst`
-- `confluence`
+- `business-product-confluence`
 - `business-product-content-marketer`
 - `business-product-customer-success-manager`
-- `jira`
+- `business-product-jira`
 - `business-product-legal-advisor`
 - `business-product-product-manager`
 - `business-product-project-manager`

@@ -1,5 +1,5 @@
 ---
-name: data-pipeline-go
+name: core-development-data-pipeline-go
 description: ETL data pipeline patterns for Go with Temporal orchestration and Kafka messaging. Use when building ingest, transform, or batch processing activities.
 ---
 

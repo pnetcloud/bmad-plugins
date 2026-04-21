@@ -6,7 +6,7 @@ Installable BMad plugin package for core software development and architecture s
 
 - `core-development-api-designer`
 - `core-development-backend-developer`
-- `data-pipeline-go`
+- `core-development-data-pipeline-go`
 - `core-development-database-postgresql`
 - `core-development-database-timescaledb`
 - `core-development-docs-general`
@@ -27,7 +27,7 @@ Installable BMad plugin package for core software development and architecture s
 - `core-development-react-standards`
 - `core-development-stripe-best-practices`
 - `core-development-ui-designer`
-- `implement-design`
+- `core-development-implement-design`
 - `core-development-web-design-guidelines`
 - `core-development-websocket-engineer`
 
