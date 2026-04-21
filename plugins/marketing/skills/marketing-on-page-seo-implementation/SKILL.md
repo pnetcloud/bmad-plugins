@@ -30,10 +30,13 @@ When invoked for implementation work, produce as many of these artifacts as the 
 
 - page inventory with keep, merge, redirect, canonicalize, noindex, or remove decisions
 - one SEO spec per target URL or page family
+- audit notes for overlap, intent ownership, and inventory cleanup decisions
 - implementation requirements split by frontend, backend/platform, and product/marketing ownership
+- implementation handoff documents when engineering work must be delegated
 - schema plan with field sources
 - internal linking plan with inbound and outbound expectations
 - launch QA checklist with blockers, warnings, and production verification steps
+- QA receipt or rollout note when validating launch or scaling a page family
 - unresolved risks that could change whether the page should launch or remain indexable
 
 ## Operating Stance
@@ -205,7 +208,19 @@ Produce:
 Read:
 - `references/07-launch-qa-checklist.md`
 
-### Phase 8: Validate Against The Right Page Type
+### Phase 8: Package The Handoff
+
+Produce the smallest artifact pack that can move the work forward:
+
+- audit note
+- implementation handoff
+- QA receipt
+- page-family rollout note when applicable
+
+Read:
+- `references/12-delivery-artifacts-and-handoffs.md`
+
+### Phase 9: Validate Against The Right Page Type
 
 Use the worked examples to sanity-check scope, blocks, linking, schema, and indexation choices.
 
@@ -253,3 +268,4 @@ When responding with implementation guidance, use this order:
 - `references/09-docs-seo-patterns.md`
 - `references/10-comparison-and-alternative-pages.md`
 - `references/11-framework-notes.md`
+- `references/12-delivery-artifacts-and-handoffs.md`

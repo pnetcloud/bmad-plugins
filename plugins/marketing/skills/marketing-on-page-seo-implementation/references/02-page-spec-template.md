@@ -190,3 +190,5 @@ For templates, locations, entities, or other repeated page families, append:
 - programmatic SEO families
 - comparison and alternative pages
 - docs pages intended to rank
+
+Pair this spec with `references/12-delivery-artifacts-and-handoffs.md` when the work must be handed to engineering, QA, or another agent.
