@@ -30,6 +30,10 @@ npx bmad-method install --custom-source /path/to/bmad-plugins --tools claude-cod
 
 ## Current Plugins
 
+### `pnet-marketing`
+
+This packaged plugin ships marketing-oriented SEO implementation skills for search-ready product surfaces.
+
 ### `pnet-business-product`
 
 This packaged plugin ships grouped business, product, planning, research, and documentation skills.

@@ -11,6 +11,8 @@
     "bmad",
     "plugins",
     "skills",
+    "marketing",
+    "seo",
     "business-product",
     "core-development",
     "agent-browser",
@@ -25,6 +27,27 @@
     "description": "Structured BMad plugin collection curated by pnetcloud."
   },
   "plugins": [
+    {
+      "name": "pnet-marketing",
+      "source": "./plugins/marketing",
+      "description": "Marketing-oriented implementation skills for on-page SEO, search-ready product surfaces, and growth-aware web delivery.",
+      "version": "0.1.1",
+      "author": {
+        "name": "pnetcloud",
+        "url": "https://github.com/pnetcloud"
+      },
+      "skills": [
+        "./plugins/marketing/skills/marketing-on-page-seo-implementation"
+      ],
+      "category": "marketing",
+      "keywords": [
+        "marketing",
+        "seo",
+        "on-page-seo",
+        "technical-seo",
+        "growth"
+      ]
+    },
     {
       "name": "pnet-business-product",
       "source": "./plugins/business-product",

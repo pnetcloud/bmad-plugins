@@ -1,0 +1,14 @@
+{
+  "name": "pnet-marketing",
+  "version": "0.1.1",
+  "description": "Marketing-oriented implementation skills for on-page SEO, search-ready product surfaces, and growth-aware web delivery.",
+  "author": {
+    "name": "pnetcloud",
+    "url": "https://github.com/pnetcloud"
+  },
+  "repository": "https://github.com/pnetcloud/bmad-plugins",
+  "license": "MIT",
+  "skills": [
+    "./skills/marketing-on-page-seo-implementation"
+  ]
+}

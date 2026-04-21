@@ -18,6 +18,7 @@ bmad-plugins/
 ├── .claude-plugin/                     # Marketplace manifest for all public plugins
 ├── docs/                               # Public docs
 ├── plugins/
+│   ├── marketing/                      # Marketing and SEO implementation bundle
 │   ├── business-product/               # Business and product skill bundle
 │   ├── core-development/               # Core software development skill bundle
 │   ├── infrastructure/                 # Infrastructure and DevOps skill bundle
@@ -104,6 +105,7 @@ npx bmad-method install --custom-source /path/to/bmad-plugins --tools claude-cod
 
 The installer reads `.claude-plugin/marketplace.json` and exposes these plugin packages:
 
+- `pnet-marketing`
 - `pnet-business-product`
 - `pnet-core-development`
 - `pnet-infrastructure`
@@ -111,6 +113,15 @@ The installer reads `.claude-plugin/marketplace.json` and exposes these plugin p
 - `pnet-qa`
 
 ## Plugin Catalog
+
+### `pnet-marketing`
+
+Marketing-oriented implementation skills for shipping search-ready product surfaces, metadata, schema, canonical rules, indexation, and on-page SEO quality into real codebases.
+
+- Publish path: `plugins/marketing`
+- Packaged skill path: `plugins/marketing/skills/*`
+- Included skills: 1
+- Examples: `marketing-on-page-seo-implementation`
 
 ### `pnet-business-product`
 
@@ -155,7 +166,7 @@ QA-oriented browser automation and testing skills.
 - Publish path: `plugins/qa`
 - Packaged skill path: `plugins/qa/skills/*`
 - Included skills: 2
-- Included skills: `agent-browser`, `qa-playwright-skill`
+- Examples: `agent-browser`, `qa-playwright-skill`
 
 ## Repository Scope
 
