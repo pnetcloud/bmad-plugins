@@ -50,15 +50,17 @@ Examples:
 
 This keeps the installed skill ID globally unique and makes it obvious which plugin owns the skill.
 
+Named third-party or branded skills may stay unprefixed when the short public ID is the more stable identifier.
+
 ### Canonicalized Skills
 
-The repository has been normalized so skill folders now use the canonical prefixed IDs everywhere.
+The repository has been normalized so skill folders now use canonical prefixed IDs, except for branded IDs that are intentionally preserved.
 
 - `business-product-confluence`
 - `business-product-jira`
 - `core-development-data-pipeline-go`
 - `core-development-implement-design`
-- `qa-agent-browser`
+- `agent-browser`
 
 ### Validation
 
@@ -68,7 +70,7 @@ Run the repository validator before publishing or adding new skills:
 python3 scripts/check_skill_names.py
 ```
 
-The validator enforces the canonical convention for every packaged skill.
+The validator enforces the canonical convention for packaged skills and allows a small explicit exception list for preserved branded IDs.
 
 ## Install
 
@@ -153,7 +155,7 @@ QA-oriented browser automation and testing skills.
 - Publish path: `plugins/qa`
 - Packaged skill path: `plugins/qa/skills/*`
 - Included skills: 2
-- Included skills: `qa-agent-browser`, `qa-playwright-skill`
+- Included skills: `agent-browser`, `qa-playwright-skill`
 
 ## Repository Scope
 

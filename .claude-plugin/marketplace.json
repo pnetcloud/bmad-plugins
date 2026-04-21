@@ -117,7 +117,7 @@
         "url": "https://github.com/pnetcloud"
       },
       "skills": [
-        "./plugins/qa/skills/qa-agent-browser",
+        "./plugins/qa/skills/agent-browser",
         "./plugins/qa/skills/qa-playwright-skill"
       ],
       "category": "quality",

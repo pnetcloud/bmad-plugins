@@ -9,7 +9,7 @@
   "repository": "https://github.com/pnetcloud/bmad-plugins",
   "license": "MIT",
   "skills": [
-    "./skills/qa-agent-browser",
+    "./skills/agent-browser",
     "./skills/qa-playwright-skill"
   ]
 }

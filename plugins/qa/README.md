@@ -4,7 +4,7 @@ Installable BMad plugin package for QA-oriented browser automation and testing s
 
 ## Included Skills
 
-- `qa-agent-browser`
+- `agent-browser`
 - `qa-playwright-skill`
 
 ## Contents
