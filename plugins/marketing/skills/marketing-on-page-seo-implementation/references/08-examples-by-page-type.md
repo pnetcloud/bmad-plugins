@@ -334,3 +334,43 @@ Usually local or entity-specific intent. The searcher expects location or entity
 
 - noindex or avoid publishing token-swapped local clones
 - retire empty or unsupported entity pages instead of leaving soft 404s
+
+## 9. Glossary Page
+
+### Best For
+
+- definitional queries that matter to the product journey
+- concepts where the searcher may need both explanation and a clear product or docs handoff
+
+### Search Intent
+
+Mostly informational. The searcher wants a clear definition, context, and often a bridge to practical application.
+
+### Minimum Content Blocks
+
+- concise definition near the top
+- explanation of why the concept matters
+- practical examples or scenarios
+- related concepts
+- link to product or docs pages where the concept becomes actionable
+
+### Common Failure Modes
+
+- definition copied from generic sources with no product context
+- glossary page ranks but never helps the user move to the next step
+- dozens of thin glossary entries with no meaningful differentiation
+
+### Internal Linking Expectations
+
+- inbound from glossary hubs, educational pages, and relevant product or docs pages
+- outbound to related concepts, product pages, and implementation docs when appropriate
+
+### Schema Suggestions
+
+- `Article`
+- `BreadcrumbList`
+
+### Indexation Cautions
+
+- do not index if the page adds no value beyond a generic definition
+- merge or noindex weak terms that cannot support a useful handoff into the rest of the site
