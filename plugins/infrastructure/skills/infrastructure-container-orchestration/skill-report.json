@@ -40,7 +40,7 @@
     "risk_level": "low",
     "is_blocked": false,
     "safe_to_publish": true,
-    "summary": "This skill provides documentation and templates for container orchestration. Static findings are predominantly false positives: the 'rm -rf' flags target standard apt cache cleanup paths (/var/lib/apt/lists/*), not root directories. Template placeholders use standard ${VAR:-default} syntax without actual credential exposure. Documentation patterns and script commands are controlled and appropriate for a DevOps skill. No malicious intent, data exfiltration, or unauthorized access patterns confirmed.",
+    "summary": "This skill provides documentation and templates for container orchestration. Static findings are predominantly false positives: the 'rm -rf' flags target standard apt cache cleanup paths (/var/lib/apt/lists/*), not root directories. Template placeholders use shell default-value interpolation without actual credential exposure. Documentation patterns and script commands are controlled and appropriate for a DevOps skill. No malicious intent, data exfiltration, or unauthorized access patterns confirmed.",
     "risk_factor_evidence": [
       {
         "factor": "scripts",

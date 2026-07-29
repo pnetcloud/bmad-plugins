@@ -19,7 +19,7 @@ services:
     ports:
       - "${APP_PORT:-8000}:8000"
     environment:
-      - DATABASE_URL=postgres://${DB_USER:-postgres}:${DB_PASSWORD:-postgres}@db:5432/${DB_NAME:-myapp}
+      - DATABASE_URL=postgres://${DB_USER:-postgres}:${DB_PASSWORD:?set DB_PASSWORD}@db:5432/${DB_NAME:-myapp}
       - REDIS_URL=redis://redis:6379/0
       - LOG_LEVEL=${LOG_LEVEL:-info}
     depends_on:
@@ -49,7 +49,7 @@ services:
     restart: unless-stopped
     environment:
       POSTGRES_USER: ${DB_USER:-postgres}
-      POSTGRES_PASSWORD: ${DB_PASSWORD:-postgres}
+      POSTGRES_PASSWORD: ${DB_PASSWORD:?set DB_PASSWORD}
       POSTGRES_DB: ${DB_NAME:-myapp}
     ports:
       - "${DB_PORT:-5432}:5432"
@@ -95,7 +95,7 @@ services:
   #   restart: unless-stopped
   #   command: python -m celery -A src.worker worker --loglevel=info
   #   environment:
-  #     - DATABASE_URL=postgres://${DB_USER:-postgres}:${DB_PASSWORD:-postgres}@db:5432/${DB_NAME:-myapp}
+  #     - DATABASE_URL=postgres://${DB_USER:-postgres}:${DB_PASSWORD:?set DB_PASSWORD}@db:5432/${DB_NAME:-myapp}
   #     - REDIS_URL=redis://redis:6379/0
   #   depends_on:
   #     - db

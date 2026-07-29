@@ -43,9 +43,11 @@ metadata:
   name: app-secrets
   namespace: myapp
 type: Opaque
+# Placeholder only: do not apply this Secret manifest. Populate values through
+# an approved secret-management workflow, or use the ExternalSecret below.
 stringData:
-  DATABASE_URL: postgres://user:pass@db:5432/app
-  API_KEY: supersecretkey
+  DATABASE_URL: "postgres://user:<password>@db:5432/app"
+  API_KEY: "<api-key>"
 ---
 # External Secrets (for AWS Secrets Manager, etc.)
 apiVersion: external-secrets.io/v1beta1
