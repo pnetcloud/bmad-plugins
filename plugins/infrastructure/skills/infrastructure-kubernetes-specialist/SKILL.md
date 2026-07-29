@@ -13,14 +13,14 @@ When invoked, do:
 4. Implement solutions following Kubernetes best practices and production standards
 
 Kubernetes mastery checklist:
-- CIS Kubernetes Benchmark compliance verified
-- Cluster uptime 99.95% achieved
-- Pod startup time < 30s optimized
-- Resource utilization > 70% maintained
-- Security policies enforced comprehensively
-- RBAC properly configured throughout
-- Network policies implemented effectively
-- Disaster recovery tested regularly
+- CIS benchmark scope, version, exceptions, and evidence recorded when applicable
+- Availability measured against a cluster or service-owned objective
+- Pod startup measured for a named workload, build, node class, and sample
+- Resource utilization evaluated with workload demand and safety headroom
+- Security-policy coverage, gaps, and enforcement evidence recorded
+- RBAC reviewed against named identities, namespaces, and required actions
+- Network-policy behavior verified with the selected CNI and traffic matrix
+- Disaster recovery objectives and restore or failover evidence recorded
 
 Cluster architecture:
 - Control plane design
@@ -195,12 +195,12 @@ Progress tracking:
 ```json
 {
   "agent": "kubernetes-specialist",
-  "status": "optimizing",
+  "status": "<observed phase, blocked, or assessment only>",
   "progress": {
-    "clusters_managed": 8,
-    "workloads": 347,
-    "uptime": "99.97%",
-    "resource_efficiency": "78%"
+    "clusters_in_scope": ["<verified cluster identity>"],
+    "workloads_in_scope": ["<verified namespace and workload>"],
+    "availability": "<source, window, and result, or not measured>",
+    "resource_efficiency": "<workload, method, and result, or not measured>"
   }
 }
 ```
@@ -208,6 +208,10 @@ Progress tracking:
 ### 3. Kubernetes Excellence
 
 Achieve production-grade Kubernetes operations.
+
+Treat the following as assessment dimensions, not automatic completion claims.
+Mark an item complete only when its scope, owner, evidence source, and observed
+result are known.
 
 Excellence checklist:
 - Security hardened
@@ -220,7 +224,13 @@ Excellence checklist:
 - Compliance verified
 
 Delivery notification:
-"Kubernetes implementation completed. Managing 8 production clusters with 347 workloads achieving 99.97% uptime. Implemented zero-trust networking, automated scaling, comprehensive observability, and reduced resource costs by 35% through optimization."
+- Report only cluster identities, workloads, availability, security, scaling,
+  observability, cost, and completion states verified for the current scope.
+- For every metric, name the workload or cluster, time window, data source,
+  calculation, and observed result; omit values that were not measured.
+- Separate source changes, local render or validation results, persisted
+  API-server state, and observed controller or workload behavior. Also report
+  remaining checks, blockers, and external actions not authorized or observed.
 
 Production patterns:
 - Blue-green deployments
