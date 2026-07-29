@@ -1,228 +1,289 @@
 #!/usr/bin/env node
+'use strict';
+
 /**
- * Universal Playwright Executor for Claude Code
+ * Explicit Playwright code runner.
  *
- * Executes Playwright automation code from:
- * - File path: node run.js script.js
- * - Inline code: node run.js 'await page.goto("...")'
- * - Stdin: cat script.js | node run.js
- *
- * Ensures proper module resolution by running from skill directory.
+ * This is an execution tool, not a sandbox. It runs reviewed code with the
+ * current user's filesystem and network authority in a separate Node process.
  */
 
 const fs = require('fs');
 const path = require('path');
-const { execSync } = require('child_process');
+const { spawnSync } = require('child_process');
 
-// Change to skill directory for proper module resolution
-process.chdir(__dirname);
+const maxFileBytes = 256 * 1024;
+const maxInlineBytes = 64 * 1024;
+const DEFAULT_ENV_NAMES = [
+  'CI',
+  'DBUS_SESSION_BUS_ADDRESS',
+  'DISPLAY',
+  'HOME',
+  'PATH',
+  'PLAYWRIGHT_BROWSERS_PATH',
+  'TMP',
+  'TEMP',
+  'TMPDIR',
+  'WAYLAND_DISPLAY',
+  'XAUTHORITY',
+];
 
-/**
- * Check if Playwright is installed
- */
-function checkPlaywrightInstalled() {
-  try {
-    require.resolve('playwright');
-    return true;
-  } catch (e) {
-    return false;
-  }
+function usage() {
+  return `Usage:
+  node run.js --file SCRIPT [--cwd DIR] [--pass-env NAME ...]
+  node run.js --inline CODE [--cwd DIR] [--pass-env NAME ...]
+  node run.js --stdin [--cwd DIR] [--pass-env NAME ...]
+
+Exactly one code source is required. Code is arbitrary local execution and must
+be reviewed before use. Dependencies and browser binaries are never installed
+automatically.`;
 }
 
-/**
- * Install Playwright if missing
- */
-function installPlaywright() {
-  console.log('📦 Playwright not found. Installing...');
-  try {
-    execSync('npm install', { stdio: 'inherit', cwd: __dirname });
-    execSync('npx playwright install chromium', { stdio: 'inherit', cwd: __dirname });
-    console.log('✅ Playwright installed successfully');
-    return true;
-  } catch (e) {
-    console.error('❌ Failed to install Playwright:', e.message);
-    console.error('Please run manually: cd', __dirname, '&& npm run setup');
-    return false;
-  }
+function fail(message) {
+  const error = new Error(message);
+  error.code = 'USAGE';
+  throw error;
 }
 
-/**
- * Get code to execute from various sources
- */
-function getCodeToExecute() {
-  const args = process.argv.slice(2);
-
-  // Case 1: File path provided
-  if (args.length > 0 && fs.existsSync(args[0])) {
-    const filePath = path.resolve(args[0]);
-    console.log(`📄 Executing file: ${filePath}`);
-    return fs.readFileSync(filePath, 'utf8');
+function takeValue(args, index, option) {
+  if (index + 1 >= args.length || !args[index + 1]) {
+    fail(`missing value for ${option}`);
   }
-
-  // Case 2: Inline code provided as argument
-  if (args.length > 0) {
-    console.log('⚡ Executing inline code');
-    return args.join(' ');
-  }
-
-  // Case 3: Code from stdin
-  if (!process.stdin.isTTY) {
-    console.log('📥 Reading from stdin');
-    return fs.readFileSync(0, 'utf8');
-  }
-
-  // No input
-  console.error('❌ No code to execute');
-  console.error('Usage:');
-  console.error('  node run.js script.js          # Execute file');
-  console.error('  node run.js "code here"        # Execute inline');
-  console.error('  cat script.js | node run.js    # Execute from stdin');
-  process.exit(1);
+  return args[index + 1];
 }
 
-/**
- * Clean up old temporary execution files from previous runs
- */
-function cleanupOldTempFiles() {
-  try {
-    const files = fs.readdirSync(__dirname);
-    const tempFiles = files.filter(f => f.startsWith('.temp-execution-') && f.endsWith('.js'));
+function parseArgs(args) {
+  if (args.length === 0) {
+    return {
+      cwd: __dirname,
+      passEnv: [],
+      source: { kind: 'stdin' },
+      legacy: true,
+    };
+  }
 
-    if (tempFiles.length > 0) {
-      tempFiles.forEach(file => {
-        const filePath = path.join(__dirname, file);
-        try {
-          fs.unlinkSync(filePath);
-        } catch (e) {
-          // Ignore errors - file might be in use or already deleted
-        }
-      });
+  if (!args.some(argument => argument.startsWith('--'))) {
+    const candidate = args.length === 1 ? path.resolve(args[0]) : null;
+    const isFile = candidate !== null && fs.existsSync(candidate);
+    return {
+      cwd: __dirname,
+      passEnv: [],
+      source: isFile
+        ? { kind: 'file', value: candidate }
+        : { kind: 'inline', value: args.join(' ') },
+      legacy: true,
+    };
+  }
+
+  const options = {
+    cwd: process.cwd(),
+    passEnv: [],
+    source: null,
+  };
+
+  for (let index = 0; index < args.length; index += 1) {
+    const option = args[index];
+    if (option === '--help') {
+      options.help = true;
+    } else if (option === '--file' || option === '--inline') {
+      if (options.source) fail('choose exactly one code source');
+      options.source = {
+        kind: option.slice(2),
+        value: takeValue(args, index, option),
+      };
+      index += 1;
+    } else if (option === '--stdin') {
+      if (options.source) fail('choose exactly one code source');
+      options.source = { kind: 'stdin' };
+    } else if (option === '--cwd') {
+      options.cwd = takeValue(args, index, option);
+      index += 1;
+    } else if (option === '--pass-env') {
+      options.passEnv.push(takeValue(args, index, option));
+      index += 1;
+    } else {
+      fail(`unknown option: ${option}`);
     }
-  } catch (e) {
-    // Ignore directory read errors
   }
+
+  if (!options.help && !options.source) fail('a code source is required');
+  return options;
 }
 
-/**
- * Wrap code in async IIFE if not already wrapped
- */
+function readRegularFile(fileName, byteLimit) {
+  const resolved = path.resolve(fileName);
+  const metadata = fs.lstatSync(resolved);
+  if (!metadata.isFile() || metadata.isSymbolicLink()) {
+    fail('script must be a regular non-symlink file');
+  }
+  if (metadata.size > byteLimit) {
+    fail(`script exceeds ${byteLimit} bytes`);
+  }
+  if (fs.realpathSync(resolved) !== resolved) {
+    fail('script path must not traverse symlinks');
+  }
+  return fs.readFileSync(resolved, 'utf8');
+}
+
+function readStdin(byteLimit) {
+  const chunks = [];
+  let totalBytes = 0;
+  while (true) {
+    const buffer = Buffer.allocUnsafe(Math.min(64 * 1024, byteLimit + 1));
+    let bytesRead;
+    try {
+      bytesRead = fs.readSync(0, buffer, 0, buffer.length, null);
+    } catch (error) {
+      if (error.code !== 'EAGAIN') throw error;
+      Atomics.wait(new Int32Array(new SharedArrayBuffer(4)), 0, 0, 1);
+      continue;
+    }
+    if (bytesRead === 0) break;
+    totalBytes += bytesRead;
+    if (totalBytes > byteLimit) {
+      fail(`stdin code exceeds ${byteLimit} bytes`);
+    }
+    chunks.push(buffer.subarray(0, bytesRead));
+  }
+  return Buffer.concat(chunks, totalBytes).toString('utf8');
+}
+
+function readCode(source) {
+  if (source.kind === 'file') {
+    return readRegularFile(source.value, maxFileBytes);
+  }
+  if (source.kind === 'inline') {
+    if (Buffer.byteLength(source.value, 'utf8') > maxInlineBytes) {
+      fail(`inline code exceeds ${maxInlineBytes} bytes`);
+    }
+    return source.value;
+  }
+  if (process.stdin.isTTY) fail('--stdin requires piped input');
+  return readStdin(maxFileBytes);
+}
+
 function wrapCodeIfNeeded(code) {
-  // Check if code already has require() and async structure
   const hasRequire = code.includes('require(');
-  const hasAsyncIIFE = code.includes('(async () => {') || code.includes('(async()=>{');
+  const hasAsyncWrapper =
+    code.includes('(async () => {') || code.includes('(async()=>{');
+  if (hasRequire && hasAsyncWrapper) return code;
 
-  // If it's already a complete script, return as-is
-  if (hasRequire && hasAsyncIIFE) {
-    return code;
-  }
-
-  // If it's just Playwright commands, wrap in full template
-  if (!hasRequire) {
-    return `
+const imports = hasRequire
+    ? ''
+    : `
 const { chromium, firefox, webkit, devices } = require('playwright');
-const helpers = require('./lib/helpers');
-
-// Extra headers from environment variables (if configured)
-const __extraHeaders = helpers.getExtraHeadersFromEnv();
-
-/**
- * Utility to merge environment headers into context options.
- * Use when creating contexts with raw Playwright API instead of helpers.createContext().
- * @param {Object} options - Context options
- * @returns {Object} Options with extraHTTPHeaders merged in
- */
+const helpers = require(process.env.QA_PLAYWRIGHT_HELPERS);
 function getContextOptionsWithHeaders(options = {}) {
-  if (!__extraHeaders) return options;
+  const environmentHeaders = helpers.getExtraHeadersFromEnv({
+    allowSensitiveHeaders: options.allowSensitiveHeaders === true,
+  });
+  const optionHeaders = helpers.validateHeaders(
+    options.extraHTTPHeaders || {},
+    options.allowSensitiveHeaders === true,
+  );
+  const {
+    allowSensitiveHeaders: _allowSensitiveHeaders,
+    extraHTTPHeaders: _extraHTTPHeaders,
+    ...contextOptions
+  } = options;
+  const extraHTTPHeaders = {
+    ...(environmentHeaders || {}),
+    ...optionHeaders,
+  };
   return {
-    ...options,
-    extraHTTPHeaders: {
-      ...__extraHeaders,
-      ...(options.extraHTTPHeaders || {})
-    }
+    ...contextOptions,
+    ...(Object.keys(extraHTTPHeaders).length > 0 && { extraHTTPHeaders }),
   };
 }
-
+`;
+  return `'use strict';
+${imports}
 (async () => {
   try {
-    ${code}
+${code}
   } catch (error) {
-    console.error('❌ Automation error:', error.message);
-    if (error.stack) {
-      console.error(error.stack);
-    }
-    process.exit(1);
+    console.error('Automation error:', error.message);
+    process.exitCode = 1;
   }
 })();
 `;
-  }
-
-  // If has require but no async wrapper
-  if (!hasAsyncIIFE) {
-    return `
-(async () => {
-  try {
-    ${code}
-  } catch (error) {
-    console.error('❌ Automation error:', error.message);
-    if (error.stack) {
-      console.error(error.stack);
-    }
-    process.exit(1);
-  }
-})();
-`;
-  }
-
-  return code;
 }
 
-/**
- * Main execution
- */
-async function main() {
-  console.log('🎭 Playwright Skill - Universal Executor\n');
+function resolveExecutionDirectory(directory) {
+  const resolved = path.resolve(directory);
+  const metadata = fs.lstatSync(resolved);
+  if (!metadata.isDirectory() || metadata.isSymbolicLink()) {
+    fail('--cwd must be an existing non-symlink directory');
+  }
+  if (fs.realpathSync(resolved) !== resolved) {
+    fail('--cwd path must not traverse symlinks');
+  }
+  return resolved;
+}
 
-  // Clean up old temp files from previous runs
-  cleanupOldTempFiles();
-
-  // Check Playwright installation
-  if (!checkPlaywrightInstalled()) {
-    const installed = installPlaywright();
-    if (!installed) {
-      process.exit(1);
+function buildEnvironment(extraNames, playwrightEntry, inheritEnvironment = false) {
+  const environment = inheritEnvironment ? { ...process.env } : {};
+  for (const name of [...DEFAULT_ENV_NAMES, ...extraNames]) {
+    if (!/^[A-Za-z_][A-Za-z0-9_]*$/.test(name)) {
+      fail(`invalid environment variable name: ${name}`);
+    }
+    if (Object.prototype.hasOwnProperty.call(process.env, name)) {
+      environment[name] = process.env[name];
+    } else if (extraNames.includes(name)) {
+      fail(`requested environment variable is unavailable: ${name}`);
     }
   }
+  environment.NODE_PATH = path.dirname(path.dirname(playwrightEntry));
+  environment.QA_PLAYWRIGHT_HELPERS = path.join(__dirname, 'lib/helpers.js');
+  return environment;
+}
 
-  // Get code to execute
-  const rawCode = getCodeToExecute();
-  const code = wrapCodeIfNeeded(rawCode);
-
-  // Create temporary file for execution
-  const tempFile = path.join(__dirname, `.temp-execution-${Date.now()}.js`);
-
+function resolvePlaywright() {
   try {
-    // Write code to temp file
-    fs.writeFileSync(tempFile, code, 'utf8');
-
-    // Execute the code
-    console.log('🚀 Starting automation...\n');
-    require(tempFile);
-
-    // Note: Temp file will be cleaned up on next run
-    // This allows long-running async operations to complete safely
-
-  } catch (error) {
-    console.error('❌ Execution failed:', error.message);
-    if (error.stack) {
-      console.error('\n📋 Stack trace:');
-      console.error(error.stack);
-    }
-    process.exit(1);
+    return require.resolve('playwright');
+  } catch {
+    fail('Playwright is not installed; run the reviewed package setup explicitly');
   }
 }
 
-// Run main function
-main().catch(error => {
-  console.error('❌ Fatal error:', error.message);
-  process.exit(1);
-});
+function execute(options, code) {
+  const playwrightEntry = resolvePlaywright();
+  const child = spawnSync(process.execPath, ['-'], {
+    cwd: resolveExecutionDirectory(options.cwd),
+    env: buildEnvironment(options.passEnv, playwrightEntry, options.legacy === true),
+    input: wrapCodeIfNeeded(code),
+    stdio: ['pipe', 'inherit', 'inherit'],
+  });
+  if (child.error) throw child.error;
+  return child.status === null ? 1 : child.status;
+}
+
+function main(args = process.argv.slice(2)) {
+  try {
+    const options = parseArgs(args);
+    if (options.help) {
+      console.log(usage());
+      return 0;
+    }
+    return execute(options, readCode(options.source));
+  } catch (error) {
+    console.error(error.message);
+    if (error.code === 'USAGE') console.error(usage());
+    return 2;
+  }
+}
+
+if (require.main === module) {
+  process.exitCode = main();
+}
+
+module.exports = {
+  buildEnvironment,
+  main,
+  parseArgs,
+  readCode,
+  readStdin,
+  resolveExecutionDirectory,
+  usage,
+  wrapCodeIfNeeded,
+};

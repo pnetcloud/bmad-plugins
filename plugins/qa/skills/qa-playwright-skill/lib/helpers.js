@@ -1,7 +1,36 @@
 // playwright-helpers.js
 // Reusable utility functions for Playwright automation
 
-const { chromium, firefox, webkit } = require('playwright');
+const fs = require('fs');
+const path = require('path');
+
+function getPlaywright() {
+  return require('playwright');
+}
+
+const SENSITIVE_HEADER_NAMES = new Set([
+  'authorization',
+  'cookie',
+  'proxy-authorization',
+  'set-cookie',
+]);
+
+function validateHeaders(headers, allowSensitiveHeaders = false) {
+  const validated = {};
+  for (const [name, value] of Object.entries(headers || {})) {
+    if (!/^[!#$%&'*+.^_`|~0-9A-Za-z-]+$/.test(name)) {
+      throw new Error(`Invalid HTTP header name: ${name}`);
+    }
+    if (typeof value !== 'string' || /[\r\n]/.test(value)) {
+      throw new Error(`Invalid HTTP header value for ${name}`);
+    }
+    if (!allowSensitiveHeaders && SENSITIVE_HEADER_NAMES.has(name.toLowerCase())) {
+      throw new Error(`Sensitive HTTP header requires explicit approval: ${name}`);
+    }
+    validated[name] = value;
+  }
+  return validated;
+}
 
 /**
  * Parse extra HTTP headers from environment variables.
@@ -11,12 +40,19 @@ const { chromium, firefox, webkit } = require('playwright');
  * Single header format takes precedence if both are set.
  * @returns {Object|null} Headers object or null if none configured
  */
-function getExtraHeadersFromEnv() {
+function getExtraHeadersFromEnv(options = {}) {
   const headerName = process.env.PW_HEADER_NAME;
   const headerValue = process.env.PW_HEADER_VALUE;
 
+  if (Boolean(headerName) !== Boolean(headerValue)) {
+    throw new Error('PW_HEADER_NAME and PW_HEADER_VALUE must be provided together');
+  }
+
   if (headerName && headerValue) {
-    return { [headerName]: headerValue };
+    return validateHeaders(
+      { [headerName]: headerValue },
+      options.allowSensitiveHeaders === true,
+    );
   }
 
   const headersJson = process.env.PW_EXTRA_HEADERS;
@@ -24,11 +60,11 @@ function getExtraHeadersFromEnv() {
     try {
       const parsed = JSON.parse(headersJson);
       if (typeof parsed === 'object' && parsed !== null && !Array.isArray(parsed)) {
-        return parsed;
+        return validateHeaders(parsed, options.allowSensitiveHeaders === true);
       }
-      console.warn('PW_EXTRA_HEADERS must be a JSON object, ignoring...');
+      throw new Error('PW_EXTRA_HEADERS must be a JSON object');
     } catch (e) {
-      console.warn('Failed to parse PW_EXTRA_HEADERS as JSON:', e.message);
+      throw new Error(`Invalid PW_EXTRA_HEADERS: ${e.message}`);
     }
   }
 
@@ -41,10 +77,13 @@ function getExtraHeadersFromEnv() {
  * @param {Object} options - Additional launch options
  */
 async function launchBrowser(browserType = 'chromium', options = {}) {
+  const { chromium, firefox, webkit } = getPlaywright();
+  const configuredSlowMo = Number.parseInt(process.env.SLOW_MO || '0', 10);
   const defaultOptions = {
     headless: process.env.HEADLESS !== 'false',
-    slowMo: process.env.SLOW_MO ? parseInt(process.env.SLOW_MO) : 0,
-    args: ['--no-sandbox', '--disable-setuid-sandbox']
+    slowMo: Number.isFinite(configuredSlowMo) && configuredSlowMo >= 0
+      ? configuredSlowMo
+      : 0,
   };
   
   const browsers = { chromium, firefox, webkit };
@@ -54,7 +93,7 @@ async function launchBrowser(browserType = 'chromium', options = {}) {
     throw new Error(`Invalid browser type: ${browserType}`);
   }
   
-  return await browser.launch({ ...defaultOptions, ...options });
+  return browser.launch({ ...defaultOptions, ...options });
 }
 
 /**
@@ -88,17 +127,13 @@ async function createPage(context, options = {}) {
  */
 async function waitForPageReady(page, options = {}) {
   const waitOptions = {
-    waitUntil: options.waitUntil || 'networkidle',
+    waitUntil: options.waitUntil || 'domcontentloaded',
     timeout: options.timeout || 30000
   };
   
-  try {
-    await page.waitForLoadState(waitOptions.waitUntil, { 
-      timeout: waitOptions.timeout 
-    });
-  } catch (e) {
-    console.warn('Page load timeout, continuing...');
-  }
+  await page.waitForLoadState(waitOptions.waitUntil, {
+    timeout: waitOptions.timeout
+  });
   
   // Additional wait for dynamic content if selector provided
   if (options.waitForSelector) {
@@ -115,7 +150,7 @@ async function waitForPageReady(page, options = {}) {
  * @param {Object} options - Click options
  */
 async function safeClick(page, selector, options = {}) {
-  const maxRetries = options.retries || 3;
+  const maxRetries = options.retries || 1;
   const retryDelay = options.retryDelay || 1000;
   
   for (let i = 0; i < maxRetries; i++) {
@@ -158,7 +193,9 @@ async function safeType(page, selector, text, options = {}) {
   }
   
   if (options.slow) {
-    await page.type(selector, text, { delay: options.delay || 100 });
+    await page.locator(selector).pressSequentially(text, {
+      delay: options.delay || 100
+    });
   } else {
     await page.fill(selector, text);
   }
@@ -184,12 +221,26 @@ async function extractTexts(page, selector) {
  */
 async function takeScreenshot(page, name, options = {}) {
   const timestamp = new Date().toISOString().replace(/[:.]/g, '-');
-  const filename = `${name}-${timestamp}.png`;
+  if (!/^[A-Za-z0-9][A-Za-z0-9._-]*$/.test(name)) {
+    throw new Error('Screenshot name must be a safe base name');
+  }
+  const outputDirectory = path.resolve(options.outputDirectory || '.');
+  const metadata = fs.lstatSync(outputDirectory);
+  if (!metadata.isDirectory() || metadata.isSymbolicLink()) {
+    throw new Error('Screenshot output directory must be a non-symlink directory');
+  }
+  if (fs.realpathSync(outputDirectory) !== outputDirectory) {
+    throw new Error('Screenshot output path must not traverse symlinks');
+  }
+  const filename = path.join(outputDirectory, `${name}-${timestamp}.png`);
+  const screenshotOptions = { ...options };
+  delete screenshotOptions.outputDirectory;
+  delete screenshotOptions.path;
   
   await page.screenshot({
     path: filename,
     fullPage: options.fullPage !== false,
-    ...options
+    ...screenshotOptions
   });
   
   console.log(`Screenshot saved: ${filename}`);
@@ -203,6 +254,12 @@ async function takeScreenshot(page, name, options = {}) {
  * @param {Object} selectors - Login form selectors
  */
 async function authenticate(page, credentials, selectors = {}) {
+  if (!credentials || !credentials.username || !credentials.password) {
+    throw new Error('Credentials must come from an approved runtime channel');
+  }
+  if (!selectors.successIndicator && !selectors.successURL) {
+    throw new Error('Authentication requires a successIndicator or successURL');
+  }
   const defaultSelectors = {
     username: 'input[name="username"], input[name="email"], #username, #email',
     password: 'input[name="password"], #password',
@@ -215,13 +272,15 @@ async function authenticate(page, credentials, selectors = {}) {
   await safeType(page, finalSelectors.password, credentials.password);
   await safeClick(page, finalSelectors.submit);
   
-  // Wait for navigation or success indicator
-  await Promise.race([
-    page.waitForNavigation({ waitUntil: 'networkidle' }),
-    page.waitForSelector(selectors.successIndicator || '.dashboard, .user-menu, .logout', { timeout: 10000 })
-  ]).catch(() => {
-    console.log('Login might have completed without navigation');
-  });
+  if (selectors.successURL) {
+    await page.waitForURL(selectors.successURL, { timeout: 10000 });
+  }
+  if (selectors.successIndicator) {
+    await page.locator(selectors.successIndicator).waitFor({
+      state: 'visible',
+      timeout: 10000,
+    });
+  }
 }
 
 /**
@@ -281,21 +340,30 @@ async function extractTableData(page, tableSelector) {
 }
 
 /**
- * Wait for and dismiss cookie banners
+ * Wait for and apply an explicit cookie-banner decision
  * @param {Object} page - Playwright page
+ * @param {'accept'|'reject'} decision - User-authorized consent decision
  * @param {number} timeout - Max time to wait
  */
-async function handleCookieBanner(page, timeout = 3000) {
-  const commonSelectors = [
-    'button:has-text("Accept")',
-    'button:has-text("Accept all")',
-    'button:has-text("OK")',
-    'button:has-text("Got it")',
-    'button:has-text("I agree")',
-    '.cookie-accept',
-    '#cookie-accept',
-    '[data-testid="cookie-accept"]'
-  ];
+async function handleCookieBanner(page, decision, timeout = 3000) {
+  const selectorsByDecision = {
+    accept: [
+      'button:has-text("Accept")',
+      'button:has-text("Accept all")',
+      '.cookie-accept',
+      '[data-testid="cookie-accept"]'
+    ],
+    reject: [
+      'button:has-text("Reject")',
+      'button:has-text("Reject all")',
+      '.cookie-reject',
+      '[data-testid="cookie-reject"]'
+    ],
+  };
+  const commonSelectors = selectorsByDecision[decision];
+  if (!commonSelectors) {
+    throw new Error('Cookie decision must be explicitly "accept" or "reject"');
+  }
   
   for (const selector of commonSelectors) {
     try {
@@ -345,14 +413,27 @@ async function retryWithBackoff(fn, maxRetries = 3, initialDelay = 1000) {
  * @param {Object} options - Context options
  */
 async function createContext(browser, options = {}) {
-  const envHeaders = getExtraHeadersFromEnv();
+  const allowSensitiveHeaders = options.allowSensitiveHeaders === true;
+  const envHeaders = getExtraHeadersFromEnv({
+    allowSensitiveHeaders,
+  });
+  const optionHeaders = validateHeaders(
+    options.extraHTTPHeaders || {},
+    allowSensitiveHeaders,
+  );
 
   // Merge environment headers with any passed in options
   const mergedHeaders = {
-    ...envHeaders,
-    ...options.extraHTTPHeaders
+    ...(envHeaders || {}),
+    ...optionHeaders,
   };
 
+  const {
+    allowSensitiveHeaders: _allowSensitiveHeaders,
+    extraHTTPHeaders: _extraHTTPHeaders,
+    mobile: _mobile,
+    ...playwrightOptions
+  } = options;
   const defaultOptions = {
     viewport: { width: 1280, height: 720 },
     userAgent: options.mobile
@@ -366,20 +447,30 @@ async function createContext(browser, options = {}) {
     ...(Object.keys(mergedHeaders).length > 0 && { extraHTTPHeaders: mergedHeaders })
   };
 
-  return await browser.newContext({ ...defaultOptions, ...options });
+  return browser.newContext({
+    ...defaultOptions,
+    ...playwrightOptions,
+    ...(Object.keys(mergedHeaders).length > 0 && {
+      extraHTTPHeaders: mergedHeaders,
+    }),
+  });
 }
 
 /**
- * Detect running dev servers on common ports
- * @param {Array<number>} customPorts - Additional ports to check
+ * Detect running dev servers only on reviewed candidate ports
+ * @param {Array<number>} candidatePorts - Explicit ports to check
  * @returns {Promise<Array>} Array of detected server URLs
  */
-async function detectDevServers(customPorts = []) {
+async function detectDevServers(candidatePorts = []) {
   const http = require('http');
 
-  // Common dev server ports
-  const commonPorts = [3000, 3001, 3002, 5173, 8080, 8000, 4200, 5000, 9000, 1234];
-  const allPorts = [...new Set([...commonPorts, ...customPorts])];
+  if (!Array.isArray(candidatePorts) || candidatePorts.length === 0) {
+    throw new Error('Provide reviewed candidate ports from the target project');
+  }
+  const allPorts = [...new Set(candidatePorts.map(port => Number(port)))];
+  if (allPorts.some(port => !Number.isInteger(port) || port < 1 || port > 65535)) {
+    throw new Error('Candidate ports must be integers between 1 and 65535');
+  }
 
   const detectedServers = [];
 
@@ -437,5 +528,6 @@ module.exports = {
   retryWithBackoff,
   createContext,
   detectDevServers,
-  getExtraHeadersFromEnv
+  getExtraHeadersFromEnv,
+  validateHeaders,
 };

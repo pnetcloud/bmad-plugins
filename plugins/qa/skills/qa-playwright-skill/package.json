@@ -1,12 +1,15 @@
 {
   "name": "playwright-skill",
   "version": "4.1.0",
-  "description": "General-purpose browser automation with Playwright for Claude Code with auto-detection and smart test management",
+  "description": "Explicit, review-first Playwright browser automation runner and helper library",
   "author": "lackeyjb",
   "main": "run.js",
   "scripts": {
-    "setup": "npm install && npx playwright install chromium",
-    "install-all-browsers": "npx playwright install chromium firefox webkit"
+    "install-dependencies": "npm install --ignore-scripts --no-package-lock",
+    "install-browser": "playwright install chromium",
+    "setup": "npm run install-dependencies && npm run install-browser",
+    "install-all-browsers": "playwright install chromium firefox webkit",
+    "test": "node --test tests/*.test.js"
   },
   "keywords": [
     "playwright",
@@ -17,10 +20,11 @@
     "general-purpose"
   ],
   "dependencies": {
-    "playwright": "^1.57.0"
+    "@playwright/test": "1.61.0",
+    "playwright": "1.61.0"
   },
   "engines": {
-    "node": ">=14.0.0"
+    "node": ">=20.0.0"
   },
   "license": "MIT"
 }
