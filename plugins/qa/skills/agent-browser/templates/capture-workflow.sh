@@ -13,11 +13,11 @@
 
 set -euo pipefail
 
-TARGET_URL="${1:?Usage: $0 <url> [output-dir]}"
-OUTPUT_DIR="${2:-.}"
+target_url="${1:?Usage: $0 <url> [output-dir]}"
+output_dir="${2:-.}"
 
-echo "Capturing: $TARGET_URL"
-mkdir -p "$OUTPUT_DIR"
+echo "Capturing: $target_url"
+mkdir -p "$output_dir"
 
 # Optional: Load authentication state
 # if [[ -f "./auth-state.json" ]]; then
@@ -26,44 +26,44 @@ mkdir -p "$OUTPUT_DIR"
 # fi
 
 # Navigate to target
-agent-browser open "$TARGET_URL"
+agent-browser open "$target_url"
 agent-browser wait --load networkidle
 
 # Get metadata
-TITLE=$(agent-browser get title)
-URL=$(agent-browser get url)
-echo "Title: $TITLE"
-echo "URL: $URL"
+title=$(agent-browser get title)
+current_url=$(agent-browser get url)
+echo "Title: $title"
+echo "URL: $current_url"
 
 # Capture full page screenshot
-agent-browser screenshot --full "$OUTPUT_DIR/page-full.png"
-echo "Saved: $OUTPUT_DIR/page-full.png"
+agent-browser screenshot --full "$output_dir/page-full.png"
+echo "Saved: $output_dir/page-full.png"
 
 # Get page structure with refs
-agent-browser snapshot -i > "$OUTPUT_DIR/page-structure.txt"
-echo "Saved: $OUTPUT_DIR/page-structure.txt"
+agent-browser snapshot -i > "$output_dir/page-structure.txt"
+echo "Saved: $output_dir/page-structure.txt"
 
 # Extract all text content
-agent-browser get text body > "$OUTPUT_DIR/page-text.txt"
-echo "Saved: $OUTPUT_DIR/page-text.txt"
+agent-browser get text body > "$output_dir/page-text.txt"
+echo "Saved: $output_dir/page-text.txt"
 
 # Save as PDF
-agent-browser pdf "$OUTPUT_DIR/page.pdf"
-echo "Saved: $OUTPUT_DIR/page.pdf"
+agent-browser pdf "$output_dir/page.pdf"
+echo "Saved: $output_dir/page.pdf"
 
 # Optional: Extract specific elements using refs from structure
-# agent-browser get text @e5 > "$OUTPUT_DIR/main-content.txt"
+# agent-browser get text @e5 > "$output_dir/main-content.txt"
 
 # Optional: Handle infinite scroll pages
 # for i in {1..5}; do
 #     agent-browser scroll down 1000
 #     agent-browser wait 1000
 # done
-# agent-browser screenshot --full "$OUTPUT_DIR/page-scrolled.png"
+# agent-browser screenshot --full "$output_dir/page-scrolled.png"
 
 # Cleanup
 agent-browser close
 
 echo ""
 echo "Capture complete:"
-ls -la "$OUTPUT_DIR"
+ls -la "$output_dir"

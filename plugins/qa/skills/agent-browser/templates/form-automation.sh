@@ -13,12 +13,12 @@
 
 set -euo pipefail
 
-FORM_URL="${1:?Usage: $0 <form-url>}"
+form_url="${1:?Usage: $0 <form-url>}"
 
-echo "Form automation: $FORM_URL"
+echo "Form automation: $form_url"
 
 # Step 1: Navigate to form
-agent-browser open "$FORM_URL"
+agent-browser open "$form_url"
 agent-browser wait --load networkidle
 
 # Step 2: Snapshot to discover form elements
@@ -40,7 +40,7 @@ agent-browser snapshot -i
 #
 # Uncomment and modify:
 # agent-browser fill @e1 "Test User"
-# agent-browser fill @e2 "test@example.com"
+# agent-browser fill @e2 "user@example.com"
 # agent-browser click @e3  # Submit button
 
 # Step 4: Wait for submission

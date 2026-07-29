@@ -81,13 +81,13 @@ agent-browser open https://external.com          # Via proxy
 #!/bin/bash
 # Test site from different regions using geo-located proxies
 
-PROXIES=(
+proxies=(
     "http://us-proxy.example.com:8080"
     "http://eu-proxy.example.com:8080"
     "http://asia-proxy.example.com:8080"
 )
 
-for proxy in "${PROXIES[@]}"; do
+for proxy in "${proxies[@]}"; do
     export HTTP_PROXY="$proxy"
     export HTTPS_PROXY="$proxy"
 
@@ -106,24 +106,24 @@ done
 #!/bin/bash
 # Rotate through proxy list to avoid rate limiting
 
-PROXY_LIST=(
+proxy_list=(
     "http://proxy1.example.com:8080"
     "http://proxy2.example.com:8080"
     "http://proxy3.example.com:8080"
 )
 
-URLS=(
+urls=(
     "https://site.com/page1"
     "https://site.com/page2"
     "https://site.com/page3"
 )
 
-for i in "${!URLS[@]}"; do
-    proxy_index=$((i % ${#PROXY_LIST[@]}))
-    export HTTP_PROXY="${PROXY_LIST[$proxy_index]}"
-    export HTTPS_PROXY="${PROXY_LIST[$proxy_index]}"
+for i in "${!urls[@]}"; do
+    proxy_index=$((i % ${#proxy_list[@]}))
+    export HTTP_PROXY="${proxy_list[$proxy_index]}"
+    export HTTPS_PROXY="${proxy_list[$proxy_index]}"
 
-    agent-browser open "${URLS[$i]}"
+    agent-browser open "${urls[$i]}"
     agent-browser get text body > "output-$i.txt"
     agent-browser close
 

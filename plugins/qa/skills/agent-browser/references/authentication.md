@@ -185,7 +185,7 @@ agent-browser wait --url "**/accounts.google.com**"
 agent-browser snapshot -i
 
 # Fill Google credentials
-agent-browser fill @e1 "user@gmail.com"
+agent-browser fill @e1 "user@example.com"
 agent-browser click @e2  # Next button
 agent-browser wait 2000
 agent-browser snapshot -i
@@ -249,24 +249,24 @@ For sessions with expiring tokens:
 #!/bin/bash
 # Wrapper that handles token refresh
 
-STATE_FILE="./auth-state.json"
+state_file="./auth-state.json"
 
 # Try loading existing state
-if [[ -f "$STATE_FILE" ]]; then
-    agent-browser state load "$STATE_FILE"
+if [[ -f "$state_file" ]]; then
+    agent-browser state load "$state_file"
     agent-browser open https://app.example.com/dashboard
 
     # Check if session is still valid
-    URL=$(agent-browser get url)
-    if [[ "$URL" == *"/login"* ]]; then
+    current_url=$(agent-browser get url)
+    if [[ "$current_url" == *"/login"* ]]; then
         echo "Session expired, re-authenticating..."
         # Perform fresh login
         agent-browser snapshot -i
-        agent-browser fill @e1 "$USERNAME"
-        agent-browser fill @e2 "$PASSWORD"
+        agent-browser fill @e1 "$TEST_USERNAME"
+        agent-browser fill @e2 "$TEST_PASSWORD"
         agent-browser click @e3
         agent-browser wait --url "**/dashboard"
-        agent-browser state save "$STATE_FILE"
+        agent-browser state save "$state_file"
     fi
 else
     # First-time login
@@ -284,8 +284,8 @@ fi
 
 2. **Use environment variables for credentials**
    ```bash
-   agent-browser fill @e1 "$APP_USERNAME"
-   agent-browser fill @e2 "$APP_PASSWORD"
+   agent-browser fill @e1 "$TEST_USERNAME"
+   agent-browser fill @e2 "$TEST_PASSWORD"
    ```
 
 3. **Clean up after automation**

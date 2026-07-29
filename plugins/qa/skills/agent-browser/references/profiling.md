@@ -81,10 +81,11 @@ agent-browser profiler stop ./interaction-profile.json
 
 ```bash
 #!/bin/bash
+build_id="${1:?Usage: $0 <build-id>}"
 agent-browser profiler start
 agent-browser navigate https://app.example.com
 agent-browser wait --load networkidle
-agent-browser profiler stop "./profiles/build-${BUILD_ID}.json"
+agent-browser profiler stop "./profiles/build-${build_id}.json"
 ```
 
 ## Output Format

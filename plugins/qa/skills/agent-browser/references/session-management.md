@@ -78,23 +78,23 @@ agent-browser open https://app.example.com/dashboard
 #!/bin/bash
 # Save login state once, reuse many times
 
-STATE_FILE="/tmp/auth-state.json"
+state_file="/tmp/auth-state.json"
 
 # Check if we have saved state
-if [[ -f "$STATE_FILE" ]]; then
-    agent-browser state load "$STATE_FILE"
+if [[ -f "$state_file" ]]; then
+    agent-browser state load "$state_file"
     agent-browser open https://app.example.com/dashboard
 else
     # Perform login
     agent-browser open https://app.example.com/login
     agent-browser snapshot -i
-    agent-browser fill @e1 "$USERNAME"
-    agent-browser fill @e2 "$PASSWORD"
+    agent-browser fill @e1 "$TEST_USERNAME"
+    agent-browser fill @e2 "$TEST_PASSWORD"
     agent-browser click @e3
     agent-browser wait --load networkidle
 
     # Save for future use
-    agent-browser state save "$STATE_FILE"
+    agent-browser state save "$state_file"
 fi
 ```
 

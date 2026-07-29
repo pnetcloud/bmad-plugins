@@ -95,11 +95,11 @@ agent-browser record stop
 #!/bin/bash
 # Record E2E test runs for CI artifacts
 
-TEST_NAME="${1:-e2e-test}"
-RECORDING_DIR="./test-recordings"
-mkdir -p "$RECORDING_DIR"
+test_name="${1:-e2e-test}"
+recording_dir="./test-recordings"
+mkdir -p "$recording_dir"
 
-agent-browser record start "$RECORDING_DIR/$TEST_NAME-$(date +%s).webm"
+agent-browser record start "$recording_dir/$test_name-$(date +%s).webm"
 
 # Run test
 if run_e2e_test; then
