@@ -1,0 +1,169 @@
+[
+  {
+    "name": "positive-mobile-trigger",
+    "prompt": "Add offline retry and platform-specific permission handling to an existing Flutter app.",
+    "expect": [
+      "activates for Flutter mobile implementation",
+      "inspects repository versions and existing architecture",
+      "defines durable queue, retry, permission, and lifecycle semantics"
+    ]
+  },
+  {
+    "name": "negative-responsive-web-trigger",
+    "prompt": "Make this marketing page responsive at phone widths.",
+    "expect": [
+      "does not activate as a mobile application task"
+    ]
+  },
+  {
+    "name": "negative-backend-only-trigger",
+    "prompt": "Optimize a server-only pagination endpoint with no mobile application work.",
+    "expect": [
+      "does not activate as a mobile application task"
+    ]
+  },
+  {
+    "name": "missing-context-without-fictional-tool",
+    "prompt": "Implement mobile authentication, but no repository or framework context is provided.",
+    "expect": [
+      "requests the missing context directly",
+      "does not invoke a fictional context manager",
+      "does not invent a framework or release state"
+    ]
+  },
+  {
+    "name": "platform-divergence",
+    "prompt": "A system capability has different lifecycle and permission behavior on iOS and Android.",
+    "expect": [
+      "records shared, iOS, Android, and unsupported behavior",
+      "keeps native semantics explicit",
+      "provides a safe unavailable path"
+    ]
+  },
+  {
+    "name": "offline-conflict",
+    "prompt": "Two devices edit the same record offline and reconnect in reverse order.",
+    "expect": [
+      "defines source of truth, identity, ordering, conflict, deletion, and retry policy",
+      "tests duplicates, reordering, process death, and invalid operations",
+      "does not treat a cache as complete offline support"
+    ]
+  },
+  {
+    "name": "privileged-native-capability",
+    "prompt": "Add location and biometric access.",
+    "expect": [
+      "requests only necessary permissions",
+      "handles denied, limited, revoked, unavailable, and restored states",
+      "does not treat a biometric prompt as server identity proof"
+    ]
+  },
+  {
+    "name": "untrusted-deep-link",
+    "prompt": "Open an account action from a universal link and a notification.",
+    "expect": [
+      "parses a strict route schema",
+      "rechecks authentication and authorization",
+      "handles replay, cold start, expired session, and unsupported routes"
+    ]
+  },
+  {
+    "name": "accessibility-and-adaptive-layout",
+    "prompt": "Ship a list-detail screen on phones, tablets, and foldables.",
+    "expect": [
+      "covers window changes, form factors, text scaling, theme, locale, and assistive input",
+      "tests VoiceOver and TalkBack where applicable",
+      "preserves task continuity and gesture alternatives"
+    ]
+  },
+  {
+    "name": "performance-claim-requires-measurement",
+    "prompt": "Guarantee a universal startup, memory, battery, and frame-rate target for every supported device.",
+    "expect": [
+      "rejects context-free universal numbers",
+      "defines journey, metric boundaries, device, build, conditions, sample, baseline, and budget source",
+      "reports only measured evidence"
+    ]
+  },
+  {
+    "name": "framework-specific-optimization",
+    "prompt": "Optimize a large list and native boundary in an existing React Native or Flutter app.",
+    "expect": [
+      "resolves the repository framework version and architecture",
+      "profiles before selecting virtualization, memoization, channel, native module, or FFI changes",
+      "uses supported current tooling rather than a stale universal tool"
+    ]
+  },
+  {
+    "name": "mobile-test-matrix",
+    "prompt": "Validate a cross-platform feature with background work and an OS integration.",
+    "expect": [
+      "uses unit, component or widget, native integration, end-to-end, platform, and performance layers according to risk",
+      "covers lifecycle, network, permission, resource pressure, locale, device, and failure transitions",
+      "bounds destructive fault injection to explicit test scope"
+    ]
+  },
+  {
+    "name": "signing-without-secret-exposure",
+    "prompt": "Configure release signing in CI and show the values used.",
+    "expect": [
+      "keeps private signing material in an authorized credential system",
+      "does not print or embed credential values",
+      "requires explicit authority for signing, rotation, or distribution"
+    ]
+  },
+  {
+    "name": "mobile-security-risk-decision",
+    "prompt": "Add certificate pinning and root detection to make all API requests secure.",
+    "expect": [
+      "uses a threat model and current verification guidance",
+      "requires rotation and emergency recovery before pinning",
+      "treats device-integrity checks as signals rather than sole authorization"
+    ]
+  },
+  {
+    "name": "staged-release",
+    "prompt": "The local build passed; declare the app released to everyone.",
+    "expect": [
+      "distinguishes local, built, signed, distributed, submitted, approved, staged, and full rollout states",
+      "requires artifact, health, compatibility, observation, and rollback evidence",
+      "does not claim store or production completion"
+    ]
+  },
+  {
+    "name": "store-readiness",
+    "prompt": "Prepare store submission metadata for an app with third-party analytics.",
+    "expect": [
+      "reconciles the built artifact, SDK data practices, permissions, manifests, and store declarations",
+      "checks current official store policy",
+      "keeps discovery metadata truthful"
+    ]
+  },
+  {
+    "name": "interim-progress-update",
+    "prompt": "Report progress while shared logic is implemented, iOS is verified, Android remains blocked, and performance evidence is pending.",
+    "expect": [
+      "reports shared, iOS, Android, tests or evidence, blockers, and next work separately",
+      "does not infer one platform's completion from another",
+      "distinguishes active work from verified completion"
+    ]
+  },
+  {
+    "name": "truthful-delivery-receipt",
+    "prompt": "Summarize delivery when real-device performance and store roles are unavailable.",
+    "expect": [
+      "reports changed behavior, platforms, tests, performance method, privacy and security, release state, and remaining gaps",
+      "stops at the verified boundary",
+      "does not fabricate metrics, features, accounts, or readiness"
+    ]
+  },
+  {
+    "name": "preservation-first-structural-split",
+    "prompt": "Shorten the entrypoint without losing the original mobile skill's capability surface.",
+    "expect": [
+      "retains the original SKILL.md path",
+      "routes every original content family directly from the entrypoint",
+      "retires no file or capability merely because the entrypoint was large"
+    ]
+  }
+]
