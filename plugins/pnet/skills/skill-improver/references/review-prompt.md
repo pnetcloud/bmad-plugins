@@ -129,7 +129,7 @@ Compare before and after for:
 - broken links or fictional capabilities;
 - lines, words, and default loaded context;
 - unnecessary tool calls and research;
-- provenance of adopted external practices.
+- provenance of adopted external practices;
 - abstraction of private evidence without loss of the reusable method.
 
 Warnings require disposition; a zero-warning score is not required. A clean heuristic scan is not proof of safety.
@@ -153,7 +153,7 @@ Ask the reviewer to report only evidence-backed findings that could cause:
 - loss of required behavior;
 - broken resources or non-portable assumptions;
 - context bloat without behavioral value;
-- inadequate validation of the changed behavior.
+- inadequate validation of the changed behavior;
 - semantic or mosaic re-identification of a private source in a public artifact.
 
 Then review the improvement process itself:

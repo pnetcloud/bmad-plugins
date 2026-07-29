@@ -4,6 +4,7 @@
 from __future__ import annotations
 
 import argparse
+import hashlib
 import ipaddress
 import json
 import os
@@ -46,6 +47,19 @@ ENVIRONMENT_REFERENCE_RE = re.compile(
     r"^\s*(?:export|ENV)\s+(?P<declared>[A-Z][A-Z0-9_]{1,})\s*=",
     re.MULTILINE,
 )
+BARE_ENVIRONMENT_ASSIGNMENT_RE = re.compile(
+    r"(?m)^\s*(?:-\s+)?(?P<assigned>[A-Z][A-Z0-9_]{1,})\s*="
+)
+ENVIRONMENT_ASSIGNMENT_SUFFIXES = {
+    ".bash",
+    ".env",
+    ".md",
+    ".mk",
+    ".sh",
+    ".yaml",
+    ".yml",
+    ".zsh",
+}
 ABSOLUTE_PRIVATE_PATH_RE = re.compile(
     r"(?:/home|/Users)/[A-Za-z0-9._-]+(?:/|$)|"
     r"\b[A-Za-z]:\\Users\\[^\\\s]+(?:\\|$)"
@@ -70,6 +84,7 @@ EMAIL_RE = re.compile(
     r"(?P<local>[A-Za-z0-9._%+-]{1,64})@"
     r"(?P<domain>[A-Za-z0-9.-]+\.[A-Za-z]{2,})"
 )
+IPV4_RE = re.compile(r"(?<![0-9])(?:[0-9]{1,3}\.){3}[0-9]{1,3}(?![0-9])")
 SENSITIVE_PACKAGE_PATH_RE = re.compile(
     r"(?:^|/)(?:\.env(?:\.[^/]+)?|id_(?:rsa|dsa|ecdsa|ed25519)|"
     r"credentials?(?:\.[^/]+)?|[^/]+\.(?:key|p12|pfx|jks|keystore))$",
@@ -577,6 +592,23 @@ def is_private_ip(host: str) -> bool:
     return address.is_private and not address.is_loopback
 
 
+def is_reserved_example_ip(host: str) -> bool:
+    try:
+        address = ipaddress.ip_address(host.strip("[]"))
+    except ValueError:
+        return False
+    if address.version != 4:
+        return False
+    return any(
+        address in network
+        for network in (
+            ipaddress.ip_network("192.0.2.0/24"),
+            ipaddress.ip_network("198.51.100.0/24"),
+            ipaddress.ip_network("203.0.113.0/24"),
+        )
+    )
+
+
 def add_public_match(
     findings: list[Finding],
     code: str,
@@ -668,7 +700,7 @@ def scan_public_urls(
                 match.start(),
             )
         if (
-            is_private_ip(host)
+            (":" in host and is_private_ip(host))
             or domain_matches(host, policy.forbidden_domains)
         ):
             add_public_match(
@@ -701,6 +733,22 @@ def scan_public_text(
                 match.start(),
             )
 
+    if (
+        relative.suffix.casefold() in ENVIRONMENT_ASSIGNMENT_SUFFIXES
+        or relative.name.casefold() in {"dockerfile", "makefile"}
+    ):
+        for match in BARE_ENVIRONMENT_ASSIGNMENT_RE.finditer(text):
+            name = match.group("assigned")
+            if name not in policy.allowed_environment_variables:
+                add_public_match(
+                    findings,
+                    "public-environment-variable",
+                    relative,
+                    "environment variable is not allowlisted for publication",
+                    text,
+                    match.start(),
+                )
+
     for match in ABSOLUTE_PRIVATE_PATH_RE.finditer(text):
         add_public_match(
             findings,
@@ -717,6 +765,19 @@ def scan_public_text(
             "public-private-host",
             relative,
             "private hostname detected",
+            text,
+            match.start(),
+        )
+
+    for match in IPV4_RE.finditer(text):
+        address = match.group(0)
+        if not is_private_ip(address) or is_reserved_example_ip(address):
+            continue
+        add_public_match(
+            findings,
+            "public-private-address",
+            relative,
+            "private address detected",
             text,
             match.start(),
         )
@@ -876,8 +937,12 @@ def scan_tree(
         if skipped:
             add(
                 findings,
-                "warning",
-                "skipped-directory",
+                "blocking" if public_policy is not None else "warning",
+                (
+                    "public-unscanned-directory"
+                    if public_policy is not None
+                    else "skipped-directory"
+                ),
                 relative,
                 "directory was not traversed; inspect or remove it before trusting the skill",
             )
@@ -1009,11 +1074,14 @@ def main() -> int:
     root = args.skill_dir.expanduser().absolute()
     policy_findings: list[Finding] = []
     public_policy = None
+    public_policy_sha256 = None
     if args.public_policy is not None:
-        public_policy = load_public_policy(
-            args.public_policy.expanduser().absolute(),
-            policy_findings,
-        )
+        public_policy_path = args.public_policy.expanduser().absolute()
+        public_policy = load_public_policy(public_policy_path, policy_findings)
+        if public_policy is not None:
+            public_policy_sha256 = hashlib.sha256(
+                public_policy_path.read_bytes()
+            ).hexdigest()
     findings = policy_findings + scan_skill(root, public_policy)
     findings = sorted(
         set(findings),
@@ -1034,6 +1102,7 @@ def main() -> int:
             json.dumps(
                 {
                     "target": displayed_target,
+                    "public_policy_sha256": public_policy_sha256,
                     "blocking": blocking,
                     "warnings": warnings,
                     "findings": [asdict(item) for item in findings],
@@ -1044,6 +1113,8 @@ def main() -> int:
         )
     else:
         print(f"target: {displayed_target}")
+        if public_policy_sha256 is not None:
+            print(f"public policy sha256: {public_policy_sha256}")
         print(f"blocking: {blocking}; warnings: {warnings}")
         for item in findings:
             location = item.path

@@ -146,6 +146,21 @@ class ScanSkillTests(unittest.TestCase):
             codes = {item.code for item in scan_skill.scan_skill(skill)}
             self.assertIn("skipped-directory", codes)
 
+    def test_skipped_directory_is_blocking_for_public_release(self):
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            _, policy = write_public_policy(root)
+            skill = write_skill(root)
+            (skill / "node_modules").mkdir()
+            findings = scan_skill.scan_skill(skill, policy)
+            public_skips = [
+                item
+                for item in findings
+                if item.code == "public-unscanned-directory"
+            ]
+            self.assertTrue(public_skips)
+            self.assertTrue(all(item.severity == "blocking" for item in public_skips))
+
     def test_inline_link_title_and_reference_link_are_validated(self):
         with tempfile.TemporaryDirectory() as directory:
             skill = write_skill(
@@ -425,6 +440,25 @@ class ScanSkillTests(unittest.TestCase):
             self.assertEqual(len(environment), 1)
             self.assertTrue(all(item.severity == "blocking" for item in environment))
 
+    def test_public_bare_environment_assignment_requires_allowlist(self):
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            _, policy = write_public_policy(
+                root,
+                allowed_environment_variables=["PATH"],
+            )
+            skill = write_skill(
+                root,
+                body="# Demo\nPRIVATE_SETTING=value\nPATH=/bin\n",
+            )
+            environment = [
+                item
+                for item in scan_skill.scan_skill(skill, policy)
+                if item.code == "public-environment-variable"
+            ]
+            self.assertEqual(len(environment), 1)
+            self.assertTrue(all(item.severity == "blocking" for item in environment))
+
     def test_public_private_paths_hosts_and_email_are_blocking(self):
         with tempfile.TemporaryDirectory() as directory:
             root = Path(directory)
@@ -450,7 +484,23 @@ class ScanSkillTests(unittest.TestCase):
             }
             self.assertIn("public-private-path", codes)
             self.assertIn("public-private-host", codes)
+            self.assertIn("public-private-address", codes)
             self.assertIn("public-email", codes)
+
+    def test_public_reserved_example_address_is_allowed(self):
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            _, policy = write_public_policy(root)
+            skill = write_skill(
+                root,
+                body="# Demo\nUse 192.0.2.10 as documentation-only example data.\n",
+            )
+            codes = {
+                item.code
+                for item in scan_skill.scan_skill(skill, policy)
+                if item.severity == "blocking"
+            }
+            self.assertNotIn("public-private-address", codes)
 
     def test_public_malformed_url_is_blocking_not_a_crash(self):
         with tempfile.TemporaryDirectory() as directory:
