@@ -33,10 +33,16 @@ When triggered, obtain the Confluence page content:
 
 Extract the cloud ID and page ID from the URL pattern:
 - Standard format: `https://[site].atlassian.net/wiki/spaces/[SPACE]/pages/[PAGE_ID]/[title]`
-- The cloud ID can be extracted from `[site].atlassian.net` or by calling `getAccessibleAtlassianResources`
+- A site hostname is not a cloud ID. Call `getAccessibleAtlassianResources` and
+  select the resource whose canonical URL matches the requested site. Stop and
+  ask when no resource or more than one plausible resource matches.
 - The page ID is the numeric value in the URL path
 
 ### If user provides only a page title or description:
+
+Call `getAccessibleAtlassianResources` first. Select an exact Confluence site
+from its canonical resources before searching; never reuse an ambient or
+previous cloud ID. Ask the user when more than one accessible site is plausible.
 
 Use the `search` tool to find the page:
 ```
@@ -66,6 +72,10 @@ This returns the page content in Markdown format, which you'll analyze in Step 3
 ## Step 2: Ask for Project Key
 
 **Before analyzing the spec**, determine the target Jira project:
+
+Resolve the Jira site independently through `getAccessibleAtlassianResources`.
+Do not assume it is the same resource as the Confluence source. Record and
+confirm its canonical site and cloud ID before listing projects.
 
 ### Ask the user:
 "Which Jira project should I create these tickets in? Please provide the project key (e.g., PROJ, ENG, PRODUCT)."
@@ -130,6 +140,11 @@ The skill should intelligently choose issue types based on the specification con
 - Epic issue type name (e.g., "Epic")
 - Default child issue type (e.g., "Story" or "Task")
 - Bug issue type name if available (e.g., "Bug")
+
+Before requesting write confirmation, call `getJiraIssueTypeMetaWithFields` for
+the Epic and every selected child type. Resolve all required fields and parent
+compatibility before the first mutation; do not discover required values after
+creating a partial backlog.
 
 ---
 
@@ -212,6 +227,22 @@ Shall I create these tickets in [PROJECT KEY]?
 
 If user requests changes, adjust the breakdown and re-present.
 
+### Confirm the exact write plan
+
+- If the user asked only for a draft or analysis, stop here without creating
+  anything.
+- Show the matched site, project key and name, Epic or existing parent, issue
+  types, exact ticket count and summaries, and every required field value.
+- Assign each planned issue a stable correlation marker before confirmation.
+  Bind it in the ledger to the canonical Jira resource, project, parent plan,
+  issue type, source identity/version, item ordinal, and summary. Show the
+  marker in the plan, include it in the issue description, and never regenerate
+  it during retry or resume.
+- Treat confirmation as authority for only that displayed plan. Reconfirm any
+  change to the site, project, parent, issue type, count, summary, or required
+  field before creating the affected item. A changed identity tuple also
+  requires a new marker and confirmation.
+
 ---
 
 ## Step 5: Create Epic FIRST
@@ -285,11 +316,9 @@ Now create each implementation task as a child ticket linked to the Epic.
 
 ### For each task:
 
-**Determine the appropriate issue type for this specific task:**
-- If the task involves fixing/resolving an issue → use "Bug" (if available)
-- If the task involves new user-facing features → use "Story" (if available)
-- If the task involves technical/infrastructure work → use "Task" (if available)
-- Otherwise → use the default child issue type from Step 2
+Use the issue type from the confirmed plan verbatim. Apply the classification
+rules in Step 2 only while preparing that plan. If later evidence suggests a
+different type, stop and return to Step 4 for revised confirmation.
 
 Call `createJiraIssue` with:
 
@@ -360,13 +389,23 @@ Make them **testable** and **specific**:
 
 ### Create all tickets sequentially:
 
-Track each created ticket key for the summary.
+Track each attempted item in a creation ledger with its planned identity,
+returned key, and observed parent result. After every call, require a returned
+key and verify the project, issue type, and parent with a read tool when one is
+available. Treat a missing or malformed key, timeout, ambiguous response, wrong
+project/type/parent, or failed read-back as an uncertain result and immediately
+use the stop-and-reconcile path below.
 
 ---
 
 ## Step 7: Provide Summary
 
 After all tickets are created, present a comprehensive summary:
+
+Use the success wording below only when every confirmed item returned a key and
+every child has creation-response or read-back evidence that its parent matches
+the plan. If an item was created but its hierarchy cannot be observed, report
+`created, hierarchy unverified` with the affected keys instead of full success.
 
 ```
 ✅ Backlog created successfully!
@@ -467,12 +506,24 @@ https://yoursite.atlassian.net/browse/PROJ-123
 - Note in ticket descriptions: "Detailed requirements need to be defined during refinement"
 - Ask user: "The spec is light on implementation details. Should I create high-level tickets that can be refined later?"
 
-### Failed API Calls
+### Failed or Uncertain API Results
 
-**If `createJiraIssue` fails:**
+**If `createJiraIssue` fails or any result is uncertain:**
 1. Check the error message for specific issues (permissions, required fields, invalid values)
 2. Use `getJiraProjectIssueTypesMetadata` to verify issue type availability
-3. Inform user: "I encountered an error creating tickets: [error message]. This might be due to project permissions or required fields."
+3. Stop the batch. Do not automatically retry, delete created issues, or create
+   later items.
+4. Report the confirmed plan, successfully created keys, failed item, uncertain
+   result, and items not attempted.
+5. Reconcile by the confirmed correlation marker and its full bound identity.
+   For an ambiguous result, continue only after one exact match is read back;
+   treat zero matches as potentially delayed visibility and multiple or partial
+   matches as ambiguity, without automatic recreation. For a definitive
+   pre-creation rejection, confirm that no marker match exists, correct and
+   reconfirm the plan, then retry only with explicit authority. Reuse the marker
+   unless the bound identity changes.
+6. Obtain explicit authority for the exact retry, continuation, or cleanup
+   action after presenting the reconciled ledger.
 
 ---
 
