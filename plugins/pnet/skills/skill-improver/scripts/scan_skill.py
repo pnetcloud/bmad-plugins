@@ -589,7 +589,11 @@ def is_private_ip(host: str) -> bool:
         address = ipaddress.ip_address(host.strip("[]"))
     except ValueError:
         return False
-    return address.is_private and not address.is_loopback
+    return (
+        address.is_private
+        and not address.is_loopback
+        and not address.is_unspecified
+    )
 
 
 def is_reserved_example_ip(host: str) -> bool:

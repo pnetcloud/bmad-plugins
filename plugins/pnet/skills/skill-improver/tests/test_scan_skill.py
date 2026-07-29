@@ -502,6 +502,25 @@ class ScanSkillTests(unittest.TestCase):
             }
             self.assertNotIn("public-private-address", codes)
 
+    def test_public_unspecified_bind_address_is_not_private_architecture(self):
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            _, policy = write_public_policy(root)
+            skill = write_skill(
+                root,
+                body=(
+                    "# Demo\n"
+                    "A container process binds to 0.0.0.0 inside its network "
+                    "namespace.\n"
+                ),
+            )
+            codes = {
+                item.code
+                for item in scan_skill.scan_skill(skill, policy)
+                if item.severity == "blocking"
+            }
+            self.assertNotIn("public-private-address", codes)
+
     def test_public_malformed_url_is_blocking_not_a_crash(self):
         with tempfile.TemporaryDirectory() as directory:
             root = Path(directory)
