@@ -175,7 +175,10 @@ Prefer smaller files within packages: one type or concern per file. Split when a
 - Return errors with context using `fmt.Errorf` and `%w` for wrapping. This preserves the error chain for debugging.
 - Every function returns a value or an error; unimplemented paths return descriptive errors. Explicit failures are debuggable.
 - Handle all branches in `switch` statements; include a `default` case that returns an error. Exhaustive handling prevents silent bugs.
-- Pass `context.Context` to external calls with explicit timeouts. Runaway requests cause cascading failures.
+- Accept `context.Context` as the first parameter for request-scoped work and
+  propagate it to external calls. Let the caller own the overall deadline;
+  derive a shorter child timeout only for an explicit local budget, immediately
+  `defer` its `CancelFunc`, and never extend an existing deadline.
 - Reserve `panic` for truly unrecoverable situations; prefer returning errors. Panics crash the program.
 - Add or update table-driven tests for new logic; cover edge cases (empty input, nil, boundaries).
 
