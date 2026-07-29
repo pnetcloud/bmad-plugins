@@ -268,7 +268,7 @@ class ScanSkillTests(unittest.TestCase):
                 if item.code == "skill-entrypoint-over-limit"
             ]
             self.assertTrue(over_limit)
-            self.assertTrue(all(item.severity == "blocking" for item in over_limit))
+            self.assertTrue(all(item.severity == "warning" for item in over_limit))
 
     def test_dense_entrypoint_and_long_description_are_warnings(self):
         with tempfile.TemporaryDirectory() as directory:

@@ -97,6 +97,10 @@ structural rationale and follow-up plan. Do not force a split when it would make
 the active workflow incomplete or less usable.
 
 An entrypoint below the goal is acceptable when it remains complete. Never add filler to hit a minimum.
+For an existing skill, these bands trigger review rather than authorize a
+rewrite. Prefer improving routing and moving a coherent conditional topic with
+its full detail; retain the current entrypoint when a safe, lossless split is
+not yet demonstrated.
 
 The total package has no fixed size limit. A large skill is healthy when:
 
@@ -115,7 +119,8 @@ more than three files, more than 20 percent of package lines, or an entire
 resource type, require the large-deletion review and explicit user approval
 defined in `review-prompt.md`. Package reduction is an incidental outcome only
 when every valid capability has a reachable destination and regression
-scenario.
+scenario. Changes below those thresholds still require a Retire disposition or
+removal-ledger entry; the thresholds are not a safe deletion budget.
 
 ## Resource Budgets
 

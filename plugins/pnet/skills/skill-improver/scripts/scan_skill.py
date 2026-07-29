@@ -435,10 +435,14 @@ def parse_frontmatter(skill_md: Path, text: str, findings: list[Finding]) -> Non
     if line_count > SKILL_MAX_LINES:
         add(
             findings,
-            "blocking",
+            "warning",
             "skill-entrypoint-over-limit",
             relative,
-            f"SKILL.md has {line_count} lines; completion limit is {SKILL_MAX_LINES}",
+            (
+                f"SKILL.md has {line_count} lines; above the {SKILL_MAX_LINES}-line "
+                "exception threshold, require structural rationale without "
+                "forcing lossy reduction"
+            ),
         )
     elif line_count > SKILL_REVIEW_LINES:
         add(

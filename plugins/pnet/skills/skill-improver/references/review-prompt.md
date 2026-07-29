@@ -89,6 +89,9 @@ Do not optimize for a score, line count, or directory template at the expense of
 Do not rewrite a working artifact merely to normalize voice, headings, or
 folder shape. Prefer narrow edits; when a broad rewrite is necessary, account
 for every original section and validate its retained destination.
+Begin by designing a zero-deletion patch that keeps every existing file and
+valid section in place. Use it when it closes the demonstrated gap. Do not
+replace a specialized skill with a generic summary.
 
 Create a baseline file manifest and capability-retention matrix before
 implementation:
@@ -101,6 +104,15 @@ example, template, deterministic operation, validation gate, and output
 contract. Default each artifact to Keep. Do not use Git history,
 ignored caches, upstream availability, age, or package size as substitutes for
 preserving behavior in the published package.
+
+Maintain a removal ledger for every deleted file and every materially removed
+or replaced section:
+
+| Baseline location | Purpose | Disposition | Destination | Preservation evidence |
+| --- | --- | --- | --- | --- |
+
+Count semantic replacement even when additions hide the churn in line-based
+statistics. A low deletion count does not prove that original depth survived.
 
 A Retire decision requires one of these recorded reasons:
 
@@ -117,13 +129,18 @@ Treat an unreachable resource as a routing defect first: link it from the
 entrypoint, document its selection rule, or preserve its compatibility path.
 Inability to find a consumer is uncertainty, not proof that none exists.
 
+For Move, add and link the destination, validate the moved capability, and only
+then consider removing the original location. Keep the compatibility path when
+consumer discovery is incomplete.
+
 Trigger a large-deletion review when the diff removes more than three files,
 more than 20 percent of package lines, or an entire resource type. In a separate
 pass, compare the original package, matrix, and proposed result. Every valid
 capability must have a reachable destination and a regression scenario. Present
 the scope and expected information loss to the user and obtain explicit approval
 before implementation. Without approval or complete accounting, preserve the
-material and defer the deletion.
+material and defer the deletion. The numerical threshold is an escalation
+signal, not permission for smaller unaccounted removals.
 
 ### 4. Implement One Coherent Delta
 
@@ -182,6 +199,7 @@ Compare before and after for:
 - preservation of valid behavior;
 - complete before/after file-manifest accounting;
 - complete disposition of removed files and capabilities;
+- complete removal-ledger coverage for materially replaced sections;
 - security and authority boundaries;
 - broken links or fictional capabilities;
 - lines, words, and default loaded context;
@@ -237,6 +255,7 @@ Improved: <target skill>
 Changed: <behavioral deltas>
 Retired: <exceptionally removed material and evidence, or none>
 Preserved: <capabilities kept or moved and their destinations>
+Removal ledger: <every removed or materially replaced item, or empty>
 Structure: <entrypoint size and resources added, moved, or retired>
 Evidence: <validators, tests, scenarios, before/after>
 Sources: <adopted and rejected practices with provenance, or none>
