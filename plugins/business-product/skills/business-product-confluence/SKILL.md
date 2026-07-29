@@ -1,11 +1,12 @@
 ---
 name: business-product-confluence
 description: Search and manage Confluence pages and spaces using confluence-cli. Read documentation, create pages, and navigate spaces.
-homepage: https://github.com/pchuri/confluence-cli
 metadata: {"clawdbot":{"emoji":"📄","primaryEnv":"CONFLUENCE_TOKEN","requires":{"bins":["confluence"],"env":["CONFLUENCE_TOKEN"]},"install":[{"id":"npm","kind":"node","package":"confluence-cli","bins":["confluence"],"label":"Install confluence-cli (npm)"}]}}
 ---
 
 # Confluence
+
+[confluence-cli project](https://github.com/pchuri/confluence-cli)
 
 Search and manage Confluence pages using confluence-cli.
 
@@ -82,13 +83,13 @@ confluence spaces
 ## Create Page
 
 ```bash
-confluence create "Page Title" SPACEKEY --body "Page content here"
+confluence create "Page Title" SPACEKEY --content "Page content here"
 ```
 
 ## Create Child Page
 
 ```bash
-confluence create-child "Child Page Title" <parent-page-id> --body "Content"
+confluence create-child "Child Page Title" <parent-page-id> --content "Content"
 ```
 
 Or from a file:
@@ -100,7 +101,7 @@ confluence create-child "Page Title" <parent-id> --file content.html --format st
 ## Update Page
 
 ```bash
-confluence update <page-id> --body "Updated content"
+confluence update <page-id> --content "Updated content"
 ```
 
 Or from a file:
@@ -126,4 +127,4 @@ confluence export <page-id> --output ./exported-page/
 - Domain in config should NOT include `https://` - just `yourcompany.atlassian.net`
 - Use `--format storage` when content is in Confluence storage format (HTML-like)
 - Page IDs are numeric and found in page URLs
-- Config is stored at `~/.confluence-cli/config.json`
+- New installations use the platform configuration directory; existing `~/.confluence-cli/` installations remain supported.
