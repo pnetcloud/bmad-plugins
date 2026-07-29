@@ -148,6 +148,8 @@ What is the overall objective or feature being implemented? This becomes your Ep
 
 ### Implementation Tasks
 Break the work into logical, independently implementable tasks.
+For unfamiliar work types or uncertain granularity, read
+[breakdown-examples.md](references/breakdown-examples.md) before proposing the breakdown.
 
 **Breakdown principles:**
 - **Size:** 3-10 tasks per spec typically (avoid over-granularity)
@@ -232,6 +234,9 @@ createJiraIssue(
 
 ### Epic Description Structure:
 
+Select the matching detailed structure from
+[epic-templates.md](references/epic-templates.md) when the Epic type needs more than the core fields below.
+
 ```markdown
 ## Overview
 [1-2 sentence summary of what this epic delivers]
@@ -315,6 +320,9 @@ Use action verbs and be specific:
 - ❌ "Frontend" (not actionable)
 
 ### Task Description Structure:
+
+Read [ticket-writing-guide.md](references/ticket-writing-guide.md) when the
+source is ambiguous or a ticket needs type-specific writing guidance.
 
 ```markdown
 ## Context
@@ -540,4 +548,3 @@ https://yoursite.atlassian.net/browse/PROJ-123
 4. [Task] Implement blue-green production deployment
 5. [Task] Add deployment rollback mechanism
 6. [Task] Create deployment runbook and documentation
-
