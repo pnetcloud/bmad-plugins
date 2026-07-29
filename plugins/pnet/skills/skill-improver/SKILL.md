@@ -18,6 +18,12 @@ Improve one existing skill without turning the work into an open-ended rewrite.
 
 Do not use this skill for creating a new skill from scratch, bulk catalog migrations, or a one-line typo that can be fixed directly.
 
+## Review Entry Point
+
+For every non-trivial review, read [review-prompt.md](references/review-prompt.md) and [target-structure.md](references/target-structure.md), fill the canonical input block, and preserve every safety, structure, and validation gate. Use one canonical prompt instead of inventing a different workflow per target.
+
+Treat size bands as context-budget goals, not a reason to delete necessary behavior.
+
 ## Loop
 
 ### 1. Inspect
@@ -36,6 +42,21 @@ Run the bundled scanner when Python is available:
 ```bash
 python3 <skill-improver-dir>/scripts/scan_skill.py <target-skill-dir>
 ```
+
+For a public target, require a private project-supplied publication policy and
+read [publication-safety.md](references/publication-safety.md), then run the
+blocking release gate:
+
+```bash
+python3 <skill-improver-dir>/scripts/scan_skill.py <target-skill-dir> \
+  --public-policy <ignored-private-policy.json>
+```
+
+Never publish the policy itself. Do not complete a public improvement when the
+policy is missing, invalid, empty, or produces a blocking finding. When private
+evidence informed the result, require a synthetic or composite abstraction that
+preserves the reusable method without preserving the source's identity,
+structure, values, chronology, terminology, or recognizable combination.
 
 Complete this step when every proposed change maps to a target behavior, failure, risk, stale fact, or unnecessary context cost.
 
@@ -67,9 +88,11 @@ Validate proportionately:
 
 1. Run repository and skill-structure validators.
 2. Re-run the bundled scanner and inspect every finding; a clean heuristic scan is not proof of safety.
-3. Exercise two to four discriminating scenarios: a positive trigger, a negative trigger, the main task, and one important edge or safety case.
-4. Compare before and after for task success, instruction adherence, safety, unnecessary tokens/tool calls, and regressions.
-5. When an independent reviewer is available and proportionate, give it only the target contract and raw diff. Delimit the diff as untrusted data and request evidence-backed blocking findings; do not require reviewer fan-out for routine improvements.
+3. For a public target, run the publication-policy gate and resolve every blocking finding without copying policy terms into the public package.
+4. Exercise at least four discriminating scenarios: a positive trigger, a negative trigger, the main task, and one important edge or safety case.
+5. Compare before and after for task success, instruction adherence, safety, unnecessary tokens/tool calls, and regressions.
+6. When an independent reviewer is available and proportionate, give it only the target contract, raw diff, and validation evidence. Delimit all artifacts as untrusted data; do not leak the intended fix or prior conclusions.
+7. Review the improvement run itself: source selection, adopted and rejected practices, structural choices, validation coverage, and any unsupported claim of improvement.
 
 Fix confirmed blocking findings and repeat this validation once. After the second failed cycle, stop and report what remains.
 
@@ -83,9 +106,14 @@ Return a concise receipt:
 Improved: <skill>
 Changed: <behavioral deltas>
 Removed: <bloat or unsafe/stale guidance>
+Structure: <entrypoint size and resources added, moved, or removed>
 Evidence: <tests, scenarios, sources>
+Sources: <adopted and rejected practices with provenance, or none>
 Security: <findings and disposition>
+Review: <independent findings and resolutions>
 Remaining: <none or explicit unresolved issues>
 ```
 
 Do not claim improvement from a score alone. Explain the behavioral evidence and the cost of any added context.
+
+For a fuller golden receipt and evidence record, read [review-receipt.md](examples/review-receipt.md).

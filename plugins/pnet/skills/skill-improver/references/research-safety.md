@@ -11,10 +11,9 @@ Use sources in this order:
 3. A local quarantine cache when configured.
 4. Community collections only for discovery, followed by primary-source verification.
 
-Resolve an optional local cache without making it a public dependency:
-
-1. Use `PNET_SKILL_SOURCE_CACHE` when it names an existing directory.
-2. If it is unset or invalid, continue without a local cache.
+Use an optional local cache only when private project rules provide one. If no
+authorized cache is available, continue without it. Do not encode its variable,
+path, host, or product name in a public skill.
 
 Never add absolute private paths, cached corpora, or operations-only material to the public skill package.
 
