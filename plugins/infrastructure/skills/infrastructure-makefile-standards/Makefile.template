@@ -23,38 +23,27 @@ COMPOSE       ?= docker compose
 COMPOSE_FILE  ?= compose.yaml
 DEV_SERVICE   ?= app
 
-CMD_DEV       ?= npm run dev
-CMD_BUILD     ?= npm run build
-CMD_TEST      ?= npm test
-CMD_LINT      ?= npm run lint
-CMD_FORMAT    ?= npm run format
+CMD_DEV       ?=
+CMD_BUILD     ?=
+CMD_TEST      ?=
+CMD_LINT      ?=
+CMD_FORMAT    ?=
+CMD_DEPLOY    ?=
+CMD_RELEASE   ?=
+CMD_PUBLISH   ?=
+CMD_CLEAN     ?=
+CMD_CLEAN_ALL ?=
 
--include project.mk
+define require-command
+$(if $(strip $($(1))),,@printf '%s\n' '$(1): configure a project-owned command in project.mk' >&2; exit 2)
+endef
 
 # -------- Help --------
 help: ## Utility: Show grouped help
-	@echo ""
-	@echo "$(h1)=====================================================$(reset)"
-	@echo "$(h2)   $(PROJECT) v$(VERSION) — Available Commands$(reset)"
-	@echo "$(h1)=====================================================$(reset)"
-	@echo ""
-	@echo "$(h2)Setup & Config$(reset)"
-	@grep -E '^[a-zA-Z0-9_.-]+:.*?## Setup ' $(MAKEFILE_LIST) | awk 'BEGIN{FS=":.*?## "}{printf "  $(b)%-18s$(reset) %s\n",$$1,$$2}'
-	@echo ""
-	@echo "$(h2)Development$(reset)"
-	@grep -E '^[a-zA-Z0-9_.-]+:.*?## Development ' $(MAKEFILE_LIST) | awk 'BEGIN{FS=":.*?## "}{printf "  $(b)%-18s$(reset) %s\n",$$1,$$2}'
-	@echo ""
-	@echo "$(h2)Quality$(reset)"
-	@grep -E '^[a-zA-Z0-9_.-]+:.*?## Quality ' $(MAKEFILE_LIST) | awk 'BEGIN{FS=":.*?## "}{printf "  $(b)%-18s$(reset) %s\n",$$1,$$2}'
-	@echo ""
-	@echo "$(h2)Build & Deploy$(reset)"
-	@grep -E '^[a-zA-Z0-9_.-]+:.*?## Build ' $(MAKEFILE_LIST) | awk 'BEGIN{FS=":.*?## "}{printf "  $(b)%-18s$(reset) %s\n",$$1,$$2}'
-	@echo ""
-	@echo "$(h2)Maintenance$(reset)"
-	@grep -E '^[a-zA-Z0-9_.-]+:.*?## Maintenance ' $(MAKEFILE_LIST) | awk 'BEGIN{FS=":.*?## "}{printf "  $(b)%-18s$(reset) %s\n",$$1,$$2}'
-	@echo ""
-	@echo "$(h2)Logs & Info$(reset)"
-	@grep -E '^[a-zA-Z0-9_.-]+:.*?## Logs ' $(MAKEFILE_LIST) | awk 'BEGIN{FS=":.*?## "}{printf "  $(b)%-18s$(reset) %s\n",$$1,$$2}'
+	@printf '\n%b\n' "$(h1)=====================================================$(reset)"
+	@printf '%b\n' "$(h2)   $(PROJECT) v$(VERSION) — Available Commands$(reset)"
+	@printf '%b\n\n' "$(h1)=====================================================$(reset)"
+	@awk 'BEGIN{group_order[1]="Setup";group_order[2]="Development";group_order[3]="Quality";group_order[4]="Build";group_order[5]="Maintenance";group_order[6]="Logs";title["Setup"]="Setup & Config";title["Development"]="Development";title["Quality"]="Quality";title["Build"]="Build & Deploy";title["Maintenance"]="Maintenance";title["Logs"]="Logs & Info"} /^[a-zA-Z0-9_.-]+:.*## [^:]+: /{name=$$0;sub(/:.*/,"",name);annotation=$$0;sub(/^.*## /,"",annotation);group=annotation;sub(/:.*/,"",group);description=annotation;sub(/^[^:]+:[[:space:]]*/,"",description);if(!(name in seen)){sequence[++count]=name;seen[name]=1};groups[name]=group;descriptions[name]=description} END{for(g=1;g<=6;g++){current=group_order[g];printf "\n$(h2)%s$(reset)\n",title[current];for(i=1;i<=count;i++){name=sequence[i];if(groups[name]==current){printf "  $(b)%-18s$(reset) %s\n",name,descriptions[name]}}}}' $(MAKEFILE_LIST)
 
 # -------- Setup --------
 up: ## Setup: Start Docker stack (compose)
@@ -67,20 +56,24 @@ restart: ## Setup: Restart Docker stack (compose)
 	@$(COMPOSE) -f $(COMPOSE_FILE) down
 	@$(COMPOSE) -f $(COMPOSE_FILE) up -d
 
-logs: ## Setup: Tail Docker stack logs
+logs: ## Logs: Tail Docker stack logs
 	@$(COMPOSE) -f $(COMPOSE_FILE) logs -f
 
 watch: ## Development: Run app in watch mode (container)
+	$(call require-command,CMD_DEV)
 	@$(COMPOSE) -f $(COMPOSE_FILE) exec $(DEV_SERVICE) $(CMD_DEV)
 
 # -------- Quality --------
 test: ## Quality: Run tests
+	$(call require-command,CMD_TEST)
 	@$(CMD_TEST)
 
 lint: ## Quality: Run linter
+	$(call require-command,CMD_LINT)
 	@$(CMD_LINT)
 
 format: ## Quality: Format code
+	$(call require-command,CMD_FORMAT)
 	@$(CMD_FORMAT)
 
 check: lint test ## Quality: Run lint + test
@@ -88,23 +81,29 @@ check: lint test ## Quality: Run lint + test
 
 # -------- Build & Deploy --------
 build: ## Build: Build project
+	$(call require-command,CMD_BUILD)
 	@$(CMD_BUILD)
 
 deploy: ## Build: Deploy project
-	@echo "$(p)deploy: not implemented$(reset)"
+	$(call require-command,CMD_DEPLOY)
+	@$(CMD_DEPLOY)
 
 release: ## Build: Create release
-	@echo "$(b)release: $(VERSION)$(reset)"
+	$(call require-command,CMD_RELEASE)
+	@$(CMD_RELEASE)
 
 publish: ## Build: Publish artefact
-	@echo "$(b)publish: not implemented$(reset)"
+	$(call require-command,CMD_PUBLISH)
+	@$(CMD_PUBLISH)
 
 # -------- Maintenance --------
 clean: ## Maintenance: Clean build artefacts
-	@rm -rf dist
+	$(call require-command,CMD_CLEAN)
+	@$(CMD_CLEAN)
 
 clean-all: ## Maintenance: Full clean (artefacts + deps)
-	@rm -rf dist node_modules
+	$(call require-command,CMD_CLEAN_ALL)
+	@$(CMD_CLEAN_ALL)
 
 # -------- Logs & Info --------
 status: ## Logs: Show status
@@ -117,3 +116,6 @@ info: ## Logs: Show info
 
 version: ## Logs: Show version
 	@echo "$(VERSION)"
+
+# Load project command hooks, help annotations, and additional targets last.
+-include project.mk

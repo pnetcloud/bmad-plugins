@@ -1,5 +1,5 @@
 ---
-description: Unified Makefile standards (Docker-first dev environment)
+description: Unified GNU Make standards for a Docker-first development environment
 globs: ["**/Makefile", "**/makefile", "**/*.mk"]
 alwaysApply: true
 priority: 100
@@ -17,8 +17,9 @@ tags: [makefile, docker, compose, automation, standards]
 
 ## Source of Truth
 
-- **Template**: `.agents/rules/coding-standards/Makefile.template`
-- Each project Makefile should be based on the template and override variables/targets via `project.mk`.
+- **Template**: `Makefile.template` in this skill package
+- Each project Makefile should be based on the template and configure command
+  variables or add project targets through `project.mk`.
 
 ## Required Core Targets
 
@@ -36,7 +37,7 @@ Override in `project.mk`:
 
 - `PROJECT` — project name
 - `VERSION` — semver or VCS tag/short SHA
-- `COMPOSE` — docker compose binary (`docker compose` or `docker-compose`)
+- `COMPOSE` — Docker Compose command (`docker compose` or a compatible wrapper)
 - `COMPOSE_FILE` — compose file path (default `compose.yaml`)
 - `DEV_SERVICE` — service for `watch`/exec
 - `CMD_DEV` — dev command (e.g., `npm run dev`, `air`, `uv run fastapi dev`)
@@ -44,6 +45,14 @@ Override in `project.mk`:
 - `CMD_TEST` — run tests
 - `CMD_LINT` — run linters
 - `CMD_FORMAT` — format code
+- `CMD_DEPLOY` — deploy command; empty by default
+- `CMD_RELEASE` — release command; empty by default
+- `CMD_PUBLISH` — publish command; empty by default
+- `CMD_CLEAN` — project-scoped artifact cleanup; empty by default
+- `CMD_CLEAN_ALL` — broader project-scoped cleanup; empty by default
+
+Standard targets fail closed while their command variable is empty. Prefer
+configuring these hooks over redefining the standard recipes.
 
 ## Help Output Conventions
 
@@ -57,13 +66,14 @@ Group labels: `Setup`, `Development`, `Quality`, `Build`, `Maintenance`, `Logs`.
 
 ## Docker Compose Expectations
 
-- Use `${COMPOSE}` and `${COMPOSE_FILE}` for all compose calls.
+- Use `$(COMPOSE)` and `$(COMPOSE_FILE)` for all Compose calls.
 - Dev service should mount source code and expose required ports.
-- `watch` runs inside the container using `${DEV_SERVICE}` and `${CMD_DEV}`.
+- `watch` runs inside the container using `$(DEV_SERVICE)` and `$(CMD_DEV)`.
 
 ## Cross-platform
 
-- Prefer POSIX shell in recipes; avoid Bash-isms.
+- The template uses GNU Make features; do not present it as portable POSIX make.
+- Prefer POSIX `sh` in recipes and avoid shell-specific extensions.
 - Avoid GNU-only utilities unless guarded.
 - Do not print secrets in logs.
 
@@ -72,3 +82,5 @@ Group labels: `Setup`, `Development`, `Quality`, `Build`, `Maintenance`, `Logs`.
 - No tech-specific flags in the global standards file.
 - No hard-coded paths to language toolchains.
 - Avoid non-deterministic sleeps; use readiness checks where possible.
+- No successful placeholder for deploy, release, publish, cleanup, or another
+  external or destructive operation.
