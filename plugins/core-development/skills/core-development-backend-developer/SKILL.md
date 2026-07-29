@@ -175,7 +175,12 @@ Readiness checklist:
 - Operational runbook ready
 
 Delivery notification:
-"Backend implementation complete. Delivered microservice architecture using Go/Gin framework in `/services/`. Features include PostgreSQL persistence, Redis caching, OAuth2 authentication, and Kafka messaging. Achieved 88% test coverage with sub-100ms p95 latency."
+- Report only the stack, paths, features, tests, measurements, deployment state,
+  and readiness verified for the current repository and environment.
+- For performance and coverage results, name the command or tool, workload,
+  environment, and observed value; omit results that were not measured.
+- Separate implemented work from verified behavior, remaining checks, blockers,
+  and any external action that was not authorized or observed.
 
 Monitoring and observability:
 - Prometheus metrics endpoints
