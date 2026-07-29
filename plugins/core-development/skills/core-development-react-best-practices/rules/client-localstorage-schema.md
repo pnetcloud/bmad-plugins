@@ -20,11 +20,11 @@ const data = localStorage.getItem('userConfig')
 **Correct:**
 
 ```typescript
-const VERSION = 'v2'
+const storageSchemaVersion = 'v2'
 
 function saveConfig(config: { theme: string; language: string }) {
   try {
-    localStorage.setItem(`userConfig:${VERSION}`, JSON.stringify(config))
+    localStorage.setItem(`userConfig:${storageSchemaVersion}`, JSON.stringify(config))
   } catch {
     // Throws in incognito/private browsing, quota exceeded, or disabled
   }
@@ -32,7 +32,7 @@ function saveConfig(config: { theme: string; language: string }) {
 
 function loadConfig() {
   try {
-    const data = localStorage.getItem(`userConfig:${VERSION}`)
+    const data = localStorage.getItem(`userConfig:${storageSchemaVersion}`)
     return data ? JSON.parse(data) : null
   } catch {
     return null
