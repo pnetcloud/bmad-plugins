@@ -7,35 +7,46 @@ tags: server, cache, lru, cross-request
 
 ## Cross-Request LRU Caching
 
-`React.cache()` only works within one request. For data shared across sequential requests (user clicks button A then button B), use an LRU cache.
+`React.cache()` is request-scoped. For reusable, non-sensitive data that may be
+shared across requests in one process, consider a bounded LRU cache after
+defining freshness and invalidation.
 
 **Implementation:**
 
 ```typescript
 import { LRUCache } from 'lru-cache'
 
-const cache = new LRUCache<string, any>({
+const cache = new LRUCache<string, PublicItem>({
   max: 1000,
-  ttl: 5 * 60 * 1000  // 5 minutes
+  ttl: 5 * 60 * 1000
 })
 
-export async function getUser(id: string) {
+export async function getPublicItem(id: string) {
   const cached = cache.get(id)
   if (cached) return cached
 
-  const user = await db.user.findUnique({ where: { id } })
-  cache.set(id, user)
-  return user
+  const item = await loadPublicItem(id)
+  cache.set(id, item)
+  return item
 }
 
-// Request 1: DB query, result cached
-// Request 2: cache hit, no DB query
+// A later request handled by this process may reuse the item.
 ```
 
-Use when sequential user actions hit multiple endpoints needing the same data within seconds.
+Use only when stale data for the chosen TTL is acceptable. Include tenant,
+locale, authorization scope, and representation version in the key whenever
+they affect the result. Do not put credentials, authorization decisions, or
+unbounded user-specific data in a shared process cache.
 
 **With Vercel's [Fluid Compute](https://vercel.com/docs/fluid-compute):** LRU caching is especially effective because multiple concurrent requests can share the same function instance and cache. This means the cache persists across requests without needing external storage like Redis.
 
-**In traditional serverless:** Each invocation runs in isolation, so consider Redis for cross-process caching.
+**In serverless runtimes:** A warm instance may serve multiple sequential
+requests, but instance reuse and affinity are not guaranteed. Module state can
+therefore persist across requests on one instance while being absent on another.
+Use a shared cache only when the application requires cross-instance coherence.
+
+Process-local caches are opportunistic: multiple instances do not share entries
+and a restart clears them. Measure hit rate and memory, cap entry size, define
+invalidation, and test stale and cross-scope behavior before relying on one.
 
 Reference: [https://github.com/isaacs/node-lru-cache](https://github.com/isaacs/node-lru-cache)

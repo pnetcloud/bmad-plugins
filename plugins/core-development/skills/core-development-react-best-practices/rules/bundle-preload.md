@@ -47,4 +47,6 @@ function FlagsProvider({ children, flags }: Props) {
 }
 ```
 
-The `typeof window !== 'undefined'` check prevents bundling preloaded modules for SSR, optimizing server bundle size and build speed.
+The `typeof window !== 'undefined'` check prevents client-only execution during
+server rendering. Confirm actual chunk placement and preload timing in the
+framework's build output; this runtime guard alone is not bundle evidence.

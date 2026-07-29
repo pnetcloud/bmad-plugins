@@ -2,10 +2,22 @@
   "version": "1.0.0",
   "organization": "Vercel Engineering",
   "date": "January 2026",
-  "abstract": "Comprehensive performance optimization guide for React and Next.js applications, designed for AI agents and LLMs. Contains 40+ rules across 8 categories, prioritized by impact from critical (eliminating waterfalls, reducing bundle size) to incremental (advanced patterns). Each rule includes detailed explanations, real-world examples comparing incorrect vs. correct implementations, and specific impact metrics to guide automated refactoring and code generation.",
+  "source_snapshot": "January 2026",
+  "public_reviewed": "2026-07-29",
+  "review_basis": {
+    "react": "19.2.7 documentation snapshot",
+    "nextjs": "16.2.9 documentation snapshot"
+  },
+  "abstract": "Adapted public snapshot containing 51 React and Next.js performance rules across eight categories. Rule impact labels and numeric examples are prioritization hints that require version and project-specific verification.",
   "references": [
     "https://react.dev",
+    "https://react.dev/reference/react/Activity",
+    "https://react.dev/reference/react/useEffectEvent",
+    "https://react.dev/reference/react/cache",
     "https://nextjs.org",
+    "https://nextjs.org/docs/app/api-reference/functions/after",
+    "https://nextjs.org/docs/app/guides/data-security",
+    "https://nextjs.org/docs/app/api-reference/functions/fetch",
     "https://swr.vercel.app",
     "https://github.com/shuding/better-all",
     "https://github.com/isaacs/node-lru-cache",
