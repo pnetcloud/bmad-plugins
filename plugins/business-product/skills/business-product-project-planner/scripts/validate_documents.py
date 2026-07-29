@@ -1,325 +1,276 @@
 #!/usr/bin/env python3
-"""
-Document Validator
-Validates project planning documents for completeness and consistency
-"""
+"""Validate traceability and unresolved placeholders in planning documents."""
 
-import re
+from __future__ import annotations
+
 import argparse
-from typing import List, Dict, Tuple
-import os
+import json
+import re
+import sys
+from collections import Counter
+from dataclasses import dataclass, field
+from pathlib import Path
 
-class DocumentValidator:
-    def __init__(self):
-        self.errors = []
-        self.warnings = []
-        
-    def validate_requirements(self, content: str) -> Tuple[List[str], List[str]]:
-        """Validate requirements document structure and content"""
-        errors = []
-        warnings = []
-        
-        # Check required sections
-        required_sections = [
-            "## Introduction",
-            "## Glossary", 
-            "## Requirements"
-        ]
-        
-        for section in required_sections:
-            if section not in content:
-                errors.append(f"Missing required section: {section}")
-        
-        # Check for user stories
-        user_story_pattern = r"\*\*User Story:\*\*.*As a.*I want.*so that"
-        if not re.search(user_story_pattern, content, re.DOTALL):
-            warnings.append("No user stories found in requirements")
-        
-        # Check for acceptance criteria
-        if "Acceptance Criteria" not in content:
-            errors.append("No acceptance criteria found")
-        
-        # Check for SHALL statements
-        shall_count = content.count("SHALL")
-        if shall_count < 5:
-            warnings.append(f"Only {shall_count} SHALL statements found (recommend at least 5)")
-        
-        # Check for requirement numbering
-        req_pattern = r"### Requirement \d+|### REQ-\d+"
-        req_matches = re.findall(req_pattern, content)
-        if len(req_matches) < 3:
-            warnings.append(f"Only {len(req_matches)} numbered requirements found")
-        
-        # Check for placeholders
-        placeholder_pattern = r"\[.*?\]"
-        placeholders = re.findall(placeholder_pattern, content)
-        if len(placeholders) > 10:
-            warnings.append(f"Found {len(placeholders)} placeholders - remember to fill them in")
-        
-        return errors, warnings
-    
-    def validate_design(self, content: str) -> Tuple[List[str], List[str]]:
-        """Validate design document structure and content"""
-        errors = []
-        warnings = []
-        
-        # Check required sections
-        required_sections = [
-            "## Overview",
-            "## System Architecture",
-            "## Data Flow",
-            "## Integration Points",
-            "## Components",
-            "## Data Models",
-            "## Deployment"
-        ]
-        
-        for section in required_sections:
-            if section not in content:
-                errors.append(f"Missing required section: {section}")
-        
-        # Check for component map
-        if "Component Map" not in content and "| Component ID |" not in content:
-            errors.append("Missing Component Map table")
-        
-        # Check for data flow specifications
-        if "Data Flow" not in content:
-            errors.append("Missing Data Flow specifications")
-        
-        # Check for integration points
-        if "Integration Points" not in content:
-            errors.append("Missing Integration Points section")
-        
-        # Check for system boundaries
-        if "System Boundaries" not in content and "In Scope" not in content:
-            warnings.append("Missing System Boundaries definition")
-        
-        # Check for architecture diagram
-        if "```" not in content and "┌" not in content:
-            warnings.append("No architecture diagram found")
-        
-        # Check for interfaces
-        if "class" not in content and "interface" not in content.lower():
-            warnings.append("No interface definitions found")
-        
-        # Check for error handling
-        if "Error Handling" not in content and "error handling" not in content.lower():
-            warnings.append("No error handling section found")
-        
-        # Check for performance targets
-        if "Performance" not in content and "performance" not in content.lower():
-            warnings.append("No performance targets specified")
-        
-        # Check for Docker configuration
-        if "Docker" not in content and "docker" not in content:
-            warnings.append("No Docker configuration found")
-        
-        return errors, warnings
-    
-    def validate_tasks(self, content: str) -> Tuple[List[str], List[str]]:
-        """Validate implementation plan structure and content"""
-        errors = []
-        warnings = []
-        
-        # Check for project boundaries
-        if "## Project Boundaries" not in content:
-            errors.append("Missing Project Boundaries section")
-        
-        if "Must Have" not in content:
-            warnings.append("Missing 'Must Have' scope definition")
-        
-        if "Out of Scope" not in content:
-            warnings.append("Missing 'Out of Scope' definition")
-        
-        # Check for deliverables
-        if "## Deliverables" not in content and "Deliverables by Phase" not in content:
-            warnings.append("Missing Deliverables section")
-        
-        # Check for success criteria
-        if "Success Criteria" not in content:
-            warnings.append("Missing Success Criteria for deliverables")
-        
-        # Check for task structure
-        phase_pattern = r"- \[[ x]\] \d+\."
-        phases = re.findall(phase_pattern, content)
-        
-        if len(phases) == 0:
-            errors.append("No phases found in task list")
-        elif len(phases) < 3:
-            warnings.append(f"Only {len(phases)} phases found (recommend at least 3)")
-        
-        # Check for subtasks
-        task_pattern = r"  - \[[ x]\] \d+\.\d+"
-        tasks = re.findall(task_pattern, content)
-        
-        if len(tasks) == 0:
-            errors.append("No tasks found in implementation plan")
-        elif len(tasks) < 10:
-            warnings.append(f"Only {len(tasks)} tasks found (recommend at least 10)")
-        
-        # Check for requirement tracing
-        req_pattern = r"_Requirements:.*REQ-\d+|_Requirements:.*\d+\.\d+"
-        req_traces = re.findall(req_pattern, content)
-        
-        if len(req_traces) == 0:
-            warnings.append("No requirement tracing found in tasks")
-        elif len(req_traces) < len(tasks) / 2:
-            warnings.append(f"Only {len(req_traces)} tasks have requirement tracing")
-        
-        # Check for component involvement
-        comp_pattern = r"_Components:.*COMP-\d+"
-        comp_traces = re.findall(comp_pattern, content)
-        
-        if len(comp_traces) == 0:
-            warnings.append("No component mapping found in tasks")
-        
-        # Check for dependencies
-        dep_pattern = r"_Dependencies:"
-        dependencies = re.findall(dep_pattern, content)
-        
-        if len(dependencies) == 0:
-            warnings.append("No task dependencies defined")
-        
-        # Check completion status
-        completed_pattern = r"- \[x\]"
-        pending_pattern = r"- \[ \]"
-        
-        completed = len(re.findall(completed_pattern, content))
-        pending = len(re.findall(pending_pattern, content))
-        
-        if completed + pending > 0:
-            completion_rate = (completed / (completed + pending)) * 100
-            print(f"Task completion: {completed}/{completed + pending} ({completion_rate:.1f}%)")
-        
-        return errors, warnings
-    
-    def validate_consistency(self, req_content: str, design_content: str, 
-                           task_content: str) -> Tuple[List[str], List[str]]:
-        """Check consistency across documents"""
-        errors = []
-        warnings = []
-        
-        # Extract requirement IDs from requirements doc
-        req_ids = set()
-        req_pattern = r"### Requirement (\d+)|### REQ-(\d+)"
-        for match in re.finditer(req_pattern, req_content):
-            req_id = match.group(1) or match.group(2)
-            req_ids.add(f"REQ-{req_id}")
-        
-        # Check if requirements are referenced in tasks
-        for req_id in req_ids:
-            if req_id not in task_content:
-                warnings.append(f"{req_id} not referenced in any tasks")
-        
-        # Extract components from design
-        component_pattern = r"### .*(?:Service|Component|Manager|Engine|Handler)"
-        components = re.findall(component_pattern, design_content)
-        
-        # Check if major components have corresponding tasks
-        for component in components:
-            component_name = component.replace("### ", "").strip()
-            if component_name.lower() not in task_content.lower():
-                warnings.append(f"Component '{component_name}' not mentioned in tasks")
-        
-        return errors, warnings
-    
-    def validate_all(self, req_file: str, design_file: str, 
-                     task_file: str) -> Dict[str, Tuple[List[str], List[str]]]:
-        """Validate all three documents"""
-        results = {}
-        
-        # Read files
-        with open(req_file, 'r') as f:
-            req_content = f.read()
-        with open(design_file, 'r') as f:
-            design_content = f.read()
-        with open(task_file, 'r') as f:
-            task_content = f.read()
-        
-        # Validate individual documents
-        results['requirements'] = self.validate_requirements(req_content)
-        results['design'] = self.validate_design(design_content)
-        results['tasks'] = self.validate_tasks(task_content)
-        
-        # Validate consistency
-        results['consistency'] = self.validate_consistency(
-            req_content, design_content, task_content
+
+HEADING_ID = re.compile(
+    r"^###\s+((?:REQ|DEC|COMP|FLOW|TASK)-[A-Z0-9][A-Z0-9.-]*)\b",
+    re.MULTILINE,
+)
+REFERENCE = re.compile(
+    r"\b((?:REQ|DEC|COMP|FLOW|TASK)-[A-Z0-9][A-Z0-9.-]*)\b"
+)
+PLACEHOLDER = re.compile(r"\{\{[^}\n]+\}\}|\bTBD\b|\[TODO\]", re.IGNORECASE)
+
+
+@dataclass
+class Report:
+    errors: list[str] = field(default_factory=list)
+    warnings: list[str] = field(default_factory=list)
+
+    def as_dict(self) -> dict[str, list[str]]:
+        return {"errors": self.errors, "warnings": self.warnings}
+
+
+def read_text(path: Path, report: Report) -> str:
+    if not path.is_file():
+        report.errors.append(f"missing file: {path}")
+        return ""
+    try:
+        return path.read_text(encoding="utf-8")
+    except (OSError, UnicodeError) as exc:
+        report.errors.append(f"cannot read {path}: {exc}")
+        return ""
+
+
+def ids_with_prefix(text: str, prefix: str) -> list[str]:
+    return [
+        match.group(1)
+        for match in HEADING_ID.finditer(text)
+        if match.group(1).startswith(f"{prefix}-")
+    ]
+
+
+def section_bodies(text: str, prefix: str) -> dict[str, str]:
+    matches = [
+        match
+        for match in HEADING_ID.finditer(text)
+        if match.group(1).startswith(f"{prefix}-")
+    ]
+    sections: dict[str, str] = {}
+    for match in matches:
+        remaining = text[match.end() :]
+        next_heading = re.search(r"^#{1,3}\s+", remaining, re.MULTILINE)
+        end = match.end() + next_heading.start() if next_heading else len(text)
+        sections[match.group(1)] = text[match.end() : end]
+    return sections
+
+
+def check_duplicates(ids: list[str], label: str, report: Report) -> None:
+    for identifier, count in sorted(Counter(ids).items()):
+        if count > 1:
+            report.errors.append(f"duplicate {label} ID: {identifier}")
+
+
+def find_references(text: str, prefix: str) -> set[str]:
+    return {
+        match.group(1)
+        for match in REFERENCE.finditer(text)
+        if match.group(1).startswith(f"{prefix}-")
+    }
+
+
+def check_placeholders(
+    documents: dict[str, str], report: Report, allow_placeholders: bool
+) -> None:
+    if allow_placeholders:
+        return
+    for name, text in documents.items():
+        count = len(PLACEHOLDER.findall(text))
+        if count:
+            report.errors.append(f"{name}: {count} unresolved placeholder(s)")
+
+
+def check_requirements(requirements: str, report: Report) -> set[str]:
+    req_ids = ids_with_prefix(requirements, "REQ")
+    check_duplicates(req_ids, "requirement", report)
+    if not req_ids:
+        report.errors.append("requirements: no REQ-* headings")
+        return set()
+
+    for req_id, body in section_bodies(requirements, "REQ").items():
+        if "Acceptance:" not in body:
+            report.errors.append(f"{req_id}: missing Acceptance block")
+        if not re.search(r"^\d+\.\s+", body, re.MULTILINE):
+            report.errors.append(f"{req_id}: no numbered acceptance scenario")
+    return set(req_ids)
+
+
+def check_design(
+    design: str, requirement_ids: set[str], report: Report
+) -> set[str]:
+    design_ids = {
+        identifier
+        for identifier in HEADING_ID.findall(design)
+        if not identifier.startswith(("REQ-", "TASK-"))
+    }
+    check_duplicates(
+        [
+            identifier
+            for identifier in HEADING_ID.findall(design)
+            if not identifier.startswith(("REQ-", "TASK-"))
+        ],
+        "design",
+        report,
+    )
+    referenced_requirements = find_references(design, "REQ")
+    for req_id in sorted(referenced_requirements - requirement_ids):
+        report.errors.append(f"design references unknown requirement: {req_id}")
+    for req_id in sorted(requirement_ids - referenced_requirements):
+        report.errors.append(f"requirement has no design trace: {req_id}")
+    if not design_ids:
+        report.warnings.append("design: no DEC, COMP, or FLOW headings")
+    return design_ids
+
+
+def dependency_graph(task_sections: dict[str, str]) -> dict[str, set[str]]:
+    graph: dict[str, set[str]] = {}
+    for task_id, body in task_sections.items():
+        dependency_line = re.search(
+            r"^- Dependencies:\s*(.*)$", body, re.MULTILINE
         )
-        
-        return results
+        graph[task_id] = (
+            find_references(dependency_line.group(1), "TASK")
+            if dependency_line
+            else set()
+        )
+    return graph
 
-def print_validation_results(results: Dict[str, Tuple[List[str], List[str]]]):
-    """Print validation results in a formatted way"""
-    
-    total_errors = 0
-    total_warnings = 0
-    
-    for doc_name, (errors, warnings) in results.items():
-        print(f"\n{'='*50}")
-        print(f"Validation Results: {doc_name.upper()}")
-        print('='*50)
-        
-        if errors:
-            print(f"\n❌ Errors ({len(errors)}):")
-            for error in errors:
-                print(f"  - {error}")
-            total_errors += len(errors)
-        else:
-            print("\n✅ No errors found")
-        
-        if warnings:
-            print(f"\n⚠️  Warnings ({len(warnings)}):")
-            for warning in warnings:
-                print(f"  - {warning}")
-            total_warnings += len(warnings)
-        else:
-            print("\n✅ No warnings found")
-    
-    # Summary
-    print(f"\n{'='*50}")
-    print("SUMMARY")
-    print('='*50)
-    
-    if total_errors == 0 and total_warnings == 0:
-        print("✅ All documents are valid and complete!")
-    else:
-        print(f"Total Errors: {total_errors}")
-        print(f"Total Warnings: {total_warnings}")
-        
-        if total_errors > 0:
-            print("\n⚠️  Please fix errors before using these documents")
-        else:
-            print("\n📝 Review warnings to improve document quality")
 
-def main():
-    parser = argparse.ArgumentParser(description="Validate project planning documents")
-    parser.add_argument("--requirements", "-r", default="requirements.md",
-                      help="Path to requirements document")
-    parser.add_argument("--design", "-d", default="design.md",
-                      help="Path to design document")
-    parser.add_argument("--tasks", "-t", default="tasks.md",
-                      help="Path to tasks/implementation plan")
-    
+def cyclic_tasks(graph: dict[str, set[str]]) -> set[str]:
+    visiting: set[str] = set()
+    visited: set[str] = set()
+    cycles: set[str] = set()
+
+    def visit(node: str) -> None:
+        if node in visiting:
+            cycles.add(node)
+            return
+        if node in visited:
+            return
+        visiting.add(node)
+        for dependency in graph.get(node, set()):
+            visit(dependency)
+        visiting.remove(node)
+        visited.add(node)
+
+    for node in graph:
+        visit(node)
+    return cycles
+
+
+def check_tasks(
+    tasks: str,
+    requirement_ids: set[str],
+    design_ids: set[str],
+    report: Report,
+) -> set[str]:
+    task_ids = ids_with_prefix(tasks, "TASK")
+    check_duplicates(task_ids, "task", report)
+    if not task_ids:
+        report.errors.append("tasks: no TASK-* headings")
+        return set()
+
+    sections = section_bodies(tasks, "TASK")
+    covered_requirements: set[str] = set()
+    for task_id, body in sections.items():
+        req_refs = find_references(body, "REQ")
+        covered_requirements.update(req_refs)
+        if not req_refs:
+            report.errors.append(f"{task_id}: no requirement reference")
+        if "- Validation:" not in body:
+            report.errors.append(f"{task_id}: missing Validation")
+        if "- Status:" not in body:
+            report.warnings.append(f"{task_id}: missing Status")
+        for req_id in sorted(req_refs - requirement_ids):
+            report.errors.append(f"{task_id} references unknown requirement: {req_id}")
+        for design_id in sorted(
+            {
+                ref
+                for ref in REFERENCE.findall(body)
+                if ref.startswith(("DEC-", "COMP-", "FLOW-"))
+            }
+            - design_ids
+        ):
+            report.errors.append(f"{task_id} references unknown design ID: {design_id}")
+
+    for req_id in sorted(requirement_ids - covered_requirements):
+        report.errors.append(f"requirement has no implementation task: {req_id}")
+
+    graph = dependency_graph(sections)
+    for task_id, dependencies in sorted(graph.items()):
+        for dependency in sorted(dependencies - set(task_ids)):
+            report.errors.append(f"{task_id} depends on unknown task: {dependency}")
+        if task_id in dependencies:
+            report.errors.append(f"{task_id} depends on itself")
+    for task_id in sorted(cyclic_tasks(graph)):
+        report.errors.append(f"task dependency cycle includes: {task_id}")
+    return set(task_ids)
+
+
+def validate(
+    requirements_path: Path,
+    design_path: Path,
+    tasks_path: Path,
+    allow_placeholders: bool = False,
+) -> Report:
+    report = Report()
+    documents = {
+        "requirements": read_text(requirements_path, report),
+        "design": read_text(design_path, report),
+        "tasks": read_text(tasks_path, report),
+    }
+    if report.errors:
+        return report
+
+    check_placeholders(documents, report, allow_placeholders)
+    requirement_ids = check_requirements(documents["requirements"], report)
+    design_ids = check_design(documents["design"], requirement_ids, report)
+    check_tasks(documents["tasks"], requirement_ids, design_ids, report)
+    return report
+
+
+def main() -> int:
+    parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument("--requirements", type=Path, required=True)
+    parser.add_argument("--design", type=Path, required=True)
+    parser.add_argument("--tasks", type=Path, required=True)
+    parser.add_argument(
+        "--allow-placeholders",
+        action="store_true",
+        help="permit template placeholders during an explicitly incomplete draft",
+    )
+    parser.add_argument("--format", choices=("text", "json"), default="text")
     args = parser.parse_args()
-    
-    # Check if files exist
-    for filepath, name in [(args.requirements, "Requirements"),
-                          (args.design, "Design"),
-                          (args.tasks, "Tasks")]:
-        if not os.path.exists(filepath):
-            print(f"❌ {name} file not found: {filepath}")
-            return 1
-    
-    # Validate documents
-    validator = DocumentValidator()
-    results = validator.validate_all(args.requirements, args.design, args.tasks)
-    
-    # Print results
-    print_validation_results(results)
-    
-    # Return exit code based on errors
-    total_errors = sum(len(errors) for errors, _ in results.values())
-    return 1 if total_errors > 0 else 0
+
+    report = validate(
+        args.requirements,
+        args.design,
+        args.tasks,
+        allow_placeholders=args.allow_placeholders,
+    )
+    if args.format == "json":
+        print(json.dumps(report.as_dict(), indent=2))
+    else:
+        for error in report.errors:
+            print(f"ERROR: {error}")
+        for warning in report.warnings:
+            print(f"WARNING: {warning}")
+        print(
+            f"validation: {len(report.errors)} error(s), "
+            f"{len(report.warnings)} warning(s)"
+        )
+    return 1 if report.errors else 0
+
 
 if __name__ == "__main__":
-    exit(main())
+    sys.exit(main())
