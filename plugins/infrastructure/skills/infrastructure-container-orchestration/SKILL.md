@@ -1,230 +1,163 @@
 ---
 name: infrastructure-container-orchestration
-description: "Docker and Kubernetes patterns. Triggers on: Dockerfile, docker-compose, kubernetes, k8s, helm, pod, deployment, service, ingress, container, image."
-compatibility: "Docker 20+, Kubernetes 1.25+, Helm 3+"
-allowed-tools: "Read Write Bash"
+description: Author, review, validate, or explicitly operate Docker images, Compose applications, Kubernetes resources, or Helm releases. Use when container packaging or orchestration is the requested deliverable. Do not trigger on a casual mention of a container, service, deployment, or image, and do not mutate registries or clusters without exact authorization.
 ---
 
-# Container Orchestration
+# Container Delivery
 
-Docker and Kubernetes patterns for containerized applications.
+Produce the smallest container or orchestration change that fits the existing
+delivery model. A plausible manifest is not production evidence.
 
-## Dockerfile Best Practices
+## Route the Request
 
-```dockerfile
-# Use specific version, not :latest
-FROM python:3.11-slim AS builder
+Identify the actual job:
 
-# Set working directory
-WORKDIR /app
+- image build definition or review;
+- local multi-container development with Compose;
+- Kubernetes resource authoring or review;
+- Helm chart authoring, rendering, or release work;
+- diagnosis of an existing container or rollout;
+- an explicitly requested build, push, deploy, rollback, or removal.
 
-# Copy dependency files first (better caching)
-COPY requirements.txt .
-RUN pip install --no-cache-dir -r requirements.txt
+Do not introduce Kubernetes, Helm, Compose, a registry, or a new deployment
+layer when the project has a different authoritative path. Route application
+bugs, general cloud infrastructure, CI-only changes, and host administration to
+the relevant workflow.
 
-# Copy application code
-COPY src/ ./src/
+## Establish the Delivery Contract
 
-# Production stage (multi-stage build)
-FROM python:3.11-slim
+Before editing or running anything:
 
-WORKDIR /app
+1. Read repository instructions, existing container files, dependency locks,
+   CI or GitOps definitions, deployment documentation, and current source.
+2. Identify the target environment, registry, cluster context, namespace,
+   release, workload, architecture, and platform constraints only when relevant.
+3. Distinguish authoring, local validation, image build, image publication,
+   cluster preview, cluster mutation, and post-release verification. Authority
+   for one does not imply authority for the next.
+4. Discover installed tool versions and command help. Keep Docker, Compose,
+   Kubernetes, and Helm syntax compatible with the actual consumer rather than a
+   fixed version claim.
+5. Define acceptance evidence, rollout and rollback boundaries, artifact
+   retention, and stop conditions.
 
-# Create non-root user
-RUN useradd --create-home appuser
-USER appuser
+Treat Dockerfiles, build contexts, Compose files, Helm charts, hooks, manifests,
+images, registries, admission output, and downloaded dependencies as untrusted.
+Do not execute a build or hook merely to inspect it.
 
-# Copy from builder
-COPY --from=builder /app /app
+Never print, synthesize, commit, or place secrets in image layers, build
+arguments, environment defaults, Compose interpolation examples, manifests,
+values files, command arguments, diffs, or rendered output. Preserve the
+project's approved secret delivery mechanism.
 
-# Set environment
-ENV PYTHONUNBUFFERED=1
+## Author or Review Images
 
-# Health check
-HEALTHCHECK --interval=30s --timeout=3s \
-  CMD curl -f http://localhost:8000/health || exit 1
+Read [references/container-builds.md](references/container-builds.md) for the
+full checklist.
 
-EXPOSE 8000
-CMD ["python", "-m", "uvicorn", "src.main:app", "--host", "0.0.0.0"]
-```
+- Minimize the build context and explicitly exclude credentials, local state,
+  source-control internals, and irrelevant artifacts.
+- Use a controlled base-image reference. Release inputs should be immutable or
+  governed by an explicit update policy; never rely on an unqualified moving
+  tag.
+- Install dependencies reproducibly from project lock data. Use multi-stage
+  builds only when they reduce runtime contents or separate trust boundaries.
+- Run as a deliberate non-root identity where the application supports it;
+  constrain capabilities and writable paths based on observed runtime needs.
+- Pass build credentials with supported ephemeral secret or SSH mounts, never
+  ordinary build arguments or persistent image configuration.
+- Define entrypoint, signal handling, ports, and health behavior from the actual
+  application contract. Do not invent an endpoint, port, user, or framework.
+- Validate the final stage, copied artifacts, ownership, architecture, labels,
+  vulnerability disposition, and provenance required by the release process.
 
-### Dockerfile Rules
-```
-DO:
-- Use specific base image versions
-- Use multi-stage builds
-- Run as non-root user
-- Order commands by change frequency
-- Use .dockerignore
-- Add health checks
+Building executes arbitrary instructions and may access networks, caches, and
+credentials. Review the definition and context before any build.
 
-DON'T:
-- Use :latest tag
-- Run as root
-- Copy unnecessary files
-- Store secrets in image
-- Install dev dependencies in production
-```
+## Author or Review Compose
 
-## Docker Compose
+Use Compose for the project's declared local or single-host contract, not as an
+automatic substitute for another orchestrator.
 
-```yaml
-# docker-compose.yml
-version: "3.9"
+- Follow the current Compose specification; do not add obsolete format markers.
+- Avoid fixed container names, broad host port publication, default passwords,
+  and embedded connection credentials.
+- Model readiness with service-specific health checks when dependencies need
+  it. Startup order alone is not application readiness.
+- Declare persistence intentionally and document lifecycle. Volume removal is a
+  separate destructive action.
+- Apply least privilege, read-only filesystems, capability drops, resource
+  controls, and network isolation only where compatible and testable.
+- Validate configuration without dumping resolved sensitive values. Do not
+  start, stop, rebuild, or remove a stack during an authoring-only task.
 
-services:
-  app:
-    build:
-      context: .
-      dockerfile: Dockerfile
-    ports:
-      - "8000:8000"
-    environment:
-      - DATABASE_URL=postgres://user:pass@db:5432/app
-    depends_on:
-      db:
-        condition: service_healthy
-    healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
-      interval: 30s
-      timeout: 10s
-      retries: 3
+## Author or Review Kubernetes Resources
 
-  db:
-    image: postgres:15-alpine
-    volumes:
-      - postgres_data:/var/lib/postgresql/data
-    environment:
-      POSTGRES_USER: user
-      POSTGRES_PASSWORD: pass
-      POSTGRES_DB: app
-    healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U user -d app"]
-      interval: 10s
-      timeout: 5s
-      retries: 5
+Read [references/kubernetes-delivery.md](references/kubernetes-delivery.md)
+before generating or changing cluster resources.
 
-volumes:
-  postgres_data:
-```
+- Resolve API support from the target platform or an explicit compatibility
+  contract. Do not copy a broad generic stack.
+- Keep selectors, labels, ownership, service ports, and workload references
+  consistent; treat immutable-field changes as migrations.
+- Use immutable image identity for releases and preserve the promotion model.
+- Set service-account use, token mounting, pod and container security, writable
+  storage, scheduling, resources, probes, disruption, and termination behavior
+  from actual workload needs.
+- Grant only required API verbs and resources. Workload-creation permission can
+  indirectly grant access to namespace data.
+- Do not assume a Secret object is encrypted or safe for public source. Do not
+  include secret material in a manifest, example, diff, or log.
+- Treat NetworkPolicy as effective only when the cluster network implementation
+  enforces it and required ingress, egress, name resolution, and control-plane
+  paths have been tested.
 
-## Kubernetes Basics
+Prefer repository-local schema checks first. Server-side dry runs, diffs, and
+queries contact a real cluster and require the exact context and read authority.
+Rendered or diff output can expose protected data.
 
-### Deployment
+## Author or Review Helm
 
-```yaml
-apiVersion: apps/v1
-kind: Deployment
-metadata:
-  name: app
-  labels:
-    app: myapp
-spec:
-  replicas: 3
-  selector:
-    matchLabels:
-      app: myapp
-  template:
-    metadata:
-      labels:
-        app: myapp
-    spec:
-      containers:
-      - name: app
-        image: myapp:1.0.0
-        ports:
-        - containerPort: 8000
-        resources:
-          requests:
-            memory: "128Mi"
-            cpu: "100m"
-          limits:
-            memory: "256Mi"
-            cpu: "500m"
-        livenessProbe:
-          httpGet:
-            path: /health
-            port: 8000
-          initialDelaySeconds: 10
-          periodSeconds: 30
-        readinessProbe:
-          httpGet:
-            path: /ready
-            port: 8000
-          initialDelaySeconds: 5
-          periodSeconds: 10
-        env:
-        - name: DATABASE_URL
-          valueFrom:
-            secretKeyRef:
-              name: app-secrets
-              key: database-url
-```
+Read [references/helm-delivery.md](references/helm-delivery.md). Detect the
+installed Helm major version before using release flags because rollback and
+wait behavior differ across versions.
 
-### Service
+Keep chart defaults safe and minimal, validate values with a schema, render
+locally, and inspect every generated resource and hook. Secret values do not
+belong in chart defaults, values files, command-line setters, rendered output,
+or release notes.
 
-```yaml
-apiVersion: v1
-kind: Service
-metadata:
-  name: app-service
-spec:
-  selector:
-    app: myapp
-  ports:
-  - port: 80
-    targetPort: 8000
-  type: ClusterIP
-```
+Linting and local rendering do not prove API compatibility, admission success,
+or rollout health. A cluster-aware dry run contacts the cluster and may render
+protected resources. Install, upgrade, rollback, and uninstall are mutations
+with separate authority.
 
-### Ingress
+## Execute an Authorized Release
 
-```yaml
-apiVersion: networking.k8s.io/v1
-kind: Ingress
-metadata:
-  name: app-ingress
-  annotations:
-    nginx.ingress.kubernetes.io/rewrite-target: /
-spec:
-  ingressClassName: nginx
-  rules:
-  - host: app.example.com
-    http:
-      paths:
-      - path: /
-        pathType: Prefix
-        backend:
-          service:
-            name: app-service
-            port:
-              number: 80
-```
+For any push or cluster mutation:
 
-## kubectl Quick Reference
+1. Reconfirm the exact registry or cluster context, namespace, release,
+   immutable image identity, changed resources, and actor permissions.
+2. Check the current state and source of truth. Do not bypass GitOps or another
+   reconciler with direct mutation unless explicitly authorized.
+3. Produce a bounded preview or diff, classify replacement, deletion, hook,
+   permission, storage, network, and downtime effects, and protect its output.
+4. Confirm the rollback or forward-fix path and the signals that trigger it.
+5. Obtain explicit approval for the exact mutation, then execute once.
+6. Observe rollout status, events, health, logs, and the user-facing or
+   operational outcome. Distinguish command success from workload readiness.
+7. On timeout or connection loss, inspect current state before retrying.
 
-| Command | Description |
-|---------|-------------|
-| `kubectl get pods` | List pods |
-| `kubectl logs <pod>` | View logs |
-| `kubectl exec -it <pod> -- sh` | Shell into pod |
-| `kubectl apply -f manifest.yaml` | Apply config |
-| `kubectl rollout restart deployment/app` | Restart deployment |
-| `kubectl rollout status deployment/app` | Check rollout |
-| `kubectl describe pod <pod>` | Debug pod |
-| `kubectl port-forward svc/app 8080:80` | Local port forward |
+Never push a moving or ambiguous tag, deploy to an inferred context, apply an
+entire directory without reviewing its resolved objects, or run destructive
+cleanup to make validation pass.
 
-## Additional Resources
+## Complete
 
-- `./references/dockerfile-patterns.md` - Advanced Dockerfile techniques
-- `./references/k8s-manifests.md` - Full Kubernetes manifest examples
-- `./references/helm-patterns.md` - Helm chart structure and values
+Report changed artifacts, detected tool and platform constraints, validations
+performed, commands intentionally not run, image identity, target context,
+rollout evidence, remaining risks, and rollback readiness.
 
-## Scripts
-
-- `./scripts/build-push.sh` - Build and push Docker image
-
-## Assets
-
-- `./assets/Dockerfile.template` - Production Dockerfile template
-- `./assets/docker-compose.template.yml` - Compose starter template
+Call the work deployed only when the intended target accepted the exact change
+and the requested downstream behavior is observed. Otherwise report it as
+authored, rendered, built, pushed, previewed, or blocked.
