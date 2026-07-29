@@ -1,125 +1,134 @@
 ---
 name: core-development-react-best-practices
-description: React and Next.js performance optimization guidelines from Vercel Engineering. This skill should be used when writing, reviewing, or refactoring React/Next.js code to ensure optimal performance patterns. Triggers on tasks involving React components, Next.js pages, data fetching, bundle optimization, or performance improvements.
+description: Diagnose, review, or improve web React and Next.js correctness and performance using version-aware, measurement-led changes. Use for React render latency, hydration, effects, state, concurrency, Server Components, data waterfalls, caching, serialization, or client-bundle work. Do not use for React Native, framework-free JavaScript tuning, visual design, or speculative rewrites without a reported symptom or review scope.
 license: MIT
-metadata: 
-author: vercel
-version: "1.0.0"
 ---
 
-# Vercel React Best Practices
+# Evidence-Led React Performance
 
-Comprehensive performance optimization guide for React and Next.js applications, maintained by Vercel. Contains 45 rules across 8 categories, prioritized by impact to guide automated refactoring and code generation.
+Improve the user-visible outcome without trading away correctness, security,
+accessibility, or maintainability. Treat every optimization as a hypothesis
+until the intended environment supplies evidence.
 
-## When to Apply
+## Establish the Contract
 
-Reference these guidelines when:
-- Writing new React components or Next.js pages
-- Implementing data fetching (client or server-side)
-- Reviewing code for performance issues
-- Refactoring existing React/Next.js code
-- Optimizing bundle size or load times
+Before proposing or editing code:
 
-## Rule Categories by Priority
+1. Read repository instructions, manifests, lockfiles, framework configuration,
+   compiler settings, routes, tests, and the complete affected data flow.
+2. Record the installed React and framework versions. Distinguish plain React,
+   a framework integration, and framework-specific server behavior; never apply
+   a Next.js rule to an unrelated React application.
+3. Identify the observed symptom, affected interaction or route, target
+   environment, device or runtime class, expected behavior, and success metric.
+4. Preserve existing semantics, authorization, accessibility, error handling,
+   cache consistency, and browser support unless the task explicitly changes
+   them.
+5. Capture a reproducible baseline when execution is authorized. If no runtime
+   is available, label conclusions as static review findings rather than
+   measured gains.
 
-| Priority | Category | Impact | Prefix |
-|----------|----------|--------|--------|
-| 1 | Eliminating Waterfalls | CRITICAL | `async-` |
-| 2 | Bundle Size Optimization | CRITICAL | `bundle-` |
-| 3 | Server-Side Performance | HIGH | `server-` |
-| 4 | Client-Side Data Fetching | MEDIUM-HIGH | `client-` |
-| 5 | Re-render Optimization | MEDIUM | `rerender-` |
-| 6 | Rendering Performance | MEDIUM | `rendering-` |
-| 7 | JavaScript Performance | LOW-MEDIUM | `js-` |
-| 8 | Advanced Patterns | LOW | `advanced-` |
+Permission to review or edit code does not authorize installing packages,
+starting services, running a production build, accessing accounts, or sending
+traffic to production. Inspect project commands before executing them because
+package and build scripts can run arbitrary host code. Do not install a newer
+framework, enable a compiler, or change shared infrastructure merely to
+investigate.
 
-## Quick Reference
+## Rank the Work
 
-### 1. Eliminating Waterfalls (CRITICAL)
+Investigate in this order:
 
-- `async-defer-await` - Move await into branches where actually used
-- `async-parallel` - Use Promise.all() for independent operations
-- `async-dependencies` - Use better-all for partial dependencies
-- `async-api-routes` - Start promises early, await late in API routes
-- `async-suspense-boundaries` - Use Suspense to stream content
+1. correctness, security, hydration, and stale-state defects;
+2. request and render waterfalls on the critical path;
+3. excessive client code, assets, or server-to-client serialization;
+4. repeated server work, cache scope, and invalidation;
+5. expensive React renders during real interactions;
+6. browser layout, paint, memory, and long-task pressure;
+7. JavaScript micro-optimizations in a demonstrated hot path.
 
-### 2. Bundle Size Optimization (CRITICAL)
+Do not assign universal severity or percentage gains to a pattern. Priority
+comes from the product path, frequency, affected users, measured cost, and
+change risk.
 
-- `bundle-barrel-imports` - Import directly, avoid barrel files
-- `bundle-dynamic-imports` - Use next/dynamic for heavy components
-- `bundle-defer-third-party` - Load analytics/logging after hydration
-- `bundle-conditional` - Load modules only when feature is activated
-- `bundle-preload` - Preload on hover/focus for perceived speed
+## Diagnose Before Editing
 
-### 3. Server-Side Performance (HIGH)
+Build a short hypothesis table with the symptom, suspected cause, evidence
+needed, and disconfirming result. Read
+[references/measurement-and-review.md](references/measurement-and-review.md)
+for the evidence ladder and review format.
 
-- `server-cache-react` - Use React.cache() for per-request deduplication
-- `server-cache-lru` - Use LRU cache for cross-request caching
-- `server-serialization` - Minimize data passed to client components
-- `server-parallel-fetching` - Restructure components to parallelize fetches
-- `server-after-nonblocking` - Use after() for non-blocking operations
+For React state, Effects, memoization, transitions, hydration, lists, or browser
+work, read [references/react-runtime.md](references/react-runtime.md). For
+Next.js App Router, Server Components, Server Actions, caching, streaming, or
+bundle behavior, also read
+[references/nextjs-runtime.md](references/nextjs-runtime.md).
 
-### 4. Client-Side Data Fetching (MEDIUM-HIGH)
+Prefer evidence at the failing boundary:
 
-- `client-swr-dedup` - Use SWR for automatic request deduplication
-- `client-event-listeners` - Deduplicate global event listeners
+- network timing for request waterfalls;
+- framework build or bundle output for shipped code;
+- React Performance tracks or Profiler data for render cost;
+- browser performance traces for long tasks, layout, and paint;
+- server traces, query counts, and cache telemetry for backend work;
+- focused tests for correctness, hydration, and race behavior.
 
-### 5. Re-render Optimization (MEDIUM)
+Synthetic examples and rule matches can locate risk; they do not prove impact.
 
-- `rerender-defer-reads` - Don't subscribe to state only used in callbacks
-- `rerender-memo` - Extract expensive work into memoized components
-- `rerender-dependencies` - Use primitive dependencies in effects
-- `rerender-derived-state` - Subscribe to derived booleans, not raw values
-- `rerender-functional-setstate` - Use functional setState for stable callbacks
-- `rerender-lazy-state-init` - Pass function to useState for expensive values
-- `rerender-transitions` - Use startTransition for non-urgent updates
+## Make the Smallest Defensible Change
 
-### 6. Rendering Performance (MEDIUM)
+Change one causal boundary at a time so the result can be attributed:
 
-- `rendering-animate-svg-wrapper` - Animate div wrapper, not SVG element
-- `rendering-content-visibility` - Use content-visibility for long lists
-- `rendering-hoist-jsx` - Extract static JSX outside components
-- `rendering-svg-precision` - Reduce SVG coordinate precision
-- `rendering-hydration-no-flicker` - Use inline script for client-only data
-- `rendering-activity` - Use Activity component for show/hide
-- `rendering-conditional-render` - Use ternary, not && for conditionals
+- start independent work together, but preserve dependency and failure
+  semantics, cancellation, transaction ordering, and resource limits;
+- move work across a server/client boundary only after checking serialization,
+  security, and runtime support;
+- reduce shipped code only when the import path and lazy boundary remain
+  supported by the package and bundler;
+- add memoization only when work is expensive and inputs are stable;
+- introduce a cache only with explicit scope, key, lifetime, invalidation,
+  error, and tenant-isolation behavior;
+- use concurrency features for interruptible non-urgent rendering, not to hide
+  uncontrolled event frequency or slow I/O;
+- preserve observable error paths rather than swallowing failures.
 
-### 7. JavaScript Performance (LOW-MEDIUM)
+Avoid broad rewrites, copied benchmark numbers, unsupported deep imports,
+unbounded module-level caches, ad hoc authentication caches, blanket lazy
+loading, blanket memoization, and dependency-array suppression.
 
-- `js-batch-dom-css` - Group CSS changes via classes or cssText
-- `js-index-maps` - Build Map for repeated lookups
-- `js-cache-property-access` - Cache object properties in loops
-- `js-cache-function-results` - Cache function results in module-level Map
-- `js-cache-storage` - Cache localStorage/sessionStorage reads
-- `js-combine-iterations` - Combine multiple filter/map into one loop
-- `js-length-check-first` - Check array length before expensive comparison
-- `js-early-exit` - Return early from functions
-- `js-hoist-regexp` - Hoist RegExp creation outside loops
-- `js-min-max-loop` - Use loop for min/max instead of sort
-- `js-set-map-lookups` - Use Set/Map for O(1) lookups
-- `js-tosorted-immutable` - Use toSorted() for immutability
+## Validate the Outcome
 
-### 8. Advanced Patterns (LOW)
+Use the narrowest project-declared checks, then widen in proportion to risk:
 
-- `advanced-event-handler-refs` - Store event handlers in refs
-- `advanced-use-latest` - useLatest for stable callback refs
+1. type-check, lint, and run focused unit or component tests;
+2. exercise success, failure, empty, loading, and rapid-update behavior;
+3. verify server and client rendering or hydration when the boundary changed;
+4. repeat the baseline measurement under comparable conditions;
+5. inspect regressions in bundle size, requests, render count, responsiveness,
+   accessibility, and error behavior;
+6. run broader project gates for shared code or configuration.
 
-## How to Use
+Use multiple samples for noisy timings and report the environment. A faster
+single run, a smaller source file, or fewer component renders is not sufficient
+unless it improves the target outcome without a material regression.
 
-Read individual rule files for detailed explanations and code examples:
+## Report
 
-```
-rules/async-parallel.md
-rules/bundle-barrel-imports.md
-rules/_sections.md
-```
+Return:
 
-Each rule file contains:
-- Brief explanation of why it matters
-- Incorrect code example with explanation
-- Correct code example with explanation
-- Additional context and references
+- scope, versions, environment, and observed symptom;
+- findings ordered by evidence-backed impact and risk;
+- changes made, with the causal reason for each;
+- exact validation commands and results;
+- comparable before/after measurements, or an explicit unmeasured status;
+- collected artifact locations and their privacy or retention handling;
+- correctness, security, accessibility, and compatibility checks;
+- remaining hypotheses, limitations, and rollback guidance.
 
-## Full Compiled Document
+Call an optimization verified only when the target behavior and metric were
+reproduced after the change. Keep static recommendations clearly separate from
+runtime evidence.
 
-For the complete guide with all rules expanded: `AGENTS.md`
+This skill preserves and refines concepts from
+[Vercel Labs Agent Skills](https://github.com/vercel-labs/agent-skills), whose
+React best-practices package declares the MIT license.
