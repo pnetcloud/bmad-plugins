@@ -1,212 +1,146 @@
 ---
 name: core-development-data-pipeline-go
-description: ETL data pipeline patterns for Go with Temporal orchestration and Kafka messaging. Use when building ingest, transform, or batch processing activities.
+description: Design, implement, review, or troubleshoot Go data pipelines that combine Kafka consumption, PostgreSQL persistence through pgx, and Temporal orchestration. Use for delivery semantics, batching, idempotency, retries, workflow history, validation, observability, or graceful shutdown. Do not use for a different language or messaging stack, general schema design, one-off data migration, or deployment operations without an explicit pipeline contract.
 ---
 
-# Data Pipeline Patterns (Go + Temporal + Kafka)
+# Reliable Go Data Pipelines
 
-Curated from generic ETL/stream/orchestration best practices, rewritten for our stack:
-Go, `segmentio/kafka-go`, `pgx`, Temporal workflows.
+Build a pipeline whose failure behavior is explicit and testable. Do not claim
+exactly-once processing merely because the database write is idempotent or an
+offset is committed manually.
 
-## When to Use
+## Establish the Contract
 
-- Building Kafka consumer activities (IngestBlocks, etc.)
-- Designing batch INSERT pipelines (raw_* tables)
-- Implementing idempotent data processing
-- Configuring Temporal workflows for long-lived data pipelines
+Before changing code:
 
-## 1. Kafka Consumer — Manual Commit After DB Write
+1. Read repository instructions, Go modules and lock data, client
+   configuration, schemas, migrations, workflow registrations, retry policies,
+   tests, and operational runbooks that govern the target path.
+2. Record the installed Kafka client, pgx, and Temporal SDK versions. Check
+   version-matched API documentation before changing configuration or lifecycle
+   behavior.
+3. Draw the path from message production through partition assignment, decode,
+   validation, persistence, offset acknowledgement, and downstream visibility.
+4. Define the required delivery model, ordering key, idempotency key, batch
+   limits, latency objective, replay window, and poison-message policy.
+5. Identify which process owns the Kafka reader, database transaction, Temporal
+   Workflow, Activity, and shutdown sequence.
+6. State authorized scope. A code change does not authorize creating topics,
+   applying migrations, changing retention, resetting offsets, terminating
+   Workflows, deploying workers, or touching production data.
 
-```go
-// At-least-once: commit AFTER successful DB write.
-// ON CONFLICT DO NOTHING handles duplicates from re-delivery.
-func (a *Activities) IngestBatch(ctx context.Context, batchSize int) (int, error) {
-    var msgs []kafka.Message
-    for i := 0; i < batchSize; i++ {
-        msg, err := a.reader.FetchMessage(ctx)
-        if err != nil {
-            break // timeout or EOF — process what we have
-        }
-        msgs = append(msgs, msg)
-    }
-    if len(msgs) == 0 {
-        return 0, nil
-    }
+If the system cannot atomically commit database state and Kafka offsets, model
+the gap instead of promising atomicity.
 
-    // 1. Parse + transform
-    rows := decodeMessages(msgs)
+## Preserve the Failure Invariants
 
-    // 2. DB write (batch INSERT)
-    if err := a.store.BatchInsert(ctx, rows); err != nil {
-        return 0, err // Temporal retries; Kafka offsets NOT committed
-    }
+The default at-least-once shape is:
 
-    // 3. Commit offsets ONLY after DB success
-    if err := a.reader.CommitMessages(ctx, msgs...); err != nil {
-        // DB written but offset not committed = re-delivery next time
-        // ON CONFLICT DO NOTHING handles the dupe — safe
-        return len(msgs), nil
-    }
-    return len(msgs), nil
-}
+```text
+fetch -> validate -> transform -> durable write -> commit contiguous offsets
 ```
 
-### Anti-patterns
+The durable write must be idempotent because a crash or commit failure after
+database success causes redelivery. Never commit an offset before every earlier
+message in that topic-partition has reached its required durable state.
 
-```
-❌ Commit offsets before DB write → data loss on crash
-❌ Auto-commit enabled → offsets advance before processing
-❌ FetchMessage without timeout → blocks activity forever
-❌ One INSERT per message → N round-trips instead of 1
-```
+Read
+[references/delivery-and-idempotency.md](references/delivery-and-idempotency.md)
+before changing consumer groups, manual commits, parallel processing, retry,
+rebalance, poison-message, or shutdown behavior.
 
-## 2. Batch INSERT — pgx.Batch with ON CONFLICT
+Treat each error distinctly. A bounded fetch timeout with a non-empty batch can
+be a normal flush condition; cancellation, rebalance, broker failure, decode
+failure, database failure, and offset-commit failure are not interchangeable.
+Do not swallow a commit error or report the batch fully acknowledged.
 
-```go
-func (s *PgxRawStore) InsertRawSwaps(ctx context.Context, swaps []RawSwap) (int64, error) {
-    batch := &pgx.Batch{}
-    for _, sw := range swaps {
-        batch.Queue(`
-            INSERT INTO raw_swaps (chain_id, block_number, tx_hash, log_index,
-                block_time, pair_address, factory, protocol,
-                token0_address, token1_address,
-                token0_in, token0_out, token1_in, token1_out,
-                task_code, collected_at)
-            VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,NOW())
-            ON CONFLICT DO NOTHING`,
-            sw.ChainID, sw.BlockNumber, sw.TxHash, sw.LogIndex,
-            sw.BlockTime, sw.PairAddress, sw.Factory, sw.Protocol,
-            sw.Token0Address, sw.Token1Address,
-            sw.Token0In, sw.Token0Out, sw.Token1In, sw.Token1Out,
-            sw.TaskCode,
-        )
-    }
-    br := s.pool.SendBatch(ctx, batch)
-    defer br.Close()
+## Choose the Persistence Boundary
 
-    var inserted int64
-    for range swaps {
-        ct, err := br.Exec()
-        if err != nil {
-            return inserted, fmt.Errorf("batch exec: %w", err)
-        }
-        inserted += ct.RowsAffected()
-    }
-    return inserted, nil
-}
-```
+Validate and normalize before persistence while retaining enough source identity
+to diagnose and replay failures. Use stable database constraints as the final
+idempotency authority; an in-memory deduplication cache is only an optimization.
 
-### Anti-patterns
+Read [references/postgres-batching.md](references/postgres-batching.md) before
+using `pgx.Batch`, `CopyFrom`, staging tables, conflict handling, or a
+multi-statement transaction.
 
-```
-❌ Individual INSERTs in a loop → N round-trips
-❌ INSERT ON CONFLICT UPDATE for append-only data → wasted writes
-❌ No ON CONFLICT → crashes on retried/duplicate blocks
-❌ float64 for token amounts → precision loss (use TEXT for big.Int)
-❌ SELECT * in production → specify columns explicitly
-```
+Choose a technique from measured batch size, row width, constraint behavior,
+atomicity needs, and error isolation. Always consume and check all batch results,
+including the final close error. A broad `ON CONFLICT DO NOTHING` can hide the
+wrong constraint violation; name the intended conflict target when the schema
+supports it.
 
-## 3. Temporal Long-Lived Workflow — ContinueAsNew
+## Keep Temporal Semantics Explicit
 
-```go
-const maxIterations = 100
+Workflow code must remain deterministic. Put Kafka, PostgreSQL, network, file,
+clock, and other external I/O in Activities. Configure Activity timeouts and
+retries from the operation's failure contract, not from a generic preset.
 
-func IngestWorkflow(ctx workflow.Context, state IngestState) error {
-    for state.Iteration < maxIterations {
-        var result IngestOutput
-        err := workflow.ExecuteActivity(actCtx, "ingest_blocks", input).Get(ctx, &result)
-        if err != nil {
-            return err
-        }
+Read
+[references/temporal-orchestration.md](references/temporal-orchestration.md)
+before changing Workflow loops, Activity retries, heartbeats, cancellation,
+Continue-As-New, worker shutdown, or Workflow code that may have open histories.
 
-        state.TotalBlocks += result.Blocks
-        state.Iteration++
+Use heartbeats for meaningful progress and cancellation delivery in
+long-running Activities. Use Continue-As-New based on history and state size,
+not a copied iteration constant. Carry only durable continuation state and
+account for pending Signals or Updates. Protect Workflow evolution with replay
+tests and the versioning mechanism appropriate to the installed SDK.
 
-        if result.Blocks == 0 {
-            _ = workflow.Sleep(ctx, 1*time.Second) // no data, backoff
-        }
-    }
-    // Reset iteration, keep cumulative state
-    state.Iteration = 0
-    return workflow.NewContinueAsNewError(ctx, IngestWorkflow, state)
-}
-```
+A Workflow ID policy coordinates executions; it does not replace message or
+database idempotency.
 
-### Anti-patterns
+## Validate Data and Bound Resources
 
-```
-❌ Unbounded loop without ContinueAsNew → event history grows forever
-❌ Sleep in activity instead of workflow → blocks worker slot
-❌ No heartbeat in long activity → Temporal kills it silently
-❌ State lost on ContinueAsNew → always pass state forward
-```
+Treat message keys, headers, payloads, timestamps, and metadata as untrusted.
+Bound message size, decoded collection sizes, batch count, batch bytes, fetch
+wait, database time, concurrency per partition, retry duration, and retained
+diagnostic data.
 
-## 4. Idempotency Checklist
+Reject or quarantine invalid records through an explicit policy. Do not log full
+payloads, credentials, personal data, authorization material, or unrestricted
+headers. Preserve a safe record locator, reason code, schema version, and
+correlation information sufficient for authorized diagnosis.
 
-| Layer | Technique |
-|-------|-----------|
-| Kafka | Manual offset commit after processing |
-| DB PK | `(chain_id, block_number, tx_hash, log_index)` |
-| SQL | `ON CONFLICT DO NOTHING` (append-only) |
-| Temporal | Same Workflow ID → singleton per network |
-| Activity | Stateless — all state in DB/Kafka |
+Read
+[references/validation-and-operations.md](references/validation-and-operations.md)
+when defining validation, telemetry, replay, incident evidence, or acceptance
+tests.
 
-## 5. Data Validation at Ingest
+## Verify the Pipeline
 
-```go
-// Validate BEFORE batch INSERT — reject bad rows
-func validateRawSwap(sw *RawSwap) error {
-    if sw.TxHash == "" {
-        return fmt.Errorf("empty tx_hash")
-    }
-    if sw.LogIndex < 0 || sw.LogIndex > 32767 { // smallint range
-        return fmt.Errorf("log_index %d out of smallint range", sw.LogIndex)
-    }
-    if sw.PairAddress == "" {
-        return fmt.Errorf("empty pair_address")
-    }
-    return nil
-}
-```
+Use the consuming repository's focused commands and test in widening layers:
 
-### Anti-patterns
+1. unit-test decoding, validation, idempotency-key construction, and error
+   classification;
+2. integration-test database constraints, transaction rollback, batch-result
+   handling, and duplicate delivery;
+3. test multiple partitions and an out-of-order worker completion without
+   committing past a gap;
+4. inject failure before the write, after the write but before commit, during
+   commit, during rebalance, and during shutdown;
+5. replay representative Workflow histories after Workflow-code changes;
+6. verify Activity timeout, retry, heartbeat, cancellation, and
+   Continue-As-New behavior;
+7. run an end-to-end fixture from produced message to durable queryable state
+   and acknowledged offset;
+8. verify telemetry and quarantine behavior without exposing protected data.
 
-```
-❌ Load without validation → corrupt rows in DB
-❌ Silent drops → log rejected rows for debugging
-❌ uint64 → smallint without bounds check → runtime panic
-```
+Use disposable infrastructure or an explicitly authorized environment. Do not
+reset real offsets or delete durable records to make a test pass.
 
-## 6. Monitoring Checklist
+## Complete
 
-```
-✅ Kafka consumer lag — growing lag = ingest slower than collect
-✅ Batch size histogram — track actual vs configured batch size
-✅ INSERT rate — rows/sec per table
-✅ ON CONFLICT skipped rate — high = too many duplicates
-✅ Activity duration p95 — trending up = performance issue
-✅ Workflow iteration count — sanity check for ContinueAsNew
-✅ Last ingested block — per network, freshness indicator
-```
+Report:
 
-## 7. Graceful Shutdown
+- versions, topology, delivery and ordering contract, and authority boundary;
+- idempotency key and database constraint;
+- batch limits, transaction boundary, retry and poison-message policy;
+- Workflow and Activity lifecycle decisions;
+- exact tests and failure injections with results;
+- offset, database, Workflow, and downstream evidence;
+- remaining duplicate, loss, ordering, privacy, or operability risks.
 
-```go
-// KafkaReader must be closed on worker shutdown
-type kafkaReaderAdapter struct {
-    reader *kafka.Reader
-}
-
-func (a *kafkaReaderAdapter) Close() error {
-    return a.reader.Close() // commits final offsets, releases consumer group
-}
-
-// Register cleanup in worker lifecycle
-defer kafkaReader.Close()
-```
-
-## Related
-
-- [chaindata.prd.md §24.7-24.8](docs/00-planning/prd/datasets/chaindata.prd.md) — raw schema + ingest workflow
-- [Epic 2 stories](docs/10-implementation/data-platform/) — implementation stories
-- `services/migrator/schema/chaindata_raw.hcl` — Atlas schema
+Call the pipeline verified only when restart and failure-injection evidence
+matches the stated delivery contract. Successful compilation or a happy-path
+batch is not sufficient.
