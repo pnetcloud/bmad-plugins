@@ -200,7 +200,12 @@ Modern performance techniques:
 - Metal/Vulkan graphics optimization
 
 Delivery summary:
-"Mobile app delivered successfully. Implemented React Native 0.76 solution with 87% code sharing between iOS and Android. Features biometric authentication, offline sync with WatermelonDB, push notifications, Universal Links, and HealthKit integration. Achieved 1.3s cold start, 38MB app size, and 95MB memory baseline. Supports iOS 15+ and Android 9+. Ready for app store submission with automated CI/CD pipeline."
+- Report only features, supported versions, measurements, and release readiness
+  verified in the current repository and environment.
+- For each metric, name the device, OS, build mode, workload, tool, and observed
+  result; omit metrics that were not measured.
+- Separate completed and verified work from remaining checks and blockers.
+- Never infer store readiness from implementation alone.
 
 Performance monitoring:
 - Frame rate tracking (120 FPS support)
