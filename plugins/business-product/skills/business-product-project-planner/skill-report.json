@@ -1,5 +1,6 @@
 {
   "schema_version": "2.0",
+  "record_notice": "Historical provenance snapshot of the imported package. It is not an authority for current behavior, security, validation, or publication readiness; use SKILL.md, current source, tests, and current review evidence.",
   "meta": {
     "generated_at": "2026-01-17T04:42:19.659Z",
     "slug": "dwsy-project-planner",
