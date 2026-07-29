@@ -1,0 +1,74 @@
+---
+description: Unified Makefile standards (Docker-first dev environment)
+globs: ["**/Makefile", "**/makefile", "**/*.mk"]
+alwaysApply: true
+priority: 100
+category: coding-standards
+tags: [makefile, docker, compose, automation, standards]
+---
+
+# Makefile Rules — Docker-first
+
+## Goals
+
+- Standardize a minimal, universal target set.
+- Use Docker Compose for dev/runtime orchestration.
+- Keep tech-specific commands in `project.mk` overrides.
+
+## Source of Truth
+
+- **Template**: `.agents/rules/coding-standards/Makefile.template`
+- Each project Makefile should be based on the template and override variables/targets via `project.mk`.
+
+## Required Core Targets
+
+- `help` — grouped, colorized, self-documenting help
+- `up` / `down` / `restart` / `logs` — Docker stack lifecycle
+- `watch` — run app in watch mode (via container)
+- `build` — produce artefact
+- `check` — aggregate: `lint` + `test`
+- `clean` — remove artefacts
+- `status` — quick health/info summary
+
+## Variables & Overrides
+
+Override in `project.mk`:
+
+- `PROJECT` — project name
+- `VERSION` — semver or VCS tag/short SHA
+- `COMPOSE` — docker compose binary (`docker compose` or `docker-compose`)
+- `COMPOSE_FILE` — compose file path (default `compose.yaml`)
+- `DEV_SERVICE` — service for `watch`/exec
+- `CMD_DEV` — dev command (e.g., `npm run dev`, `air`, `uv run fastapi dev`)
+- `CMD_BUILD` — build command
+- `CMD_TEST` — run tests
+- `CMD_LINT` — run linters
+- `CMD_FORMAT` — format code
+
+## Help Output Conventions
+
+Each public target must include a docstring comment:
+
+```
+target-name: ## <Group>: <short description>
+```
+
+Group labels: `Setup`, `Development`, `Quality`, `Build`, `Maintenance`, `Logs`.
+
+## Docker Compose Expectations
+
+- Use `${COMPOSE}` and `${COMPOSE_FILE}` for all compose calls.
+- Dev service should mount source code and expose required ports.
+- `watch` runs inside the container using `${DEV_SERVICE}` and `${CMD_DEV}`.
+
+## Cross-platform
+
+- Prefer POSIX shell in recipes; avoid Bash-isms.
+- Avoid GNU-only utilities unless guarded.
+- Do not print secrets in logs.
+
+## Don’ts
+
+- No tech-specific flags in the global standards file.
+- No hard-coded paths to language toolchains.
+- Avoid non-deterministic sleeps; use readiness checks where possible.
