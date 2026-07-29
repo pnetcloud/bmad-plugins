@@ -86,6 +86,9 @@ threshold. Keep the entrypoint within its context-budget goals; the full skill
 package may remain large through progressive disclosure.
 
 Do not optimize for a score, line count, or directory template at the expense of correctness. Do not create empty resource directories.
+Do not rewrite a working artifact merely to normalize voice, headings, or
+folder shape. Prefer narrow edits; when a broad rewrite is necessary, account
+for every original section and validate its retained destination.
 
 Create a baseline file manifest and capability-retention matrix before
 implementation:
@@ -165,6 +168,12 @@ Exercise at least four discriminating scenarios:
 Add scenarios until every independent retained or replaced capability in the
 retention matrix is exercised. Four is the minimum for a small skill, not a
 catalog-wide preservation claim.
+
+Keep structural and behavioral evidence separate. A checked-in scenario vector,
+phrase assertion, link check, or schema test proves only that the declared
+contract exists. Claim behavioral coverage only after an agent or executable
+harness has run each relevant vector and the evidence record contains its
+expected behavior, observed behavior, verdict, and inspectable evidence.
 
 Compare before and after for:
 

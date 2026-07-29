@@ -12,6 +12,9 @@ Improve one existing skill without turning the work into an open-ended rewrite.
 - Work on one target skill unless the user explicitly authorizes a batch.
 - Preserve the complete useful capability surface, stable paths, and
   project-specific conventions.
+- Preserve before standardizing. Uniform structure and shorter prose are means,
+  not acceptance criteria; do not replace a working artifact wholesale when a
+  local patch can address the demonstrated defect.
 - Measure improvement by task success, safety, clarity, and efficient context
   use—not by shrinking the package.
 - Default to zero deleted files and zero retired capabilities. Prefer targeted
@@ -102,6 +105,11 @@ Default every artifact to Keep. Mere length, age, different wording,
 temporary unreachability, or availability in Git history is not a Retire
 justification.
 
+A rewrite is not minimal merely because the result is shorter or more uniform.
+When substantial rewriting is genuinely required, compare each original
+section against its destination and preservation scenario before accepting the
+replacement.
+
 Retire only when evidence shows exact duplication with an authoritative copy
 retained, non-behavioral filler with no consumer, unsafe executable behavior
 with no legitimate use, private material whose reusable method is preserved, or
@@ -130,6 +138,9 @@ Validate proportionately:
 4. Exercise at least four discriminating scenarios: a positive trigger, a negative trigger, the main task, and one important edge or safety case.
 5. Exercise additional scenarios for every independent capability in the
    retention matrix; four scenarios are a floor, not proof of full preservation.
+   A scenario file records test vectors; it is not behavioral evidence until an
+   agent or executable harness has evaluated each vector and recorded expected
+   versus observed behavior with inspectable evidence.
 6. Compare the before/after file manifest and capability surface, then compare
    task success, instruction adherence, safety, unnecessary tokens/tool calls,
    and regressions. Investigate every unexpected disappearance.
