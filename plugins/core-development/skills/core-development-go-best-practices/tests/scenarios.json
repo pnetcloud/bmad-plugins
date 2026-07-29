@@ -1,0 +1,94 @@
+[
+  {
+    "id": "go-file-change",
+    "tags": ["positive-trigger", "main-task"],
+    "given": "A task changes behavior in an existing Go package.",
+    "require": [
+      "Activate the skill and inspect the declared toolchain, callers, package contracts, and tests.",
+      "Preserve exported behavior and apply only patterns justified by the change."
+    ],
+    "forbid": [
+      "Replace the package structure with a generic template."
+    ]
+  },
+  {
+    "id": "non-go-task",
+    "tags": ["negative-trigger"],
+    "given": "The task contains no Go source or Go package contract.",
+    "require": [
+      "Do not activate this skill."
+    ],
+    "forbid": [
+      "Inject Go-specific rules into an unrelated task."
+    ]
+  },
+  {
+    "id": "unused-implementor-interface",
+    "tags": ["interfaces", "safety"],
+    "given": "A concrete implementation has one consumer and no substitution boundary, but a mock-only interface is proposed beside the implementation.",
+    "require": [
+      "Keep the concrete type and let an actual consumer define the smallest interface if one becomes useful."
+    ],
+    "forbid": [
+      "Define an interface before any consumer needs it."
+    ]
+  },
+  {
+    "id": "invalid-functional-option",
+    "tags": ["options", "edge-case"],
+    "given": "A functional option accepts an invalid port, duration, or nil option.",
+    "require": [
+      "Reject the option before returning the constructed value and identify the failing option."
+    ],
+    "forbid": [
+      "Return a partially invalid server with no error."
+    ]
+  },
+  {
+    "id": "caller-owned-context",
+    "tags": ["context", "safety"],
+    "given": "A lower-level call receives a caller context with a deadline and has no contract to shorten it.",
+    "require": [
+      "Propagate the caller context without storing it or silently replacing its deadline."
+    ],
+    "forbid": [
+      "Create an arbitrary timeout at every external call."
+    ]
+  },
+  {
+    "id": "closed-switch-with-exhaustive-analysis",
+    "tags": ["retention", "correctness"],
+    "given": "A closed enum-like switch is checked by an exhaustive analyzer.",
+    "require": [
+      "Account for every value and preserve analyzer visibility."
+    ],
+    "forbid": [
+      "Add a default mechanically if it hides newly added constants from analysis."
+    ]
+  },
+  {
+    "id": "typed-configuration-review",
+    "tags": ["configuration", "public-safety"],
+    "given": "A Go service loads protected settings from an approved external source.",
+    "require": [
+      "Centralize parsing into typed configuration and validate required and cross-field constraints.",
+      "Inspect names and schemas without reading or printing current protected values."
+    ],
+    "forbid": [
+      "Copy real source keys, values, topology, or weak production defaults into public guidance."
+    ]
+  },
+  {
+    "id": "concurrent-worker-change",
+    "tags": ["concurrency", "validation"],
+    "given": "A change starts goroutines and shares mutable state.",
+    "require": [
+      "Define lifetime, cancellation, waiting, channel ownership, and error behavior.",
+      "Confine mutable state or choose mutex, atomic, or channel-transfer synchronization with a clear happens-before relationship.",
+      "Run focused tests and an applicable race-enabled test that exercises the actual concurrent access path when supported and authorized."
+    ],
+    "forbid": [
+      "Claim race safety from compilation or an unexercised race run."
+    ]
+  }
+]

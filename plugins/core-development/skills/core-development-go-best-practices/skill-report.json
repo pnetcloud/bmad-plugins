@@ -9,7 +9,9 @@
     "analysis_version": "3.0.0",
     "source_type": "community",
     "content_hash": "1c44e581c2a3bf1c578ca8e7f8b1dfeb02bf93329498e88227672d71d615f057",
-    "tree_hash": "f6b426a5d306e266f720475c4d4c1cd1a654ab0a8c75bca2860d675fe1da7f7c"
+    "tree_hash": "f6b426a5d306e266f720475c4d4c1cd1a654ab0a8c75bca2860d675fe1da7f7c",
+    "scope": "historical-upstream-snapshot",
+    "review_notice": "This report describes the recorded upstream snapshot. It is retained for provenance and is not current Go guidance, validation evidence, or authority to access configuration, run tools, or apply its claims without inspecting the active skill references and target module."
   },
   "skill": {
     "name": "go-best-practices",
