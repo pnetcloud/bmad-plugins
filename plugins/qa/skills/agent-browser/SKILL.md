@@ -18,14 +18,16 @@ by the CLI and changes between versions. Guessing at commands without loading th
 will produce incorrect or outdated invocations.
 
 ```bash
-agent-browser skills get agent-browser    # Required before any browser automation
-agent-browser skills get <name> --full    # Include references and templates
+agent-browser skills get core          # Required before ordinary browser automation
+agent-browser skills get core --full   # Include references and templates
+agent-browser skills get <name> --full # Load a specialized skill with its resources
 ```
 
 ## Available Skills
 
-- **agent-browser** — Core browser automation
+- **core** — Core browser automation
 - **dogfood** — Exploratory testing and QA
+- **derive-client** — Derive an API client from recorded browser traffic
 - **electron** — Electron desktop app automation
 - **slack** — Slack workspace automation
 - **vercel-sandbox** — Browser automation in Vercel Sandbox
