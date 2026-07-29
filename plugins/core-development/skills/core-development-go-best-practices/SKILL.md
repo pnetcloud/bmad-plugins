@@ -173,7 +173,9 @@ Prefer smaller files within packages: one type or concern per file. Split when a
 ## Instructions
 
 - Return errors with context using `fmt.Errorf` and `%w` for wrapping. This preserves the error chain for debugging.
-- Every function returns a value or an error; unimplemented paths return descriptive errors. Explicit failures are debuggable.
+- Return an `error` from operations that can fail; do not invent one for a
+  function with no failure contract. Reachable unimplemented paths return a
+  descriptive error instead of a zero value that looks successful.
 - Handle all branches in `switch` statements; include a `default` case that returns an error. Exhaustive handling prevents silent bugs.
 - Accept `context.Context` as the first parameter for request-scoped work and
   propagate it to external calls. Let the caller own the overall deadline;
