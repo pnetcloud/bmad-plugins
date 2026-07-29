@@ -1,8 +1,9 @@
 ---
 name: infrastructure-container-orchestration
 description: "Docker and Kubernetes patterns. Triggers on: Dockerfile, docker-compose, kubernetes, k8s, helm, pod, deployment, service, ingress, container, image."
-compatibility: "Docker 20+, Kubernetes 1.25+, Helm 3+"
 allowed-tools: "Read Write Bash"
+metadata:
+  compatibility: "Docker 20+, Kubernetes 1.25+, Helm 3+"
 ---
 
 # Container Orchestration
