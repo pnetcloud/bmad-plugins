@@ -30,6 +30,10 @@ npx bmad-method install --custom-source /path/to/bmad-plugins --tools claude-cod
 
 ## Current Plugins
 
+### `pnet`
+
+This packaged plugin ships the `skill-improver` meta-skill for bounded, security-aware improvement of existing Agent Skills.
+
 ### `pnet-marketing`
 
 This packaged plugin ships marketing-oriented SEO implementation skills for search-ready product surfaces.

@@ -1,5 +1,9 @@
 _bmad
-_bmad_output
+_bmad-output
 .agents
 .kilocode
 .opencode
+AGENTS.override.md
+__pycache__/
+*.py[cod]
+/vendor/

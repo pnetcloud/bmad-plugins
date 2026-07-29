@@ -11,7 +11,10 @@ from pathlib import Path
 
 SOURCE_ROOT = Path(__file__).resolve().parent.parent
 SKILL_SLUG_RE = re.compile(r"^[a-z0-9]+(?:-[a-z0-9]+)*$")
-CANONICAL_EXCEPTIONS = {("qa", "agent-browser")}
+CANONICAL_EXCEPTIONS = {
+    ("pnet", "skill-improver"),
+    ("qa", "agent-browser"),
+}
 
 
 def plugin_manifest_paths() -> list[Path]:

@@ -28,6 +28,27 @@
   },
   "plugins": [
     {
+      "name": "pnet",
+      "source": "./plugins/pnet",
+      "description": "pNet meta-skills for improving and maintaining Agent Skills safely and efficiently.",
+      "version": "0.1.1",
+      "author": {
+        "name": "pnetcloud",
+        "url": "https://github.com/pnetcloud"
+      },
+      "skills": [
+        "./plugins/pnet/skills/skill-improver"
+      ],
+      "category": "developer-tools",
+      "keywords": [
+        "skills",
+        "skill-improvement",
+        "review",
+        "security",
+        "agent-tools"
+      ]
+    },
+    {
       "name": "pnet-marketing",
       "source": "./plugins/marketing",
       "description": "Marketing-oriented implementation skills for on-page SEO, search-ready product surfaces, and growth-aware web delivery.",

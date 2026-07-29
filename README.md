@@ -18,6 +18,7 @@ bmad-plugins/
 ├── .claude-plugin/                     # Marketplace manifest for all public plugins
 ├── docs/                               # Public docs
 ├── plugins/
+│   ├── pnet/                           # pNet skill-maintenance meta-tools
 │   ├── marketing/                      # Marketing and SEO implementation bundle
 │   ├── business-product/               # Business and product skill bundle
 │   ├── core-development/               # Core software development skill bundle
@@ -62,6 +63,7 @@ The repository has been normalized so skill folders now use canonical prefixed I
 - `core-development-data-pipeline-go`
 - `core-development-implement-design`
 - `agent-browser`
+- `skill-improver`
 
 ### Validation
 
@@ -105,6 +107,7 @@ npx bmad-method install --custom-source /path/to/bmad-plugins --tools claude-cod
 
 The installer reads `.claude-plugin/marketplace.json` and exposes these plugin packages:
 
+- `pnet`
 - `pnet-marketing`
 - `pnet-business-product`
 - `pnet-core-development`
@@ -113,6 +116,15 @@ The installer reads `.claude-plugin/marketplace.json` and exposes these plugin p
 - `pnet-qa`
 
 ## Plugin Catalog
+
+### `pnet`
+
+pNet meta-skills for improving existing Agent Skills with minimal evidence-backed changes, quarantined external research, and bounded validation.
+
+- Publish path: `plugins/pnet`
+- Packaged skill path: `plugins/pnet/skills/*`
+- Included skills: 1
+- Examples: `skill-improver`
 
 ### `pnet-marketing`
 
