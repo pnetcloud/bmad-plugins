@@ -1,119 +1,111 @@
-# Project Makefile (Docker-first, grouped help)
-.PHONY: help up down restart logs watch \
-        build test lint format check \
-        deploy release publish \
-        clean clean-all \
-        status info version
+# GNU Make template for a Docker-first development repository.
 
+SHELL := /bin/sh
 .DEFAULT_GOAL := help
+.DELETE_ON_ERROR:
 
-# -------- Color Aliases --------
-h1 := \033[1;36m
-h2 := \033[1;34m
-b  := \033[1;32m
-p  := \033[1;33m
-r  := \033[1;31m
-reset := \033[0m
+.PHONY: help config up down restart logs status watch \
+        test lint format check validate build clean info version
 
-# -------- Variables (override in project.mk) --------
-PROJECT       ?= example-project
-VERSION       ?= 0.1.0
+PROJECT      ?= example-service
+VERSION      ?= dev
+COMPOSE      ?= docker compose
+COMPOSE_FILE ?= compose.yaml
+DEV_SERVICE  ?= app
+BUILD_DIR    ?= dist
+SAFE_CLEAN_DIRS ?= dist
 
-COMPOSE       ?= docker compose
-COMPOSE_FILE  ?= compose.yaml
-DEV_SERVICE   ?= app
-
-CMD_DEV       ?= npm run dev
-CMD_BUILD     ?= npm run build
-CMD_TEST      ?= npm test
-CMD_LINT      ?= npm run lint
-CMD_FORMAT    ?= npm run format
+# Keep project commands empty until project.mk supplies truthful implementations.
+CMD_DEV      ?=
+CMD_TEST     ?=
+CMD_LINT     ?=
+CMD_FORMAT   ?=
+CMD_BUILD    ?=
 
 -include project.mk
 
-# -------- Help --------
-help: ## Utility: Show grouped help
-	@echo ""
-	@echo "$(h1)=====================================================$(reset)"
-	@echo "$(h2)   $(PROJECT) v$(VERSION) — Available Commands$(reset)"
-	@echo "$(h1)=====================================================$(reset)"
-	@echo ""
-	@echo "$(h2)Setup & Config$(reset)"
-	@grep -E '^[a-zA-Z0-9_.-]+:.*?## Setup ' $(MAKEFILE_LIST) | awk 'BEGIN{FS=":.*?## "}{printf "  $(b)%-18s$(reset) %s\n",$$1,$$2}'
-	@echo ""
-	@echo "$(h2)Development$(reset)"
-	@grep -E '^[a-zA-Z0-9_.-]+:.*?## Development ' $(MAKEFILE_LIST) | awk 'BEGIN{FS=":.*?## "}{printf "  $(b)%-18s$(reset) %s\n",$$1,$$2}'
-	@echo ""
-	@echo "$(h2)Quality$(reset)"
-	@grep -E '^[a-zA-Z0-9_.-]+:.*?## Quality ' $(MAKEFILE_LIST) | awk 'BEGIN{FS=":.*?## "}{printf "  $(b)%-18s$(reset) %s\n",$$1,$$2}'
-	@echo ""
-	@echo "$(h2)Build & Deploy$(reset)"
-	@grep -E '^[a-zA-Z0-9_.-]+:.*?## Build ' $(MAKEFILE_LIST) | awk 'BEGIN{FS=":.*?## "}{printf "  $(b)%-18s$(reset) %s\n",$$1,$$2}'
-	@echo ""
-	@echo "$(h2)Maintenance$(reset)"
-	@grep -E '^[a-zA-Z0-9_.-]+:.*?## Maintenance ' $(MAKEFILE_LIST) | awk 'BEGIN{FS=":.*?## "}{printf "  $(b)%-18s$(reset) %s\n",$$1,$$2}'
-	@echo ""
-	@echo "$(h2)Logs & Info$(reset)"
-	@grep -E '^[a-zA-Z0-9_.-]+:.*?## Logs ' $(MAKEFILE_LIST) | awk 'BEGIN{FS=":.*?## "}{printf "  $(b)%-18s$(reset) %s\n",$$1,$$2}'
+# Recursive expansion keeps later project.mk and command-line overrides visible.
+COMPOSE_CMD = $(COMPOSE) -f $(COMPOSE_FILE)
 
-# -------- Setup --------
-up: ## Setup: Start Docker stack (compose)
-	@$(COMPOSE) -f $(COMPOSE_FILE) up -d
+# $(call require-command,CMD_NAME) fails before an undefined operation can pass.
+define require-command
+	@test -n "$(strip $($(1)))" || { \
+		printf '%s\n' "$(1) is not configured; set it in project.mk"; \
+		exit 2; \
+	}
+endef
 
-down: ## Setup: Stop Docker stack (compose)
-	@$(COMPOSE) -f $(COMPOSE_FILE) down
+help: ## Utility: Show available commands
+	@awk 'BEGIN { FS = ":.*## " } \
+		/^[A-Za-z0-9_.-]+:.*## / { printf "  %-16s %s\n", $$1, $$2 }' \
+		$(MAKEFILE_LIST)
 
-restart: ## Setup: Restart Docker stack (compose)
-	@$(COMPOSE) -f $(COMPOSE_FILE) down
-	@$(COMPOSE) -f $(COMPOSE_FILE) up -d
+config: ## Setup: Validate Compose configuration
+	@$(COMPOSE_CMD) config --quiet
 
-logs: ## Setup: Tail Docker stack logs
-	@$(COMPOSE) -f $(COMPOSE_FILE) logs -f
+up: config ## Setup: Start the development stack
+	@$(COMPOSE_CMD) up -d
 
-watch: ## Development: Run app in watch mode (container)
-	@$(COMPOSE) -f $(COMPOSE_FILE) exec $(DEV_SERVICE) $(CMD_DEV)
+down: ## Setup: Stop the development stack
+	@$(COMPOSE_CMD) down
 
-# -------- Quality --------
-test: ## Quality: Run tests
-	@$(CMD_TEST)
+restart: ## Setup: Restart existing services
+	@$(COMPOSE_CMD) restart
 
-lint: ## Quality: Run linter
-	@$(CMD_LINT)
+logs: ## Logs: Follow service logs
+	@$(COMPOSE_CMD) logs -f
 
-format: ## Quality: Format code
-	@$(CMD_FORMAT)
+status: ## Logs: Show service status
+	@$(COMPOSE_CMD) ps
 
-check: lint test ## Quality: Run lint + test
-	@echo "$(b)checks: ok$(reset)"
+watch: ## Development: Run the interactive development command
+	$(call require-command,CMD_DEV)
+	@$(COMPOSE_CMD) exec $(DEV_SERVICE) $(CMD_DEV)
 
-# -------- Build & Deploy --------
-build: ## Build: Build project
-	@$(CMD_BUILD)
+test: ## Quality: Run focused tests
+	$(call require-command,CMD_TEST)
+	@$(COMPOSE_CMD) exec -T $(DEV_SERVICE) $(CMD_TEST)
 
-deploy: ## Build: Deploy project
-	@echo "$(p)deploy: not implemented$(reset)"
+lint: ## Quality: Run the linter
+	$(call require-command,CMD_LINT)
+	@$(COMPOSE_CMD) exec -T $(DEV_SERVICE) $(CMD_LINT)
 
-release: ## Build: Create release
-	@echo "$(b)release: $(VERSION)$(reset)"
+format: ## Quality: Format project files
+	$(call require-command,CMD_FORMAT)
+	@$(COMPOSE_CMD) exec -T $(DEV_SERVICE) $(CMD_FORMAT)
 
-publish: ## Build: Publish artefact
-	@echo "$(b)publish: not implemented$(reset)"
+check: ## Quality: Run the fast quality checks
+	+@$(MAKE) lint
+	+@$(MAKE) test
 
-# -------- Maintenance --------
-clean: ## Maintenance: Clean build artefacts
-	@rm -rf dist
+build: ## Build: Build the project artifact
+	$(call require-command,CMD_BUILD)
+	@$(COMPOSE_CMD) exec -T $(DEV_SERVICE) $(CMD_BUILD)
 
-clean-all: ## Maintenance: Full clean (artefacts + deps)
-	@rm -rf dist node_modules
+validate: ## Quality: Run the complete local validation contract
+	+@$(MAKE) config
+	+@$(MAKE) check
+	+@$(MAKE) build
 
-# -------- Logs & Info --------
-status: ## Logs: Show status
-	@$(COMPOSE) -f $(COMPOSE_FILE) ps
+clean: ## Maintenance: Remove generated build output
+ifeq ($(strip $(BUILD_DIR)),)
+	@printf '%s\n' "refusing empty BUILD_DIR"
+	@exit 2
+else ifneq ($(filter /% . .. .% %/%,$(BUILD_DIR)),)
+	@printf '%s\n' "refusing unsafe BUILD_DIR shape"
+	@exit 2
+else ifeq ($(filter $(BUILD_DIR),$(SAFE_CLEAN_DIRS)),)
+	@printf '%s\n' "refusing BUILD_DIR outside SAFE_CLEAN_DIRS"
+	@exit 2
+else
+	@if [ -e "./$(BUILD_DIR)" ]; then rm -r -- "./$(BUILD_DIR)"; fi
+endif
 
-info: ## Logs: Show info
-	@echo "Project: $(PROJECT)"
-	@echo "Version: $(VERSION)"
-	@echo "Compose: $(COMPOSE) -f $(COMPOSE_FILE)"
+info: ## Logs: Show non-sensitive project configuration
+	@printf '%s\n' \
+		"Project: $(PROJECT)" \
+		"Version: $(VERSION)" \
+		"Compose file: $(COMPOSE_FILE)"
 
-version: ## Logs: Show version
-	@echo "$(VERSION)"
+version: ## Logs: Show project version
+	@printf '%s\n' "$(VERSION)"
