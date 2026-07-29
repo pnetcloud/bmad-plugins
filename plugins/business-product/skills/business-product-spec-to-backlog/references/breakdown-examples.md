@@ -2,14 +2,29 @@
 
 This reference provides examples of effective task breakdowns for different types of specifications.
 
+All examples are synthetic teaching aids. They demonstrate decomposition shapes,
+not required ticket counts, estimates, technologies, architecture, or acceptance
+targets. Use only details supported by the active source and target project.
+
+## Contents
+
+- Principles of good breakdowns
+- New feature example
+- Bug-fix example
+- Infrastructure example
+- API example
+- Frontend redesign example
+- Anti-patterns
+
 ## Principles of Good Breakdowns
 
 **DO:**
 - Create tasks that are independently testable
 - Group related frontend/backend work logically
-- Include explicit testing and documentation tasks
+- Include explicit testing or documentation work when the source or approved
+  project convention requires it; otherwise label it as a proposal
 - Use specific, actionable language
-- Size tasks for 1-3 days of work typically
+- Size tasks according to the team's evidence-backed planning convention
 
 **DON'T:**
 - Create overly granular tasks (e.g., "Write one function")
@@ -70,7 +85,7 @@ Add email and in-app notifications for user actions (comments, mentions, updates
 - Each task is independently completable
 - Clear separation between backend, frontend, and integration
 - Testing is explicit
-- Tasks are sized appropriately (1-3 days each)
+- Tasks are independently reviewable without assuming a universal duration
 
 ---
 
@@ -317,7 +332,8 @@ Redesign main dashboard with modern UI framework, improve performance, maintain 
 - Only feature implementation tasks, no testing mentioned
 
 ✅ **Better:**
-- Include explicit testing tasks or ensure testing is part of each feature task
+- Trace source-backed verification needs into each feature task; when the source
+  is silent, surface a testing task as a proposal rather than a requirement
 
 ### No Clear Ownership
 ❌ **Bad:**
