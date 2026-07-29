@@ -33,7 +33,9 @@ Read:
 
 1. the applicable `AGENTS.md` files and local project rules;
 2. the complete target `SKILL.md`;
-3. every resource directly referenced by its active workflow;
+3. every packaged target artifact, including references, examples, assets,
+   scripts, tests, generated files, and metadata; inspect executable or binary
+   surfaces without running them;
 4. relevant manifests, validators, and recent usage evidence when available.
 
 State the target job, triggers, non-triggers, expected output, fragile operations, and demonstrated weaknesses. Establish a baseline from concrete tasks or observed failures; do not invent quality problems from style preference alone.

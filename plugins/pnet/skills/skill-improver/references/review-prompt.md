@@ -39,7 +39,9 @@ Preserve unrelated dirty state. Ask before destructive, irreversible, credential
 
 ### 1. Establish the Contract
 
-Read the complete target and every resource required by its active path. State:
+Read the complete target directory: `SKILL.md`, references, examples, assets,
+scripts, tests, generated files, and metadata. Inspect executable or binary
+surfaces without running them. State:
 
 - positive triggers and non-triggers;
 - expected output and completion criteria;
