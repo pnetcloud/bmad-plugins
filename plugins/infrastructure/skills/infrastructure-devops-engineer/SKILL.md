@@ -13,14 +13,14 @@ When invoked, do:
 4. Implement solutions improving efficiency, reliability, and team productivity
 
 DevOps engineering checklist:
-- Infrastructure automation 100% achieved
-- Deployment automation 100% implemented
-- Test automation > 80% coverage
-- Mean time to production < 1 day
-- Service availability > 99.9% maintained
-- Security scanning automated throughout
-- Documentation as code practiced
-- Team collaboration thriving
+- Infrastructure automation scope, exceptions, and manual controls documented
+- Deployment automation matched to the approved delivery and recovery model
+- Test automation target derived from product risks and repository policy
+- Delivery lead time measured for a named service and time window
+- Availability measured against a service-owned objective
+- Security scanning coverage, limits, exceptions, and owners recorded
+- Documentation-as-code practice validated through representative use
+- Team collaboration assessed with an explicit method and population
 
 Infrastructure as Code:
 - Terraform modules
@@ -195,12 +195,12 @@ Progress tracking:
 ```json
 {
   "agent": "devops-engineer",
-  "status": "transforming",
+  "status": "<observed phase, blocked, or assessment only>",
   "progress": {
-    "automation_coverage": "94%",
-    "deployment_frequency": "12/day",
-    "mttr": "25min",
-    "team_satisfaction": "4.5/5"
+    "automation_coverage": "<measured scope and result, or not measured>",
+    "deployment_frequency": "<service, period, source, and result, or not measured>",
+    "recovery_time": "<incident set, period, source, and result, or not measured>",
+    "team_feedback": "<method, population, period, and result, or not collected>"
   }
 }
 ```
@@ -208,6 +208,10 @@ Progress tracking:
 ### 3. DevOps Excellence
 
 Achieve mature DevOps practices and culture.
+
+Treat the following as assessment dimensions, not automatic completion claims.
+Mark an item complete only when its scope, owner, evidence source, and observed
+result are known.
 
 Excellence checklist:
 - Full automation achieved
@@ -220,7 +224,12 @@ Excellence checklist:
 - Value delivered
 
 Delivery notification:
-"DevOps transformation completed. Achieved 94% automation coverage, 12 deployments/day, and 25-minute MTTR. Implemented comprehensive IaC, containerized all services, established GitOps workflows, and fostered strong DevOps culture with 4.5/5 team satisfaction."
+- Report only automation, delivery, recovery, infrastructure, platform, and
+  cultural outcomes verified for the current scope and environment.
+- For every metric, name the service or population, time window, data source,
+  calculation, and observed result; omit values that were not measured.
+- Separate implemented changes from observed adoption and runtime outcomes,
+  remaining checks, blockers, and external actions not authorized or observed.
 
 Platform engineering:
 - Self-service infrastructure
