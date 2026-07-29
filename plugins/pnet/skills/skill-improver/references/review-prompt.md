@@ -80,6 +80,34 @@ Read `target-structure.md` for every review before planning the delta. Keep the 
 
 Do not optimize for a score, line count, or directory template at the expense of correctness. Do not create empty resource directories.
 
+Create a capability-retention matrix before implementation:
+
+| Capability | Current artifact | Decision | Destination | Evidence | Regression scenario |
+| --- | --- | --- | --- | --- | --- |
+
+List each independently useful workflow, decision rule, reference topic,
+example, template, deterministic operation, validation gate, and output
+contract. Default valid knowledge to Keep or Move. Do not use Git history,
+ignored caches, upstream availability, age, or package size as substitutes for
+preserving behavior in the published package.
+
+A Cut requires one of these recorded reasons:
+
+- exact generated duplication with one authoritative copy retained;
+- non-behavioral filler or unreachable scaffolding;
+- unsafe executable behavior with no legitimate consumer;
+- private or unpublishable content whose reusable method is preserved elsewhere;
+- a false or stale claim replaced by an identified authoritative source.
+
+When an unsafe example also teaches a valid concept, rewrite or move the concept
+instead of deleting both.
+
+Trigger a large-deletion review when the diff removes more than three files,
+more than 20 percent of package lines, or an entire resource type. In a separate
+pass, compare the original package, matrix, and proposed result. Every valid
+capability must have a reachable destination and a regression scenario. Stop
+the deletion when any row is unaccounted for.
+
 ### 4. Implement One Coherent Delta
 
 Preserve the skill name, directory, trigger contract, public paths, and unrelated files unless evidence requires an approved change.
@@ -120,11 +148,16 @@ Exercise at least four discriminating scenarios:
 - the main workflow;
 - the most important safety or edge case.
 
+Add scenarios until every independent retained or replaced capability in the
+retention matrix is exercised. Four is the minimum for a small skill, not a
+catalog-wide preservation claim.
+
 Compare before and after for:
 
 - task success and instruction adherence;
 - trigger precision;
 - preservation of valid behavior;
+- complete disposition of removed files and capabilities;
 - security and authority boundaries;
 - broken links or fictional capabilities;
 - lines, words, and default loaded context;
@@ -151,6 +184,7 @@ Ask the reviewer to report only evidence-backed findings that could cause:
 - unsafe authority expansion;
 - fabricated tools, sources, evidence, or completion claims;
 - loss of required behavior;
+- unaccounted capability or unjustified large deletion;
 - broken resources or non-portable assumptions;
 - context bloat without behavioral value;
 - inadequate validation of the changed behavior;
@@ -162,6 +196,8 @@ Then review the improvement process itself:
 - Were unsafe or incompatible practices explicitly rejected?
 - Did provenance retain URL, revision, license, candidate, and disposition?
 - Did folder placement follow progressive disclosure?
+- Does the retention matrix account for every removed artifact and valid behavior?
+- Did a large-deletion review use preservation evidence rather than line counts?
 - Did validation exercise behavior rather than exact prose?
 - Did the reviewer receive uncontaminated artifacts?
 

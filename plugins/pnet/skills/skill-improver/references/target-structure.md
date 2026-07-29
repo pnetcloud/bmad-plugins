@@ -100,6 +100,16 @@ The total package has no fixed size limit. A large skill is healthy when:
 - large references are navigable and topic-focused;
 - scripts and assets do not consume context unless needed.
 
+Do not use progressive disclosure as a synonym for deleting detail. Move valid
+knowledge into directly reachable, topic-focused resources. A source cache or
+Git history is provenance and recovery evidence, not part of the installed
+skill's usable capability.
+
+Before deleting more than three files, more than 20 percent of package lines, or
+an entire resource type, require the large-deletion review defined in
+`review-prompt.md`. Package reduction is an outcome only when every valid
+capability has a reachable destination and regression scenario.
+
 ## Resource Budgets
 
 - Reference goal: one topic, normally no more than 300 lines or 2500 words.
@@ -122,3 +132,5 @@ These are decision thresholds, not quality scores. Exceed a goal only when evide
 - Do tests cover parsers, scripts, safety gates, and important edge cases?
 - Does the active path stay within the context budget?
 - Did the refactor preserve public paths and valid behavior?
+- Does the retention matrix account for every removed file and capability?
+- If the large-deletion gate triggered, was information loss reviewed separately?
