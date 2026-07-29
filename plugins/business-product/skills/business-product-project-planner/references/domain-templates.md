@@ -1,11 +1,6 @@
 # Domain-Specific Templates Reference
 
-This reference provides specialized prompts and capability checklists for
-different system domains. It is not a catalog of required components, approved
-technologies, compliance advice, or defensible performance targets. Treat every
-named product, topology, metric, protocol, and deployment pattern as an
-illustration to validate against the project's authoritative evidence. Keep
-non-applicable sections out of the resulting plan.
+This reference provides specialized templates and patterns for different types of systems.
 
 ## Table of Contents
 
@@ -32,11 +27,9 @@ non-applicable sections out of the resulting plan.
 
 ```markdown
 ### Market Data Requirements
-- THE system SHALL process market data streams and orders within the
-  evidence-backed latency target for the approved workload.
+- THE system SHALL process market data streams and orders with sub-millisecond latency.
 - THE system SHALL integrate with external financial exchanges and market data feeds using standard protocols (e.g. FIX, REST APIs).
-- THE system SHALL support the approved concurrent transaction workload,
-  measured with a named profile and environment.
+- THE system SHALL support large volumes of transactions concurrently (thousands to millions per second).
 - THE system SHALL provide time synchronization mechanisms for ordering of events across components.
 
 ### Risk Management Requirements  
@@ -47,8 +40,7 @@ non-applicable sections out of the resulting plan.
 
 ### Order Execution Requirements
 - THE system SHALL support connection to trading user interfaces and algorithmic trading bots through well-defined APIs.
-- THE system SHALL meet the approved availability and recovery objectives using
-  a validated redundancy and failover design.
+- THE system SHALL provide high availability (99.999%) with active-active clustering and automated failover.
 - THE system SHALL implement stringent security controls, encryption in transit and at rest, and authentication/authorization for all components.
 ```
 
@@ -108,8 +100,7 @@ non-applicable sections out of the resulting plan.
 ```markdown
 ### Event Processing
 - THE system SHALL process and respond to incoming events within a defined real-time threshold (e.g. milliseconds to seconds) to meet business needs.
-- THE system SHALL support the measured event workload and burst profile with
-  an approved processing-latency target.
+- THE system SHALL support streaming data ingestion and event processing at high throughput (e.g. thousands of events per second).
 - THE system SHALL guarantee the order of events when required (in-order processing).
 - THE system SHALL maintain state consistency across distributed components for stateful real-time operations.
 
@@ -349,8 +340,7 @@ non-applicable sections out of the resulting plan.
 - THE system SHALL support secure onboarding and provisioning of a large number of IoT devices.
 - THE system SHALL allow over-the-air (OTA) firmware or configuration updates to devices.
 - THE system SHALL implement device identity management and authentication to prevent unauthorized devices.
-- THE system SHALL scale for the approved concurrent device profile, with
-  measured connection and recovery behavior.
+- THE system SHALL scale horizontally to support millions of concurrent device connections.
 
 ### Data Ingestion and Processing
 - THE system SHALL use lightweight protocols (e.g. MQTT, CoAP) to handle unreliable networks and constrained devices.
@@ -877,11 +867,11 @@ non-applicable sections out of the resulting plan.
 
 ### Performance
 ```markdown
-- Response time: [percentile] [approved threshold] under [workload]
-- Throughput: [approved rate] under [environment and data profile]
-- Concurrency: [approved active-user or operation profile]
-- Data access: [measured query target and dataset]
-- Cache effectiveness: [measurement and approved target, if caching is chosen]
+- Response time: p95 < 200ms, p99 < 500ms
+- Throughput: >1000 requests per second
+- Concurrent users: >10,000
+- Database queries: <50ms
+- Cache hit rate: >90%
 ```
 
 ### Scalability
@@ -895,9 +885,9 @@ non-applicable sections out of the resulting plan.
 
 ### Reliability
 ```markdown
-- Availability objective: [approved target and measurement window]
-- Recovery time objective: [approved duration]
-- Recovery point objective: [approved data-loss window]
+- Uptime: 99.9% availability
+- RTO: <1 hour
+- RPO: <5 minutes
 - Automated failover
 - Data replication strategy
 ```

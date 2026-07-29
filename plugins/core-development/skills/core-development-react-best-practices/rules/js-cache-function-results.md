@@ -7,9 +7,7 @@ tags: javascript, cache, memoization, performance
 
 ## Cache Repeated Function Calls
 
-Use a bounded module-level cache for a pure function when profiling shows
-repeated computation with the same inputs. Include every input that affects the
-result and define eviction or invalidation.
+Use a module-level Map to cache function results when the same function is called repeatedly with the same inputs during render.
 
 **Incorrect (redundant computation):**
 
@@ -33,17 +31,12 @@ function ProjectList({ projects }: { projects: Project[] }) {
 ```typescript
 // Module-level cache
 const slugifyCache = new Map<string, string>()
-const MAX_SLUG_CACHE_ENTRIES = 256
 
 function cachedSlugify(text: string): string {
   if (slugifyCache.has(text)) {
     return slugifyCache.get(text)!
   }
   const result = slugify(text)
-  if (slugifyCache.size >= MAX_SLUG_CACHE_ENTRIES) {
-    const oldestKey = slugifyCache.keys().next().value
-    if (oldestKey !== undefined) slugifyCache.delete(oldestKey)
-  }
   slugifyCache.set(text, result)
   return result
 }
@@ -62,25 +55,26 @@ function ProjectList({ projects }: { projects: Project[] }) {
 }
 ```
 
-**Simpler pattern for an immutable helper:**
+**Simpler pattern for single-value functions:**
 
 ```typescript
-let shortDateFormatter: Intl.DateTimeFormat | null = null
+let isLoggedInCache: boolean | null = null
 
-function formatShortDate(value: Date): string {
-  if (!shortDateFormatter) {
-    shortDateFormatter = new Intl.DateTimeFormat('en', {
-      dateStyle: 'short'
-    })
+function isLoggedIn(): boolean {
+  if (isLoggedInCache !== null) {
+    return isLoggedInCache
   }
-  return shortDateFormatter.format(value)
+  
+  isLoggedInCache = document.cookie.includes('auth=')
+  return isLoggedInCache
+}
+
+// Clear cache when auth changes
+function onAuthChange() {
+  isLoggedInCache = null
 }
 ```
 
 Use a Map (not a hook) so it works everywhere: utilities, event handlers, not just React components.
-
-Do not use a module cache for credentials, authorization decisions, mutable
-request data, or user-scoped results unless the cache key, lifetime, isolation,
-and invalidation model make cross-user reuse impossible.
 
 Reference: [How we made the Vercel Dashboard twice as fast](https://vercel.com/blog/how-we-made-the-vercel-dashboard-twice-as-fast)

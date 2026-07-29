@@ -9,9 +9,7 @@
     "analysis_version": "3.0.0",
     "source_type": "community",
     "content_hash": "20191932119945cb1e8c612e1079ac3c2075a98892545f07ae10d90dfd2df919",
-    "tree_hash": "e7528806f3e088079215ffaa149bd5639cd0d1f647fecb2419af1b67605ebbd9",
-    "scope": "historical-upstream-snapshot",
-    "review_notice": "This report describes the recorded upstream snapshot. It is retained for provenance and is not current operational guidance, validation evidence, or authority to run packaged scripts or mutate a registry or cluster."
+    "tree_hash": "e7528806f3e088079215ffaa149bd5639cd0d1f647fecb2419af1b67605ebbd9"
   },
   "skill": {
     "name": "container-orchestration",
@@ -42,7 +40,7 @@
     "risk_level": "low",
     "is_blocked": false,
     "safe_to_publish": true,
-    "summary": "Historical audit of the recorded upstream snapshot. Cache cleanup findings referred to bounded package-manager paths, but this report does not validate later edits, project substitutions, executable scripts, build contexts, registries, or clusters. Use the current package validation and authority requirements before publication or execution.",
+    "summary": "This skill provides documentation and templates for container orchestration. Static findings are predominantly false positives: the 'rm -rf' flags target standard apt cache cleanup paths (/var/lib/apt/lists/*), not root directories. Template placeholders use standard ${VAR:-default} syntax without actual credential exposure. Documentation patterns and script commands are controlled and appropriate for a DevOps skill. No malicious intent, data exfiltration, or unauthorized access patterns confirmed.",
     "risk_factor_evidence": [
       {
         "factor": "scripts",

@@ -2,20 +2,6 @@
 
 Effective Epic descriptions provide context, goals, and success criteria. Use these templates based on the type of work.
 
-These are synthetic shape examples, not sources of requirements. Omit or mark
-unknown any field that is not supported by the active specification, project
-metadata, or an explicit user decision. Never reuse sample links, technologies,
-metrics, dates, vendors, topology, or rollout values as defaults.
-
-## Contents
-
-- New feature template and example
-- Bug-fix template and example
-- Infrastructure template and example
-- API template and example
-- Redesign template and example
-- Shared epic elements and common mistakes
-
 ## Template 1: New Feature Epic
 
 ```markdown
@@ -57,7 +43,7 @@ metrics, dates, vendors, topology, or rollout values as defaults.
 Add comprehensive notification system supporting email and in-app notifications for user activity (comments, mentions, updates).
 
 ## Source Specification
-[source specification link]
+https://company.atlassian.net/wiki/spaces/PRODUCT/pages/123456/Notifications-Spec
 
 ## Business Value
 Users currently miss important updates, leading to delayed responses and reduced engagement. Notifications will increase daily active usage by an estimated 20% and improve user satisfaction scores.
@@ -127,7 +113,7 @@ Users currently miss important updates, leading to delayed responses and reduced
 Users experiencing intermittent payment failures during checkout, resulting in abandoned transactions and support tickets. Error rate spiked to 8% on Nov 15, up from baseline 0.5%.
 
 ## Source Documentation
-[source investigation link]
+https://company.atlassian.net/wiki/spaces/ENG/pages/789012/Payment-Failure-Investigation
 
 ## Current Impact
 - **Severity**: Critical
@@ -197,7 +183,7 @@ Payment gateway timeouts due to insufficient timeout settings (5s) and no retry 
 Migrate primary database from PostgreSQL 12 to PostgreSQL 15 to leverage performance improvements and new features before PostgreSQL 12 EOL.
 
 ## Source Documentation
-[source technical design link]
+https://company.atlassian.net/wiki/spaces/ENG/pages/345678/PG15-Migration-RFC
 
 ## Current State
 Running PostgreSQL 12.8 on AWS RDS with 2TB data, 50K queries/minute at peak. Some queries use deprecated features.
@@ -274,7 +260,7 @@ Must complete by October 2024 (1 month before PG12 EOL). Testing requires 3 week
 Launch v1 of public REST API enabling third-party developers to integrate with our platform for user management and resource access.
 
 ## Source Specification
-[source API specification link]
+https://company.atlassian.net/wiki/spaces/API/pages/456789/Public-API-v1-Spec
 
 ## Use Cases
 - SaaS companies integrating our user management into their products
@@ -355,7 +341,7 @@ Launch v1 of public REST API enabling third-party developers to integrate with o
 Redesign main analytics dashboard with modern UI framework, improved performance, and better mobile support while maintaining all existing functionality.
 
 ## Source Documentation
-[source design link]
+https://company.atlassian.net/wiki/spaces/DESIGN/pages/567890/Dashboard-Redesign
 
 ## Current Pain Points
 - Slow initial load time (4-6 seconds)
@@ -396,21 +382,20 @@ Redesign main analytics dashboard with modern UI framework, improved performance
 
 ---
 
-## Key Elements to Consider for an Epic
+## Key Elements in Every Epic
 
-Use the elements the source and project support. Keep unsupported elements
-unknown or proposed instead of fabricating values:
+Regardless of template, ensure every Epic includes:
 
 1. **Clear objective** - Anyone should understand what's being built/fixed
-2. **Source link** - Link to each authoritative source when permitted
-3. **Success criteria** - Source-backed outcomes that define "done"
-4. **Scope clarity** - Source-backed inclusions and exclusions
-5. **Context** - Source-backed background that explains why the work matters
+2. **Source link** - Always link to the Confluence spec or design doc
+3. **Success criteria** - Measurable outcomes that define "done"
+4. **Scope clarity** - What IS and ISN'T included
+5. **Context** - Enough background for someone new to understand why this matters
 
 ## Common Mistakes to Avoid
 
 ❌ **Too brief**: "Build notifications" - lacks context  
 ❌ **Too detailed**: Including implementation details that belong in tickets  
-❌ **Hidden success-criteria gap**: Inventing criteria instead of marking the source gap
+❌ **No success criteria**: How do we know when it's done?  
 ❌ **Missing source link**: Hard to trace back to requirements  
 ❌ **Vague scope**: Leads to scope creep and confusion

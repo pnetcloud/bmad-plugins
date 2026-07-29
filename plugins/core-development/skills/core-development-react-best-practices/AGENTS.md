@@ -1,29 +1,20 @@
 # React Best Practices
 
-**Source snapshot 1.0.0**
-Attributed to Vercel Engineering
-January 2026; public package reviewed July 2026
+**Version 1.0.0**  
+Vercel Engineering  
+January 2026
 
 > **Note:**  
 > This document is mainly for agents and LLMs to follow when maintaining,  
 > generating, or refactoring React and Next.js codebases at Vercel. Humans  
 > may also find it useful, but guidance here is optimized for automation  
 > and consistency by AI-assisted workflows.
->
-> **Compatibility status:** This expanded upstream snapshot is preserved for
-> broad reading. The individual files under `rules/` are the authoritative
-> packaged rule units when wording differs. Verify version-sensitive behavior
-> against current official documentation and measure it in the target project.
-> Do not apply examples as blanket rewrites or treat numeric examples as
-> guaranteed results.
 
 ---
 
 ## Abstract
 
-Expanded React and Next.js performance guide organized into eight categories.
-Impact labels and numeric examples help prioritize investigation, but require
-version, runtime, workload, and project-specific verification before use.
+Comprehensive performance optimization guide for React and Next.js applications, designed for AI agents and LLMs. Contains 40+ rules across 8 categories, prioritized by impact from critical (eliminating waterfalls, reducing bundle size) to incremental (advanced patterns). Each rule includes detailed explanations, real-world examples comparing incorrect vs. correct implementations, and specific impact metrics to guide automated refactoring and code generation.
 
 ---
 
@@ -447,9 +438,7 @@ function AnimationPlayer({ enabled, setEnabled }: { enabled: boolean; setEnabled
 }
 ```
 
-The `typeof window !== 'undefined'` check prevents client-only execution during
-server rendering. It does not by itself prove that a bundler excluded the module
-from a server or client graph; inspect the build output when placement matters.
+The `typeof window !== 'undefined'` check prevents bundling this module for SSR, optimizing server bundle size and build speed.
 
 ### 2.3 Defer Non-Critical Third-Party Libraries
 
@@ -571,9 +560,7 @@ function FlagsProvider({ children, flags }: Props) {
 }
 ```
 
-The `typeof window !== 'undefined'` check prevents client-only execution during
-server rendering. Confirm actual chunk placement and preload timing in build
-output; this runtime guard alone is not bundle evidence.
+The `typeof window !== 'undefined'` check prevents bundling preloaded modules for SSR, optimizing server bundle size and build speed.
 
 ---
 
@@ -738,47 +725,36 @@ Deduplication works recursively. Impact varies by data type:
 
 **Impact: HIGH (caches across requests)**
 
-`React.cache()` is request-scoped. For reusable, non-sensitive data that may be
-shared across requests in one process, consider a bounded LRU cache after
-defining freshness and invalidation.
+`React.cache()` only works within one request. For data shared across sequential requests (user clicks button A then button B), use an LRU cache.
 
 **Implementation:**
 
 ```typescript
 import { LRUCache } from 'lru-cache'
 
-const cache = new LRUCache<string, PublicItem>({
+const cache = new LRUCache<string, any>({
   max: 1000,
-  ttl: 5 * 60 * 1000
+  ttl: 5 * 60 * 1000  // 5 minutes
 })
 
-export async function getPublicItem(id: string) {
+export async function getUser(id: string) {
   const cached = cache.get(id)
   if (cached) return cached
 
-  const item = await loadPublicItem(id)
-  cache.set(id, item)
-  return item
+  const user = await db.user.findUnique({ where: { id } })
+  cache.set(id, user)
+  return user
 }
 
-// A later request handled by this process may reuse the item.
+// Request 1: DB query, result cached
+// Request 2: cache hit, no DB query
 ```
 
-Use only when stale data for the chosen TTL is acceptable. Include tenant,
-locale, authorization scope, and representation version in the key whenever
-they affect the result. Do not put credentials, authorization decisions, or
-unbounded user-specific data in a shared process cache.
+Use when sequential user actions hit multiple endpoints needing the same data within seconds.
 
 **With Vercel's [Fluid Compute](https://vercel.com/docs/fluid-compute):** LRU caching is especially effective because multiple concurrent requests can share the same function instance and cache. This means the cache persists across requests without needing external storage like Redis.
 
-**In serverless runtimes:** A warm instance may serve multiple sequential
-requests, but instance reuse and affinity are not guaranteed. Module state can
-therefore persist across requests on one instance while being absent on another.
-Use a shared cache only when the application requires cross-instance coherence.
-
-Process-local caches are opportunistic: multiple instances do not share entries
-and a restart clears them. Measure hit rate and memory, cap entry size, define
-invalidation, and test stale and cross-scope behavior before relying on one.
+**In traditional serverless:** Each invocation runs in isolation, so consider Redis for cross-process caching.
 
 Reference: [https://github.com/isaacs/node-lru-cache](https://github.com/isaacs/node-lru-cache)
 
@@ -899,9 +875,7 @@ export default function Page() {
 
 **Impact: MEDIUM (deduplicates within request)**
 
-Use `React.cache()` for request-scoped deduplication in React Server Components.
-Confirm the framework owns the server render and cache lifetime; this API is not
-a general process cache.
+Use `React.cache()` for server-side request deduplication. Authentication and database queries benefit most.
 
 **Usage:**
 
@@ -917,9 +891,7 @@ export const getCurrentUser = cache(async () => {
 })
 ```
 
-Within a supported server render, multiple calls to `getCurrentUser()` with the
-same arguments can reuse the result. Keep authorization checks request-scoped
-and do not treat memoization as proof that a result is safe for another user.
+Within a single request, multiple calls to `getCurrentUser()` execute the query only once.
 
 **Avoid inline objects as arguments:**
 
@@ -949,12 +921,7 @@ If you must pass objects, pass the same reference:
 
 **Next.js-Specific Note:**
 
-During eligible React server render passes, Next.js memoizes matching `GET` or
-`HEAD` fetches with the same URL and options. This does not apply to Route
-Handlers, and supplying a custom `AbortController` signal opts out. Check the
-installed version's current documentation before removing explicit
-deduplication outside that scope. `React.cache()` remains useful for supported
-non-fetch work such as:
+In Next.js, the `fetch` API is automatically extended with request memoization. Requests with the same URL and options are automatically deduplicated within a single request, so you don't need `React.cache()` for `fetch` calls. However, `React.cache()` is still essential for other async tasks:
 
 - Database queries (Prisma, Drizzle, etc.)
 
@@ -1000,7 +967,7 @@ export async function POST(request: Request) {
 
 ```tsx
 import { after } from 'next/server'
-import { headers } from 'next/headers'
+import { headers, cookies } from 'next/headers'
 import { logUserAction } from '@/app/utils'
 
 export async function POST(request: Request) {
@@ -1010,7 +977,9 @@ export async function POST(request: Request) {
   // Log after response is sent
   after(async () => {
     const userAgent = (await headers()).get('user-agent') || 'unknown'
-    await logUserAction({ event: 'resource-updated', userAgent })
+    const sessionCookie = (await cookies()).get('session-id')?.value || 'anonymous'
+    
+    logUserAction({ sessionCookie, userAgent })
   })
   
   return new Response(JSON.stringify({ status: 'success' }), {
@@ -1039,14 +1008,6 @@ The response is sent immediately while logging happens in the background.
 - `after()` runs even if the response fails or redirects
 
 - Works in Server Actions, Route Handlers, and Server Components
-
-- Remains subject to the deployment runtime's duration and failure model
-
-- Does not replace authorization, error handling, idempotency, or a durable
-  queue when work must be guaranteed
-
-- Do not send cookies, credentials, authorization headers, or sensitive payloads
-  to logs or analytics
 
 Reference: [https://nextjs.org/docs/app/api-reference/functions/after](https://nextjs.org/docs/app/api-reference/functions/after)
 
@@ -1241,11 +1202,11 @@ const data = localStorage.getItem('userConfig')
 **Correct:**
 
 ```typescript
-const STORAGE_KEY = 'userConfig:v2'
+const VERSION = 'v2'
 
 function saveConfig(config: { theme: string; language: string }) {
   try {
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(config))
+    localStorage.setItem(`userConfig:${VERSION}`, JSON.stringify(config))
   } catch {
     // Throws in incognito/private browsing, quota exceeded, or disabled
   }
@@ -1253,7 +1214,7 @@ function saveConfig(config: { theme: string; language: string }) {
 
 function loadConfig() {
   try {
-    const data = localStorage.getItem(STORAGE_KEY)
+    const data = localStorage.getItem(`userConfig:${VERSION}`)
     return data ? JSON.parse(data) : null
   } catch {
     return null
@@ -1763,9 +1724,7 @@ npx svgo --precision=1 --multipass icon.svg
 
 **Impact: MEDIUM (avoids visual flicker and hydration errors)**
 
-When presentation state can be resolved on the server, render that state into
-the server markup and seed the first client render with the same value. This
-avoids both a hydration mismatch and a post-hydration correction.
+When rendering content that depends on client-side storage (localStorage, cookies), avoid both SSR breakage and post-hydration flickering by injecting a synchronous script that updates the DOM before React hydrates.
 
 **Incorrect: breaks SSR**
 
@@ -1808,57 +1767,42 @@ function ThemeWrapper({ children }: { children: ReactNode }) {
 
 Component first renders with default value (`light`), then updates after hydration, causing a visible flash of incorrect content.
 
-**Correct: server and first client render agree**
+**Correct: no flicker, no hydration mismatch**
 
 ```tsx
-type Theme = 'light' | 'dark'
-
-function ThemeDocument({
-  children,
-  initialTheme,
-}: {
-  children: ReactNode
-  initialTheme: Theme
-}) {
+function ThemeWrapper({ children }: { children: ReactNode }) {
   return (
-    <html data-theme={initialTheme}>
-      <body>
+    <>
+      <div id="theme-wrapper">
         {children}
-      </body>
-    </html>
+      </div>
+      <script
+        dangerouslySetInnerHTML={{
+          __html: `
+            (function() {
+              try {
+                var theme = localStorage.getItem('theme') || 'light';
+                var el = document.getElementById('theme-wrapper');
+                if (el) el.className = theme;
+              } catch (e) {}
+            })();
+          `,
+        }}
+      />
+    </>
   )
 }
 ```
 
-Resolve `initialTheme` from an approved server-readable preference such as an
-allowlisted cookie, and pass that same value to any client-side theme state.
-Validate the value before rendering it.
+The inline script executes synchronously before showing the element, ensuring the DOM already has the correct value. No flickering, no hydration mismatch.
 
-When browser storage is the only source, either update after hydration and
-accept a possible correction, or use the framework's documented
-before-hydration bootstrap and narrowly mark the exact known divergence. A
-generic inline script placed after the target element does not guarantee
-ordering under streaming and can still create a mismatch.
-
-**Safety and compatibility conditions:**
-
-- Never interpolate untrusted or user-controlled values into a bootstrap.
-- Satisfy Content Security Policy with the application's approved nonce, hash,
-  or external bootstrap mechanism.
-- Use it only for presentation state. Do not derive authentication or
-  authorization decisions from browser storage or pre-hydration DOM changes.
-- Verify server markup, first client output, streaming order, blocked storage,
-  and restrictive CSP.
+This pattern is especially useful for theme toggles, user preferences, authentication states, and any client-only data that should render immediately without flashing default values.
 
 ### 6.6 Use Activity Component for Show/Hide
 
 **Impact: MEDIUM (preserves state/DOM)**
 
-Use React's `<Activity>` to preserve state for components that frequently toggle
-visibility when the project runs a React version that provides it. Hidden
-Activity boundaries hide content, clean up Effects, and may continue
-lower-priority rendering; they are not a promise of zero background work.
-Verify availability and lifecycle behavior in the current official documentation.
+Use React's `<Activity>` to preserve state/DOM for expensive components that frequently toggle visibility.
 
 **Usage:**
 
@@ -1874,8 +1818,7 @@ function Dropdown({ isOpen }: Props) {
 }
 ```
 
-Use this when preserved state and background preparation justify the retained
-tree. Measure the tradeoff against unmounting or ordinary conditional rendering.
+Avoids expensive re-renders and state loss.
 
 ### 6.7 Use Explicit Conditional Rendering
 
@@ -2014,9 +1957,7 @@ for (let i = 0; i < len; i++) {
 
 **Impact: MEDIUM (avoid redundant computation)**
 
-Use a bounded module-level cache for a pure function when profiling shows
-repeated computation with the same inputs. Include every input that affects the
-result and define eviction or invalidation.
+Use a module-level Map to cache function results when the same function is called repeatedly with the same inputs during render.
 
 **Incorrect: redundant computation**
 
@@ -2040,17 +1981,12 @@ function ProjectList({ projects }: { projects: Project[] }) {
 ```typescript
 // Module-level cache
 const slugifyCache = new Map<string, string>()
-const MAX_SLUG_CACHE_ENTRIES = 256
 
 function cachedSlugify(text: string): string {
   if (slugifyCache.has(text)) {
     return slugifyCache.get(text)!
   }
   const result = slugify(text)
-  if (slugifyCache.size >= MAX_SLUG_CACHE_ENTRIES) {
-    const oldestKey = slugifyCache.keys().next().value
-    if (oldestKey !== undefined) slugifyCache.delete(oldestKey)
-  }
   slugifyCache.set(text, result)
   return result
 }
@@ -2069,26 +2005,27 @@ function ProjectList({ projects }: { projects: Project[] }) {
 }
 ```
 
-**Simpler pattern for an immutable helper:**
+**Simpler pattern for single-value functions:**
 
 ```typescript
-let shortDateFormatter: Intl.DateTimeFormat | null = null
+let isLoggedInCache: boolean | null = null
 
-function formatShortDate(value: Date): string {
-  if (!shortDateFormatter) {
-    shortDateFormatter = new Intl.DateTimeFormat('en', {
-      dateStyle: 'short'
-    })
+function isLoggedIn(): boolean {
+  if (isLoggedInCache !== null) {
+    return isLoggedInCache
   }
-  return shortDateFormatter.format(value)
+  
+  isLoggedInCache = document.cookie.includes('auth=')
+  return isLoggedInCache
+}
+
+// Clear cache when auth changes
+function onAuthChange() {
+  isLoggedInCache = null
 }
 ```
 
 Use a Map (not a hook) so it works everywhere: utilities, event handlers, not just React components.
-
-Do not use a module cache for credentials, authorization decisions, mutable
-request data, or user-scoped results unless the cache key, lifetime, isolation,
-and invalidation model make cross-user reuse impossible.
 
 Reference: [https://vercel.com/blog/how-we-made-the-vercel-dashboard-twice-as-fast](https://vercel.com/blog/how-we-made-the-vercel-dashboard-twice-as-fast)
 
@@ -2127,46 +2064,20 @@ function setLocalStorage(key: string, value: string) {
 
 Use a Map (not a hook) so it works everywhere: utilities, event handlers, not just React components.
 
-**Safely scoped cookie-read cache:**
-
-Cache only explicitly allowlisted, non-sensitive presentation preferences when
-profiling proves repeated cookie parsing matters:
+**Cookie caching:**
 
 ```typescript
-const NON_SENSITIVE_COOKIE_KEYS = new Set(['ui-density'])
-const preferenceCookieCache = new Map<string, string | null>()
+let cookieCache: Record<string, string> | null = null
 
-function getCachedPreferenceCookie(name: string) {
-  if (!NON_SENSITIVE_COOKIE_KEYS.has(name)) return null
-  if (preferenceCookieCache.has(name)) {
-    return preferenceCookieCache.get(name) ?? null
+function getCookie(name: string) {
+  if (!cookieCache) {
+    cookieCache = Object.fromEntries(
+      document.cookie.split('; ').map(c => c.split('='))
+    )
   }
-
-  const prefix = `${encodeURIComponent(name)}=`
-  const match = document.cookie
-    .split('; ')
-    .find(cookie => cookie.startsWith(prefix))
-  let value: string | null = null
-  try {
-    value = match ? decodeURIComponent(match.slice(prefix.length)) : null
-  } catch {
-    value = null
-  }
-  preferenceCookieCache.set(name, value)
-  return value
-}
-
-function invalidatePreferenceCookie(name: string) {
-  preferenceCookieCache.delete(name)
+  return cookieCache[name]
 }
 ```
-
-Invalidate on every application-owned write and when the document becomes
-visible again if the server or another tab may change the cookie. Never use this
-cache for session, authentication, authorization, CSRF, consent, account,
-tenant, or other security-relevant state. Prefer server-owned session checks
-and an application-owned state source when correctness matters more than the
-measured parsing cost.
 
 **Important: invalidate on external changes**
 
@@ -2178,15 +2089,11 @@ window.addEventListener('storage', (e) => {
 document.addEventListener('visibilitychange', () => {
   if (document.visibilityState === 'visible') {
     storageCache.clear()
-    preferenceCookieCache.clear()
   }
 })
 ```
 
 If storage can change externally (another tab, server-set cookies), invalidate cache:
-
-Bound the cache and minimize stored values. Clear relevant entries on logout,
-tenant or account changes, schema migration, and permission changes.
 
 ### 7.6 Combine Multiple Array Iterations
 

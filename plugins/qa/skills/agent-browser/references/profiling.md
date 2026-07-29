@@ -2,10 +2,6 @@
 
 Capture Chrome DevTools performance profiles during browser automation for performance analysis.
 
-Profiles can contain URLs, script names, timing, page structure, and other
-protected context. Authorize the target and output path, bound the capture, and
-review artifacts before sharing.
-
 **Related**: [commands.md](commands.md) for full command reference, [SKILL.md](../SKILL.md) for quick start.
 
 ## Contents
@@ -85,16 +81,15 @@ agent-browser profiler stop ./interaction-profile.json
 
 ```bash
 #!/bin/bash
-build_id="${1:?Usage: profile-ci.sh <synthetic-build-id>}"
 agent-browser profiler start
 agent-browser navigate https://app.example.com
 agent-browser wait --load networkidle
-agent-browser profiler stop "./profiles/build-${build_id}.json"
+agent-browser profiler stop "./profiles/build-${BUILD_ID}.json"
 ```
 
 ## Output Format
 
-The output is commonly a JSON file in Chrome Trace Event format:
+The output is a JSON file in Chrome Trace Event format:
 
 ```json
 {
@@ -108,8 +103,7 @@ The output is commonly a JSON file in Chrome Trace Event format:
 }
 ```
 
-Confirm platform-specific metadata with the installed version rather than
-depending on a fixed field set.
+The `metadata.clock-domain` field is set based on the host platform (Linux or macOS). On Windows it is omitted.
 
 ## Viewing Profiles
 
@@ -122,7 +116,5 @@ Load the output JSON file in any of these tools:
 ## Limitations
 
 - Only works with Chromium-based browsers (Chrome, Edge). Not supported on Firefox or WebKit.
-- Trace data accumulates in memory while profiling is active. Stop promptly
-  after the area of interest and use the installed version's documented bounds.
-- Profile collection may time out or return a partial artifact if the browser is
-  unresponsive; verify the output before reporting success.
+- Trace data accumulates in memory while profiling is active (capped at 5 million events). Stop profiling promptly after the area of interest.
+- Data collection on stop has a 30-second timeout. If the browser is unresponsive, the stop command may fail.

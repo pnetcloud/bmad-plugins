@@ -28,7 +28,4 @@ function AnimationPlayer({ enabled, setEnabled }: { enabled: boolean; setEnabled
 }
 ```
 
-The `typeof window !== 'undefined'` check prevents client-only execution during
-server rendering. It does not by itself prove that a bundler excluded the module
-from a server or client graph; inspect the framework's build output when bundle
-placement matters.
+The `typeof window !== 'undefined'` check prevents bundling this module for SSR, optimizing server bundle size and build speed.

@@ -4,159 +4,41 @@ Project Document Generator
 Generates structured requirements, design, and task documents for new projects
 """
 
+import json
 import argparse
 from datetime import datetime
 from typing import Dict, List, Optional
-from pathlib import Path
 import os
-import re
-import sys
-import tempfile
-
-MAX_INPUT_LENGTH = 240
-OUTPUT_FILES = ("requirements.md", "design.md", "tasks.md")
-DEFAULT_PROMPTS = {
-    "web-app": {
-        "features": [
-            "to complete the primary browser-based outcome",
-            "to understand and recover from invalid input",
-            "to observe the status of the primary workflow",
-        ],
-        "components": [
-            "User Interaction Boundary",
-            "Application Core",
-            "External or State Adapter",
-        ],
-    },
-    "cli-tool": {
-        "features": [
-            "to invoke the primary command and receive a documented result",
-            "to understand invalid arguments and corrective action",
-            "to use configuration through an approved precedence model",
-        ],
-        "components": [
-            "Command Interface",
-            "Application Core",
-            "Configuration or I/O Adapter",
-        ],
-    },
-    "api-service": {
-        "features": [
-            "to call the primary interface and receive a documented result",
-            "to distinguish retryable and terminal failures",
-            "to use a compatible versioned contract",
-        ],
-        "components": [
-            "API Interface",
-            "Application Core",
-            "External or State Adapter",
-        ],
-    },
-    "generic": {
-        "features": [
-            "to complete the primary supported outcome",
-            "to receive an observable failure result",
-            "to verify the outcome against accepted evidence",
-        ],
-        "components": [
-            "Primary Interface",
-            "Application Core",
-            "External Adapter",
-        ],
-    },
-}
-
-
-def validate_single_line(value: str, label: str) -> str:
-    """Reject values that can break the generated Markdown structure."""
-    if not isinstance(value, str):
-        raise ValueError(f"{label} must be text")
-    cleaned = value.strip()
-    if not cleaned or len(cleaned) > MAX_INPUT_LENGTH:
-        raise ValueError(f"{label} must contain 1-{MAX_INPUT_LENGTH} characters")
-    if any(ord(character) < 32 for character in cleaned):
-        raise ValueError(f"{label} must be a single printable line")
-    return cleaned
-
-
-def markdown_inline(value: str) -> str:
-    """Escape data that is inserted into Markdown headings, tables, or lists."""
-    return (
-        value.replace("\\", "\\\\")
-        .replace("&", "&amp;")
-        .replace("<", "&lt;")
-        .replace(">", "&gt;")
-        .replace("|", "\\|")
-    )
-
-
-def python_identifier(value: str) -> str:
-    """Create an illustrative identifier without changing the display name."""
-    words = re.findall(r"[A-Za-z0-9]+", value)
-    identifier = "".join(word[:1].upper() + word[1:] for word in words)
-    if not identifier:
-        return "PlannedComponent"
-    if identifier[0].isdigit():
-        identifier = f"Component{identifier}"
-    return identifier
-
-
-def reject_symlink_components(path: Path) -> None:
-    """Reject an output path that traverses an existing symlink."""
-    absolute = path.absolute()
-    current = Path(absolute.anchor)
-    for part in absolute.parts[1:]:
-        current = current / part
-        if current.is_symlink():
-            raise ValueError(f"Output path traverses a symlink: {current}")
 
 class ProjectDocumentGenerator:
     def __init__(self, project_name: str, project_type: str = "web-app"):
-        self.project_name = validate_single_line(project_name, "project name")
-        if project_type not in DEFAULT_PROMPTS:
-            raise ValueError(
-                "project type must be one of: " + ", ".join(DEFAULT_PROMPTS)
-            )
+        self.project_name = project_name
         self.project_type = project_type
         self.timestamp = datetime.now().strftime("%Y-%m-%d")
         
     def generate_requirements_template(self, features: List[str]) -> str:
         """Generate requirements document template"""
-        if not features:
-            raise ValueError("at least one feature prompt is required")
-        features = [
-            markdown_inline(validate_single_line(feature, f"feature {index}"))
-            for index, feature in enumerate(features, 1)
-        ]
-        project_name = markdown_inline(self.project_name)
         
         template = f"""# Requirements Document
 
 ## Introduction
 
-{project_name} is a [DESCRIPTION OF SYSTEM PURPOSE]. The system is designed
-for [TARGET USERS] and will be deployed as [DEPLOYMENT MODEL].
-
-- Status: Draft
-- Scope owner: [ROLE OR OWNER]
-- Authoritative inputs: [SOURCES]
+{self.project_name} is a [DESCRIPTION OF SYSTEM PURPOSE]. The system is designed for [TARGET USERS] and will be deployed as [DEPLOYMENT MODEL].
 
 ## Glossary
 
 - **[Term]**: [Definition specific to this system]
 - **User**: [Define user types]
-- **System**: The {project_name} platform
+- **System**: The {self.project_name} platform
 
 ## Requirements
 """
         
         for i, feature in enumerate(features, 1):
             template += f"""
-### REQ-{i}: {feature}
+### Requirement {i}
 
 **User Story:** As a [USER TYPE], I want {feature}, so that [BENEFIT]
-**Source/Owner:** [EVIDENCE OR DECISION OWNER]
-**Priority/Status:** [PRIORITY] / Proposed
 
 #### Acceptance Criteria
 
@@ -166,101 +48,85 @@ for [TARGET USERS] and will be deployed as [DEPLOYMENT MODEL].
 4. IF [error condition], THEN THE system SHALL [handle gracefully]
 5. THE system SHALL persist [data] with [attributes]
 """
-        template += """
-## Quality and Operational Requirements
-
-- Performance: [APPROVED TARGET, WORKLOAD, ENVIRONMENT, AND MEASUREMENT]
-- Reliability: [APPROVED AVAILABILITY AND RECOVERY OBJECTIVES]
-- Security and privacy: [DATA CLASSIFICATION, THREATS, AND CONTROLS]
-- Operability: [OBSERVABILITY, SUPPORT, AND MAINTENANCE OUTCOMES]
-
-## Constraints, Risks, and Open Questions
-
-- Constraint: [SOURCED CONSTRAINT]
-- Risk: [RISK, OWNER, AND RESPONSE]
-- Open question: [QUESTION, OWNER, AND DUE POINT]
-
-## Traceability
-
-| Requirement | Design coverage | Delivery tasks | Verification | Status |
-|---|---|---|---|---|
-"""
-        for index in range(1, len(features) + 1):
-            template += (
-                f"| REQ-{index} | [DESIGN IDS] | [TASK IDS] "
-                "| [EVIDENCE] | Gap |\n"
-            )
+        
         return template
     
     def generate_design_template(self, components: List[str]) -> str:
         """Generate design document template with comprehensive architecture"""
-        if not components:
-            raise ValueError("at least one component prompt is required")
-        components = [
-            markdown_inline(validate_single_line(component, f"component {index}"))
-            for index, component in enumerate(components, 1)
-        ]
-        project_name = markdown_inline(self.project_name)
         
         template = f"""# Design Document
 
 ## Overview
 
-The architecture for {project_name} remains a decision until the
-requirements, constraints, and alternatives below are reviewed.
-
-- Status: Draft
-- Decision owner: [ROLE OR OWNER]
-- Authoritative inputs: [REQUIREMENTS, CONSTRAINTS, AND EVIDENCE]
+The {self.project_name} system is built as a [ARCHITECTURE PATTERN] with [KEY COMPONENTS]. The design prioritizes [KEY PRIORITIES].
 
 ## System Architecture
 
 ### Component Map
 
-| Component ID | Name | Type or role | Responsibility | Interfaces With |
-|---|---|---|---|---|
-"""
+| Component ID | Name | Type | Responsibility | Interfaces With |
+|-------------|------|------|----------------|-----------------|
+| COMP-1 | Frontend | UI | User interface and interaction | COMP-2 |
+| COMP-2 | API Gateway | Service | Request routing and authentication | COMP-3, COMP-4 |"""
         
-        for i, component in enumerate(components, 1):
+        for i, component in enumerate(components, 3):
             template += f"""
-| COMP-{i} | {component} | [DECIDE TYPE OR ROLE] | [Responsibility] | [Components] |"""
+| COMP-{i} | {component} | Service | [Responsibility] | [Components] |"""
         
         template += """
 
 ### High-Level Architecture Diagram
 
 ```
-[Actor or upstream system]
-            |
-            | [Approved interaction and contract]
-            v
-[COMP-N: primary boundary]
-            |
-            | [Approved dependency or state transition]
-            v
-[External system or state owner, only if required]
+┌─────────────────────────────────────────────────────────────┐
+│                         Frontend Layer                       │
+│  ┌──────────────────────────────────────────────────────┐  │
+│  │   [UI Framework] Application                         │  │
+│  └──────────────────────────────────────────────────────┘  │
+└─────────────────────────────────────────────────────────────┘
+                            │
+                    API (REST/GraphQL/WebSocket)
+                            │
+┌─────────────────────────────────────────────────────────────┐
+│                        Backend Layer                         │
+│  ┌──────────────────────────────────────────────────────┐  │
+│  │   [Backend Framework] Application                    │  │
+│  │   ┌──────────┐  ┌──────────┐  ┌──────────┐        │  │
+│  │   │ Service  │  │ Service  │  │ Service  │        │  │
+│  │   └──────────┘  └──────────┘  └──────────┘        │  │
+│  └──────────────────────────────────────────────────────┘  │
+└─────────────────────────────────────────────────────────────┘
+                            │
+                      Database Access
+                            │
+┌─────────────────────────────────────────────────────────────┐
+│                         Data Layer                           │
+│  ┌──────────────────────────────────────────────────────┐  │
+│  │   [Database Type]                                    │  │
+│  └──────────────────────────────────────────────────────┘  │
+└─────────────────────────────────────────────────────────────┘
 ```
-
-Replace this placeholder with the accepted components and normal, degraded,
-and recovery paths. Do not add a layer, protocol, or state store by convention.
 
 ## Data Flow Specifications
 
 ### Primary Data Flows
 
-#### 1. [Primary Flow]
+#### 1. User Authentication Flow
 
 ```
-1. [Actor] → [Component]: [Input and precondition]
-2. [Component] → [Component]: [Validation or transformation]
-3. [Component] → [System of record]: [State transition]
-4. [Component] → [Actor]: [Observable outcome]
+1. User → Frontend: Login credentials
+2. Frontend → API Gateway: Encrypted credentials
+3. API Gateway → Auth Service: Validation request
+4. Auth Service → User Database: Query user record
+5. User Database → Auth Service: User data
+6. Auth Service → API Gateway: JWT token
+7. API Gateway → Frontend: Auth response with token
 ```
 
 **Data Transformations:**
-- Step 2: [Transformation and validation]
-- Step 3: [State, consistency, and failure behavior]
-- Failure path: [Rejection, timeout, duplicate, or partial completion]
+- Step 2: Credentials encrypted with HTTPS
+- Step 3: Rate limiting applied
+- Step 6: JWT token generated with claims
 
 [Add other critical data flows]
 
@@ -270,7 +136,9 @@ and recovery paths. Do not add a layer, protocol, or state store by convention.
 
 | Source | Target | Protocol | Data Format | Purpose |
 |--------|--------|----------|-------------|---------|
-| [COMP-N] | [COMP-N] | [APPROVED PROTOCOL] | [APPROVED FORMAT] | [OUTCOME] |
+| Frontend | API Gateway | HTTPS/REST | JSON | API calls |
+| API Gateway | Services | HTTP/gRPC | JSON/Protobuf | Service calls |
+| Services | Database | TCP | SQL | Data persistence |
 
 ### External Integration Points
 
@@ -284,17 +152,16 @@ and recovery paths. Do not add a layer, protocol, or state store by convention.
 
 **Interface Contract:**
 ```
-[METHOD] /[PATH]
-Headers: { "[NON-SENSITIVE HEADER]": "[SYNTHETIC VALUE]" }
-Body: { "[field]": "[type]" }
-Response: { "[result]": "[type]" }
+POST /api/endpoint
+Headers: { "Authorization": "Bearer token" }
+Body: { "field": "value" }
+Response: { "result": "value" }
 ```
 
-**Failure Contract:**
-- Retryability: [WHICH FAILURES MAY BE RETRIED, BY WHOM, AND WHY]
-- Limits and backpressure: [APPROVED BEHAVIOR]
-- Degraded behavior: [OBSERVABLE OUTCOME]
-- Recovery evidence: [TEST, TRACE, METRIC, OR REVIEW]
+**Error Handling:**
+- Retry strategy: Exponential backoff with jitter
+- Circuit breaker: Opens after 5 consecutive failures
+- Fallback: [Degraded functionality or cached response]
 
 ## System Boundaries
 
@@ -314,44 +181,49 @@ Response: { "[result]": "[type]" }
 """
         
         for component in components:
-            identifier = python_identifier(component)
             template += f"""
 ### {component}
 
 **Responsibility:** [Single sentence description of what this component does]
 
 **Key Classes:**
-- `{identifier}Boundary`: Illustrative boundary; replace with the approved form
-- `{identifier}Interface`: Illustrative interface boundary
-- `{identifier}Store`: Include only if this component owns persisted state
+- `{component}Service`: Main service class for {component.lower()} operations
+- `{component}Controller`: Handles API requests for {component.lower()}
+- `{component}Repository`: Data access layer for {component.lower()}
 
 **Interfaces:**
 ```python
-class {identifier}Interface:
-    async def execute(self, request: "[APPROVED INPUT]") -> "[APPROVED RESULT]":
-        ...
+class {component}Service:
+    async def create(self, data: Dict) -> {component}
+    async def get(self, id: str) -> Optional[{component}]
+    async def update(self, id: str, data: Dict) -> {component}
+    async def delete(self, id: str) -> bool
+    async def list(self, filters: Dict) -> List[{component}]
 ```
 
 **Data Flow:**
-- Receives [INPUT] from [SOURCE] under [PRECONDITION]
-- Validates [RULES] and performs [APPROVED RESPONSIBILITY]
-- Changes [STATE], if this component owns it
-- Emits or returns [OBSERVABLE RESULT] to [DESTINATION]
+- Receives requests from [API layer/other service]
+- Validates input using [validation rules]
+- Processes business logic
+- Persists to database
+- Returns response
 
 **Performance:**
-- Baseline: [MEASURED CURRENT BEHAVIOR]
-- Target: [APPROVED METRIC, WORKLOAD, AND ENVIRONMENT]
-- Verification: [MEASUREMENT METHOD]
+- Target response time: <200ms for queries
+- Target response time: <500ms for mutations
+- Maximum concurrent operations: 100
 """
         
         template += """
 ## Data Models
 
-### [Entity]
+### User
 ```python
 @dataclass
-class PlannedEntity:
+class User:
     id: str
+    email: str
+    name: str
     created_at: datetime
     updated_at: datetime
 ```
@@ -360,76 +232,110 @@ class PlannedEntity:
 
 ## Error Handling
 
-### [Failure Category]
+### API Errors
+**Types:** 
+- 400 Bad Request - Invalid input
+- 401 Unauthorized - Missing/invalid authentication
+- 403 Forbidden - Insufficient permissions
+- 404 Not Found - Resource doesn't exist
+- 500 Internal Server Error - Unexpected error
 
-- Trigger and scope: [CONDITION]
-- Observable result: [ERROR OR DEGRADED CONTRACT]
-- Retryability and idempotency: [DECISION]
-- Recovery and rollback: [DECISION]
-- Evidence: [TEST, TRACE, METRIC, OR REVIEW]
+**Handling:** 
+- Return consistent error format with code, message, and details
+- Log all errors with context
+- Implement retry logic for transient failures
+
+### Database Errors
+**Types:**
+- Connection failures
+- Query timeouts
+- Constraint violations
+
+**Handling:**
+- Retry with exponential backoff
+- Graceful degradation where possible
+- Transaction rollback on failure
 
 ## Testing Strategy
 
 ### Unit Tests
-- Component contract: [BEHAVIOR AND BOUNDARY]
-- Decision logic: [RULES AND FAILURE CASES]
-- Coverage and test scope: [APPROVED RISK-BASED TARGET]
+- Service layer: Test business logic with mocked dependencies
+- Repository layer: Test database operations
+- API layer: Test request/response handling
+- Coverage target: 80%
 
 ### Integration Tests
-- Interface compatibility: [INT-N]
-- State or external integration: [ONLY IF REQUIRED]
-- Degraded and recovery flow: [FLOW-N]
+- End-to-end API tests
+- Database integration tests
+- External service integration tests
 
 ### Performance Tests
-- Workload: [APPROVED CONCURRENCY AND DATA PROFILE]
-- Response target: [APPROVED PERCENTILE AND THRESHOLD]
-- Throughput: [APPROVED RATE AND ENVIRONMENT]
+- Load testing: 100 concurrent users
+- Response time: p95 < 500ms
+- Throughput: >100 requests/second
 
 ## Deployment
 
 ### Docker Configuration
 ```yaml
-# Include only when container deployment is an accepted decision.
+version: '3.8'
+
 services:
-  planned-component:
-    image: "[PINNED IMAGE REFERENCE]"
+  app:
+    build: .
+    ports:
+      - "3000:3000"
     environment:
-      - "[RUNTIME CONFIGURATION REFERENCE]"
+      - DATABASE_URL=${DATABASE_URL}
+    depends_on:
+      - database
+      
+  database:
+    image: postgres:15
+    volumes:
+      - db_data:/var/lib/postgresql/data
+    environment:
+      - POSTGRES_PASSWORD=${DB_PASSWORD}
+
+volumes:
+  db_data:
 ```
 
 ### Environment Variables
 ```
-[PUBLIC CONFIGURATION NAME]=[DESCRIPTION]
-[SECRET REFERENCE NAME]=[EXTERNAL SECRET SOURCE]
+DATABASE_URL=postgresql://user:pass@localhost/dbname
+API_KEY=your-api-key
+JWT_SECRET=your-secret-key
+NODE_ENV=production
 ```
 
 ## Performance Targets
 
-- [Operation]: [APPROVED PERCENTILE AND THRESHOLD]
-- [Data access]: [APPROVED DATASET AND QUERY TARGET]
-- [User experience]: [APPROVED MEASURE AND ENVIRONMENT]
-- [Resource]: [APPROVED LIMIT AND WORKLOAD]
+- API response time: <200ms (p95)
+- Database query time: <50ms (p95)
+- Frontend load time: <2s
+- Time to interactive: <3s
+- Memory usage: <512MB per instance
 
 ## Security Considerations
 
-- Identity and trust boundaries: [IF REQUIRED]
-- Authorization model and denied behavior: [APPROVED DECISION]
-- Data classification and protection: [SOURCED REQUIREMENT]
-- Abuse, input, and resource controls: [THREAT-DRIVEN DECISION]
-- Sensitive observability and retention: [APPROVED POLICY]
+- JWT-based authentication
+- Rate limiting on all endpoints
+- Input validation and sanitization
+- SQL injection prevention via parameterized queries
+- XSS prevention via output encoding
+- HTTPS only in production
 """
         
         return template
     
     def generate_tasks_template(self, phases: List[Dict]) -> str:
         """Generate implementation plan template with boundaries and deliverables"""
-        if not phases:
-            raise ValueError("at least one candidate phase is required")
         
         template = f"""# Implementation Plan
 
 Generated: {self.timestamp}
-Project: {markdown_inline(self.project_name)}
+Project: {self.project_name}
 Type: {self.project_type}
 
 ## Project Boundaries
@@ -453,27 +359,22 @@ Type: {self.project_type}
 
 ## Deliverables by Phase
 
-The following phases and tasks are candidate planning prompts. Keep only those
-justified by accepted requirements and design decisions; unchecked scaffolds
-are not approved work.
-
 | Phase | Deliverables | Success Criteria |
-|---|---|---|
-"""
-
-        for phase_num, phase in enumerate(phases, 1):
-            template += (
-                f"| {phase_num}. Candidate: {phase['name']} "
-                "| [REVIEWABLE DELIVERABLE] | [ACCEPTANCE EVIDENCE] |\n"
-            )
-
-        template += """
+|-------|-------------|------------------|
+| 1. Infrastructure | Working development environment | All developers can run locally |
+| 2. Data Layer | Database schema, models | CRUD operations functional |
+| 3. Business Logic | Core services implemented | All requirements fulfilled |
+| 4. API Layer | REST/GraphQL endpoints | API tests passing |
+| 5. Frontend | User interface | End-to-end workflows complete |
+| 6. Testing | Test coverage >80% | All tests passing |
+| 7. Deployment | Production environment | System accessible and stable |
 
 ## Task Breakdown
+
 """
         
         for phase_num, phase in enumerate(phases, 1):
-            template += f"- [ ] {phase_num}. Candidate: {phase['name']}\n\n"
+            template += f"- [ ] {phase_num}. {phase['name']}\n\n"
             
             for task_num, task in enumerate(phase.get('tasks', []), 1):
                 template += f"  - [ ] {phase_num}.{task_num} {task['name']}\n"
@@ -493,179 +394,373 @@ are not approved work.
         return template
     
     def get_default_phases(self) -> List[Dict]:
-        """Return neutral planning prompts for the selected project shape.
-
-        These prompts preserve the useful project-type distinction without
-        inventing a framework, datastore, authentication scheme, packaging
-        channel, deployment target, or release decision.
-        """
-
-        phase_names = {
-            "web-app": (
-                "Interaction Contract",
-                "Primary Outcome Slice",
-                "Verification and Release Readiness",
-            ),
-            "cli-tool": (
-                "Command Contract",
-                "Primary Outcome Slice",
-                "Packaging and Compatibility",
-            ),
-            "api-service": (
-                "Interface Contract",
-                "Primary Outcome Slice",
-                "Compatibility and Operations",
-            ),
-            "generic": (
-                "Scope and Contract",
-                "Primary Outcome Slice",
-                "Verification and Handoff",
-            ),
-        }
-        contract_phase, delivery_phase, readiness_phase = phase_names[
-            self.project_type
-        ]
-
-        return [
-            {
-                "name": contract_phase,
-                "tasks": [
-                    {
-                        "name": "Resolve the accepted boundary and contracts",
-                        "subtasks": [
-                            "Map confirmed requirements to observable outcomes",
-                            "Record approved interfaces, constraints, and owners",
-                            "Keep unresolved choices visible as open decisions",
-                        ],
-                    }
-                ],
-            },
-            {
-                "name": delivery_phase,
-                "tasks": [
-                    {
-                        "name": "Deliver one accepted vertical slice",
-                        "subtasks": [
-                            "Implement only approved behavior and interfaces",
-                            "Preserve existing compatibility unless change is approved",
-                            "Verify normal, failure, and boundary behavior",
-                        ],
-                        "dependencies": ["1.1"],
-                    }
-                ],
-            },
-            {
-                "name": readiness_phase,
-                "tasks": [
-                    {
-                        "name": "Prepare approved verification and handoff",
-                        "subtasks": [
-                            "Collect evidence for each acceptance condition",
-                            "Resolve or explicitly defer remaining risks",
-                            "Define rollout and rollback only when applicable",
-                        ],
-                        "dependencies": ["2.1"],
-                    }
-                ],
-            },
-        ]
+        """Get default phases based on project type"""
+        
+        if self.project_type == "web-app":
+            return [
+                {
+                    "name": "Infrastructure Setup",
+                    "tasks": [
+                        {
+                            "name": "Initialize project structure",
+                            "subtasks": [
+                                "Create directory structure",
+                                "Initialize package managers",
+                                "Set up version control"
+                            ],
+                            "requirements": ["REQ-12.1"]
+                        },
+                        {
+                            "name": "Set up database",
+                            "subtasks": [
+                                "Create database schema",
+                                "Write migrations",
+                                "Set up connection pooling"
+                            ],
+                            "requirements": ["REQ-9.1", "REQ-9.2"]
+                        },
+                        {
+                            "name": "Configure Docker",
+                            "subtasks": [
+                                "Create Dockerfiles",
+                                "Write docker-compose.yml",
+                                "Set up volumes and networks"
+                            ],
+                            "requirements": ["REQ-12.2", "REQ-12.3"]
+                        }
+                    ]
+                },
+                {
+                    "name": "Backend Implementation",
+                    "tasks": [
+                        {
+                            "name": "Create data models",
+                            "subtasks": [
+                                "Define entities",
+                                "Create validation schemas",
+                                "Implement serialization"
+                            ],
+                            "requirements": ["REQ-3.1"],
+                            "dependencies": ["1.2"]
+                        },
+                        {
+                            "name": "Implement service layer",
+                            "subtasks": [
+                                "Create business logic services",
+                                "Implement validation rules",
+                                "Add error handling"
+                            ],
+                            "requirements": ["REQ-4.1"],
+                            "dependencies": ["2.1"]
+                        },
+                        {
+                            "name": "Build API endpoints",
+                            "subtasks": [
+                                "Create REST/GraphQL routes",
+                                "Add authentication middleware",
+                                "Implement request validation"
+                            ],
+                            "requirements": ["REQ-5.1"],
+                            "dependencies": ["2.2"]
+                        }
+                    ]
+                },
+                {
+                    "name": "Frontend Implementation",
+                    "tasks": [
+                        {
+                            "name": "Set up frontend framework",
+                            "subtasks": [
+                                "Initialize React/Vue/Angular app",
+                                "Configure build tools",
+                                "Set up routing"
+                            ],
+                            "requirements": ["REQ-7.1"]
+                        },
+                        {
+                            "name": "Create UI components",
+                            "subtasks": [
+                                "Build reusable components",
+                                "Implement responsive design",
+                                "Add styling/theming"
+                            ],
+                            "requirements": ["REQ-7.2"],
+                            "dependencies": ["3.1"]
+                        },
+                        {
+                            "name": "Integrate with backend",
+                            "subtasks": [
+                                "Set up API client",
+                                "Implement state management",
+                                "Add error handling"
+                            ],
+                            "requirements": ["REQ-7.3"],
+                            "dependencies": ["2.3", "3.2"]
+                        }
+                    ]
+                },
+                {
+                    "name": "Testing and Quality Assurance",
+                    "tasks": [
+                        {
+                            "name": "Write unit tests",
+                            "subtasks": [
+                                "Test services",
+                                "Test components",
+                                "Test utilities"
+                            ],
+                            "requirements": ["REQ-13.1"],
+                            "dependencies": ["2.2", "3.2"]
+                        },
+                        {
+                            "name": "Create integration tests",
+                            "subtasks": [
+                                "Test API endpoints",
+                                "Test database operations",
+                                "Test external integrations"
+                            ],
+                            "requirements": ["REQ-13.2"],
+                            "dependencies": ["4.1"]
+                        },
+                        {
+                            "name": "Perform end-to-end testing",
+                            "subtasks": [
+                                "Test user workflows",
+                                "Test error scenarios",
+                                "Performance testing"
+                            ],
+                            "requirements": ["REQ-13.3"],
+                            "dependencies": ["4.2"]
+                        }
+                    ]
+                },
+                {
+                    "name": "Deployment and Documentation",
+                    "tasks": [
+                        {
+                            "name": "Set up CI/CD pipeline",
+                            "subtasks": [
+                                "Configure build automation",
+                                "Set up test automation",
+                                "Configure deployment"
+                            ],
+                            "requirements": ["REQ-14.1"],
+                            "dependencies": ["4.3"]
+                        },
+                        {
+                            "name": "Write documentation",
+                            "subtasks": [
+                                "API documentation",
+                                "User guide",
+                                "Deployment guide"
+                            ],
+                            "requirements": ["REQ-15.1"],
+                            "dependencies": ["5.1"]
+                        },
+                        {
+                            "name": "Deploy to production",
+                            "subtasks": [
+                                "Set up production environment",
+                                "Configure monitoring",
+                                "Perform deployment"
+                            ],
+                            "requirements": ["REQ-14.2"],
+                            "dependencies": ["5.2"]
+                        }
+                    ]
+                }
+            ]
+        
+        elif self.project_type == "cli-tool":
+            return [
+                {
+                    "name": "Project Setup",
+                    "tasks": [
+                        {
+                            "name": "Initialize project",
+                            "subtasks": [
+                                "Set up package structure",
+                                "Configure build system",
+                                "Add dependencies"
+                            ]
+                        },
+                        {
+                            "name": "Design command structure",
+                            "subtasks": [
+                                "Define commands and subcommands",
+                                "Plan argument parsing",
+                                "Design configuration schema"
+                            ]
+                        }
+                    ]
+                },
+                {
+                    "name": "Core Implementation",
+                    "tasks": [
+                        {
+                            "name": "Implement command parser",
+                            "subtasks": [
+                                "Create argument parser",
+                                "Add command handlers",
+                                "Implement help system"
+                            ],
+                            "dependencies": ["1.2"]
+                        },
+                        {
+                            "name": "Build core logic",
+                            "subtasks": [
+                                "Implement business logic",
+                                "Add validation",
+                                "Handle errors"
+                            ],
+                            "dependencies": ["2.1"]
+                        }
+                    ]
+                },
+                {
+                    "name": "Testing and Packaging",
+                    "tasks": [
+                        {
+                            "name": "Write tests",
+                            "subtasks": [
+                                "Unit tests",
+                                "Integration tests",
+                                "CLI tests"
+                            ],
+                            "dependencies": ["2.2"]
+                        },
+                        {
+                            "name": "Package and distribute",
+                            "subtasks": [
+                                "Create package",
+                                "Write documentation",
+                                "Publish"
+                            ],
+                            "dependencies": ["3.1"]
+                        }
+                    ]
+                }
+            ]
+        
+        elif self.project_type == "api-service":
+            return [
+                {
+                    "name": "Service Setup",
+                    "tasks": [
+                        {
+                            "name": "Initialize API project",
+                            "subtasks": [
+                                "Set up framework",
+                                "Configure database",
+                                "Add middleware"
+                            ]
+                        },
+                        {
+                            "name": "Design API schema",
+                            "subtasks": [
+                                "Define endpoints",
+                                "Create OpenAPI spec",
+                                "Plan authentication"
+                            ]
+                        }
+                    ]
+                },
+                {
+                    "name": "API Implementation",
+                    "tasks": [
+                        {
+                            "name": "Create endpoints",
+                            "subtasks": [
+                                "Implement routes",
+                                "Add validation",
+                                "Handle errors"
+                            ],
+                            "dependencies": ["1.2"]
+                        },
+                        {
+                            "name": "Add authentication",
+                            "subtasks": [
+                                "Implement auth middleware",
+                                "Add JWT/OAuth",
+                                "Set up permissions"
+                            ],
+                            "dependencies": ["2.1"]
+                        }
+                    ]
+                }
+            ]
+        
+        else:  # Generic project
+            return [
+                {
+                    "name": "Project Setup",
+                    "tasks": [
+                        {
+                            "name": "Initialize project",
+                            "subtasks": ["Create structure", "Set up tools"]
+                        }
+                    ]
+                },
+                {
+                    "name": "Implementation",
+                    "tasks": [
+                        {
+                            "name": "Build core features",
+                            "subtasks": ["Implement logic", "Add tests"]
+                        }
+                    ]
+                },
+                {
+                    "name": "Deployment",
+                    "tasks": [
+                        {
+                            "name": "Prepare for production",
+                            "subtasks": ["Test", "Document", "Deploy"]
+                        }
+                    ]
+                }
+            ]
     
-    def generate_all_documents(
-        self,
-        features: Optional[List[str]] = None,
-        components: Optional[List[str]] = None,
-        output_dir: str = ".",
-        force: bool = False,
-    ) -> Dict[str, str]:
+    def generate_all_documents(self, 
+                              features: List[str] = None,
+                              components: List[str] = None,
+                              output_dir: str = ".") -> Dict[str, str]:
         """Generate all three documents"""
         
-        # Use neutral, project-type-specific prompts if explicit values were not provided.
+        # Use defaults if not provided
         if not features:
-            features = list(DEFAULT_PROMPTS[self.project_type]["features"])
+            features = [
+                "to authenticate and manage my account",
+                "to create and manage resources",
+                "to view analytics and reports",
+                "to configure system settings",
+                "to receive notifications"
+            ]
         
         if not components:
-            components = list(DEFAULT_PROMPTS[self.project_type]["components"])
+            components = [
+                "Authentication Service",
+                "User Management",
+                "Resource Manager",
+                "Analytics Engine",
+                "Notification Service"
+            ]
         
-        features = [
-            validate_single_line(feature, f"feature {index}")
-            for index, feature in enumerate(features, 1)
-        ]
-        components = [
-            validate_single_line(component, f"component {index}")
-            for index, component in enumerate(components, 1)
-        ]
-
-        phases = self.get_default_phases()
-        for phase in phases:
-            for task in phase.get("tasks", []):
-                # Historical defaults contained unrelated, dangling IDs. Keep
-                # the task families but never claim unsupported traceability.
-                task.pop("requirements", None)
-        phases.append(
-            {
-                "name": "Requirement Delivery",
-                "tasks": [
-                    {
-                        "name": f"Deliver requirement REQ-{index}",
-                        "subtasks": [
-                            f"Refine and implement: {markdown_inline(feature)}",
-                            "Verify every accepted criterion",
-                        ],
-                        "requirements": [f"REQ-{index}"],
-                    }
-                    for index, feature in enumerate(features, 1)
-                ],
-            },
-        )
-
         # Generate documents
         docs = {
             "requirements.md": self.generate_requirements_template(features),
             "design.md": self.generate_design_template(components),
-            "tasks.md": self.generate_tasks_template(phases),
+            "tasks.md": self.generate_tasks_template(self.get_default_phases())
         }
         
-        output_path = Path(output_dir).absolute()
-        reject_symlink_components(output_path)
-        output_path.mkdir(parents=True, exist_ok=True)
-        if not output_path.is_dir():
-            raise ValueError(f"Output path is not a directory: {output_path}")
-
-        destinations = {name: output_path / name for name in OUTPUT_FILES}
-        existing = [
-            str(path)
-            for path in destinations.values()
-            if path.exists() or path.is_symlink()
-        ]
-        if existing and not force:
-            raise FileExistsError(
-                "Refusing to replace existing documents without --force: "
-                + ", ".join(existing)
-            )
-        if any(path.is_symlink() for path in destinations.values()):
-            raise ValueError("Refusing to replace a symlinked document")
-
-        # Write each document to the same directory, flush it, then replace the
-        # destination. Preflight above prevents a partial no-force overwrite.
+        # Save to files
+        os.makedirs(output_dir, exist_ok=True)
+        
         for filename, content in docs.items():
-            destination = destinations[filename]
-            descriptor, temporary_name = tempfile.mkstemp(
-                dir=output_path,
-                prefix=f".{filename}.",
-                suffix=".tmp",
-                text=True,
-            )
-            try:
-                with os.fdopen(descriptor, "w", encoding="utf-8", newline="\n") as stream:
-                    stream.write(content)
-                    stream.flush()
-                    os.fsync(stream.fileno())
-                os.replace(temporary_name, destination)
-            except Exception:
-                if os.path.exists(temporary_name):
-                    os.unlink(temporary_name)
-                raise
-            print(f"Generated: {destination}")
+            filepath = os.path.join(output_dir, filename)
+            with open(filepath, 'w') as f:
+                f.write(content)
+            print(f"Generated: {filepath}")
         
         return docs
 
@@ -682,25 +777,15 @@ def main():
                       help="List of components for design")
     parser.add_argument("--output", default=".", 
                       help="Output directory for documents")
-    parser.add_argument(
-        "--force",
-        action="store_true",
-        help="replace existing generated documents after explicit review",
-    )
     
     args = parser.parse_args()
     
-    try:
-        generator = ProjectDocumentGenerator(args.project_name, args.type)
-        generator.generate_all_documents(
-            features=args.features,
-            components=args.components,
-            output_dir=args.output,
-            force=args.force,
-        )
-    except (OSError, UnicodeError, ValueError) as error:
-        print(f"Error: {error}", file=sys.stderr)
-        return 2
+    generator = ProjectDocumentGenerator(args.project_name, args.type)
+    generator.generate_all_documents(
+        features=args.features,
+        components=args.components,
+        output_dir=args.output
+    )
     
     print(f"\n✅ Successfully generated project documents for '{args.project_name}'")
     print(f"   Type: {args.type}")
@@ -710,8 +795,7 @@ def main():
     print("2. Fill in the [PLACEHOLDER] sections")
     print("3. Add project-specific requirements and design details")
     print("4. Use these documents as input for AI-assisted implementation")
-    return 0
 
 
 if __name__ == "__main__":
-    raise SystemExit(main())
+    main()

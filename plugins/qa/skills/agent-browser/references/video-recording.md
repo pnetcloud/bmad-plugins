@@ -2,10 +2,6 @@
 
 Capture browser automation as video for debugging, documentation, or verification.
 
-Recording can capture credentials, personal data, private messages, and people.
-Require explicit authorization for the page, account, duration, output path,
-retention, and audience. Pause or stop before protected input.
-
 **Related**: [commands.md](commands.md) for full command reference, [SKILL.md](../SKILL.md) for quick start.
 
 ## Contents
@@ -72,15 +68,21 @@ agent-browser record stop
 
 ```bash
 #!/bin/bash
-# Record a synthetic, non-authenticated workflow for documentation
+# Record workflow for documentation
 
-agent-browser record start ./docs/navigation-example.webm
+agent-browser record start ./docs/how-to-login.webm
 
-agent-browser open https://example.com
+agent-browser open https://app.example.com/login
 agent-browser wait 1000  # Pause for visibility
 
 agent-browser snapshot -i
-agent-browser click @e1
+agent-browser fill @e1 "demo@example.com"
+agent-browser wait 500
+
+agent-browser fill @e2 "password"
+agent-browser wait 500
+
+agent-browser click @e3
 agent-browser wait --load networkidle
 agent-browser wait 1000  # Show result
 
@@ -93,11 +95,11 @@ agent-browser record stop
 #!/bin/bash
 # Record E2E test runs for CI artifacts
 
-test_name="${1:-e2e-test}"
-recording_dir="./test-recordings"
-mkdir -p "$recording_dir"
+TEST_NAME="${1:-e2e-test}"
+RECORDING_DIR="./test-recordings"
+mkdir -p "$RECORDING_DIR"
 
-agent-browser record start "$recording_dir/$test_name-$(date +%s).webm"
+agent-browser record start "$RECORDING_DIR/$TEST_NAME-$(date +%s).webm"
 
 # Run test
 if run_e2e_test; then
@@ -119,15 +121,12 @@ agent-browser click @e1
 agent-browser wait 500  # Let viewer see result
 ```
 
-Use bounded waits for presentation only after the underlying state has been
-verified with a specific condition. A pause is not proof that the page is ready.
-
 ### 2. Use Descriptive Filenames
 
 ```bash
 # Include context in filename
-agent-browser record start ./recordings/navigation-flow.webm
-agent-browser record start ./recordings/synthetic-checkout.webm
+agent-browser record start ./recordings/login-flow-2024-01-15.webm
+agent-browser record start ./recordings/checkout-test-run-42.webm
 ```
 
 ### 3. Handle Recording in Error Cases
@@ -146,9 +145,6 @@ agent-browser record start ./automation.webm
 # ... automation steps ...
 ```
 
-The cleanup handler must stop only the recording and session owned by this task.
-Do not hide a failed stop or claim that an incomplete recording was saved.
-
 ### 4. Combine with Screenshots
 
 ```bash
@@ -166,14 +162,12 @@ agent-browser record stop
 
 ## Output Format
 
-- Common output is WebM; confirm codec and compatibility in the installed
-  version before promising a consumer-specific format.
-- Treat every recording as potentially sensitive until reviewed and redacted.
+- Default format: WebM (VP8/VP9 codec)
+- Compatible with all modern browsers and video players
+- Compressed but high quality
 
 ## Limitations
 
 - Recording adds slight overhead to automation
 - Large recordings can consume significant disk space
 - Some headless environments may have codec limitations
-- Recording may capture transient protected content that is absent from the
-  final screenshot or page state.

@@ -1,12 +1,5 @@
 # Requirements Document Template
 
-Use placeholders as unresolved decisions, not suggested defaults. Replace them
-only with sourced facts or explicitly owned decisions.
-
-**Status:** [Draft / In Review / Accepted]
-**Scope owner:** [Role or owner]
-**Authoritative inputs:** [Sources]
-
 ## Introduction
 
 [PROJECT NAME] is a [SYSTEM TYPE] designed for [TARGET USERS]. The system [PRIMARY PURPOSE].
@@ -30,8 +23,6 @@ only with sourced facts or explicitly owned decisions.
 ### REQ-1: [Feature Name]
 
 **User Story:** As a [user role], I want [feature], so that [benefit]
-**Source/Owner:** [Evidence or decision owner]
-**Priority/Status:** [Project-defined priority] / [Status]
 
 **Acceptance Criteria:**
 1. WHEN [condition], THE system SHALL [behavior]
@@ -56,27 +47,24 @@ only with sourced facts or explicitly owned decisions.
 ## Non-Functional Requirements
 
 ### Performance Requirements
-- Response time: Under [workload and environment], THE system SHALL meet
-  [approved percentile and threshold], measured by [method]
-- Concurrency: THE system SHALL support [approved workload profile], measured
-  by [method]
-- Data processing: THE system SHALL process [approved rate and data profile],
-  measured by [method]
+- Response time: THE system SHALL respond to user requests within [X] milliseconds
+- Throughput: THE system SHALL handle [X] concurrent users
+- Data processing: THE system SHALL process [X] records per second
 
 ### Security Requirements  
-- Identity: [State whether authentication is required and why]
-- Authorization: [Approved access model and denied behavior]
-- Data protection: [Classification, threat, approved control, and evidence]
+- Authentication: THE system SHALL implement [auth method]
+- Authorization: THE system SHALL enforce role-based access control
+- Data protection: THE system SHALL encrypt sensitive data at rest and in transit
 
 ### Reliability Requirements
-- Availability: THE system SHALL meet [approved objective and measurement window]
-- Recovery: THE system SHALL meet [approved recovery objective], measured by [method]
-- Data integrity: THE system SHALL provide [approved consistency and durability behavior]
+- Availability: THE system SHALL maintain 99.9% uptime
+- Recovery: THE system SHALL recover from failures within [X] minutes
+- Data integrity: THE system SHALL ensure ACID compliance for transactions
 
 ### Scalability Requirements
-- Capacity: [Approved workload and growth model]
-- Scaling approach: [Decision supported by measurements and constraints]
-- Limits and backpressure: [Observable behavior at approved boundaries]
+- THE system SHALL support horizontal scaling
+- THE system SHALL handle [X]% growth in users annually
+- THE system SHALL support database sharding for data volumes exceeding [X]
 
 ## Constraints and Boundaries
 
@@ -93,9 +81,3 @@ only with sourced facts or explicitly owned decisions.
 - **In Scope:** [What's included]
 - **Out of Scope:** [What's explicitly excluded]
 - **Future Considerations:** [Deferred features]
-
-## Traceability
-
-| Requirement | Design coverage | Delivery tasks | Verification | Status |
-|---|---|---|---|---|
-| REQ-1 | [Design IDs] | [Task IDs] | [Evidence] | [Status] |

@@ -1,13 +1,6 @@
 # Playwright Skill - Complete API Reference
 
-This document preserves the package's broad Playwright surface while keeping
-the default workflow in [SKILL.md](SKILL.md) short. Examples target the pinned
-Playwright 1.61 package and Node.js 20 or newer. Confirm installed CLI help and
-the official documentation when behavior depends on a later version.
-
-Playwright code runs with the current user's local and network authority; it is
-not sandboxed. Use only reviewed code, explicit target domains, task-owned
-artifacts, and separately authorized consequential actions.
+This document contains the comprehensive Playwright API reference and advanced patterns. For quick-start execution patterns, see [SKILL.md](SKILL.md).
 
 ## Table of Contents
 
@@ -36,20 +29,15 @@ artifacts, and separately authorized consequential actions.
 
 ### Prerequisites
 
-Resolve `skill_dir` to the directory containing `SKILL.md`, then inspect the
-installed package without changing it:
+Before using this skill, ensure Playwright is available:
 
 ```bash
-skill_dir="/path/to/qa-playwright-skill"
-npm --prefix "$skill_dir" list playwright
-node "$skill_dir/run.js" --help
-```
+# Check if Playwright is installed
+npm list playwright 2>/dev/null || echo "Playwright not installed"
 
-The runner never installs anything. With explicit permission for network
-downloads and package-directory writes, use the pinned setup:
-
-```bash
-npm --prefix "$skill_dir" run setup
+# Install (if needed)
+cd ~/.claude/skills/qa-playwright-skill
+npm run setup
 ```
 
 ### Basic Configuration
@@ -107,9 +95,9 @@ const { chromium } = require('playwright');
 
   const page = await context.newPage();
 
-  // Navigate; prefer a concrete UI assertion over global network idleness.
+  // Navigate
   await page.goto('https://example.com', {
-    waitUntil: 'domcontentloaded'
+    waitUntil: 'networkidle'  // Wait for network to be idle
   });
 
   // Your automation here
@@ -162,7 +150,7 @@ await page.getByText(/welcome back/i).click();
 
 // OK: Semantic HTML
 await page.locator('button[type="submit"]').click();
-await page.locator('input[name="email"]').fill('user@example.com');
+await page.locator('input[name="email"]').fill('test@test.com');
 
 // AVOID: Classes and IDs (can change frequently)
 await page.locator('.btn-primary').click();  // Avoid
@@ -282,7 +270,7 @@ await page.locator('button').waitFor({ state: 'detached' });
 await page.waitForURL('**/success');
 await page.waitForURL(url => url.pathname === '/dashboard');
 
-// Use networkidle only for a reviewed app whose background traffic terminates.
+// Wait for network
 await page.waitForLoadState('networkidle');
 await page.waitForLoadState('domcontentloaded');
 
@@ -382,13 +370,10 @@ class LoginPage {
 }
 
 // Usage in test
-test('login with authorized runtime credentials', async ({ page }) => {
+test('login with valid credentials', async ({ page }) => {
   const loginPage = new LoginPage(page);
   await loginPage.navigate();
-  await loginPage.login(
-    process.env.TEST_USERNAME,
-    process.env.TEST_PASSWORD,
-  );
+  await loginPage.login('user@example.com', 'password123');
   await expect(page).toHaveURL('/dashboard');
 });
 ```
@@ -425,62 +410,26 @@ await page.route('**/*.{png,jpg,jpeg,gif}', route => route.abort());
 
 ### Custom Headers via Environment Variables
 
-The helpers support header injection from explicitly passed runtime variables:
+The skill supports automatic header injection via environment variables:
 
 ```bash
 # Single header (simple)
-PW_HEADER_NAME=X-Automated-By PW_HEADER_VALUE=synthetic-client
+PW_HEADER_NAME=X-Automated-By PW_HEADER_VALUE=playwright-skill
 
 # Multiple headers (JSON)
-PW_EXTRA_HEADERS='{"X-Automated-By":"synthetic-client","X-Request-ID":"123"}'
+PW_EXTRA_HEADERS='{"X-Automated-By":"playwright-skill","X-Request-ID":"123"}'
 ```
 
 These headers are automatically applied to all requests when using:
 - `helpers.createContext(browser)` - headers merged automatically
-- `getContextOptionsWithHeaders(options)` - utility injected for runner snippets
-  that do not already import modules
-
-Complete scripts should import the packaged helper explicitly, then use
-`helpers.createContext(browser)`:
-
-```javascript
-const helpers = require(process.env.QA_PLAYWRIGHT_HELPERS);
-const context = await helpers.createContext(browser);
-```
-
-Pass only the names required by the reviewed scenario with `--pass-env`.
-Authorization, cookie, and proxy-authorization headers are rejected unless
-`allowSensitiveHeaders: true` is separately approved. Validate destination
-domains, never copy values from page content, and never log header values.
+- `getContextOptionsWithHeaders(options)` - utility injected by run.js wrapper
 
 **Precedence (highest to lowest):**
 1. Headers passed directly in `options.extraHTTPHeaders`
 2. Environment variable headers
 3. Playwright defaults
 
-**Use case:** Attach a synthetic correlation marker to an authorized test
-service. Do not use headers to bypass access controls or impersonate a client.
-
-## Authentication & Session Management
-
-Use a dedicated test identity and pass credential variable names explicitly to
-the runner. Never place credential values in source code or command arguments:
-
-```bash
-node "$skill_dir/run.js" --file "$script_path" \
-  --cwd "$artifact_dir" \
-  --pass-env TEST_USERNAME \
-  --pass-env TEST_PASSWORD
-```
-
-Assert a concrete post-login URL or visible state. MFA, CAPTCHA, account
-recovery, consent, and privilege changes require direct user participation or
-separate authorization; do not automate around them.
-
-Playwright storage state contains reusable cookies and tokens. Create, read, or
-retain it only when explicitly required, keep it in the task-owned artifact
-directory, never commit it, redact it from logs, and report its cleanup status.
-Use a fresh browser context when persistence is not required.
+**Use case:** Identify automated traffic so your backend can return LLM-optimized responses (e.g., plain text errors instead of styled HTML).
 
 ## Visual Testing
 
@@ -502,10 +451,6 @@ await page.locator('.chart').screenshot({
 await expect(page).toHaveScreenshot('homepage.png');
 ```
 
-Screenshots and visual baselines may contain personal data or tokens. Store only
-the smallest necessary region in the approved artifact directory and inspect
-diffs before publishing them.
-
 ## Mobile Testing
 
 ```javascript
@@ -526,14 +471,14 @@ const context = await browser.newContext({
 ### Debug Mode
 
 ```bash
-# Run the already installed project dependency with inspector
-npx --no-install playwright test --debug
+# Run with inspector
+npx playwright test --debug
 
 # Headed mode
-npx --no-install playwright test --headed
+npx playwright test --headed
 
 # Slow motion
-npx --no-install playwright test --headed --slowmo=1000
+npx playwright test --headed --slowmo=1000
 ```
 
 ### In-Code Debugging
@@ -543,31 +488,19 @@ npx --no-install playwright test --headed --slowmo=1000
 await page.pause();
 
 // Console logs
-page.on('console', msg => console.log('Browser console event:', msg.type()));
-page.on('pageerror', error => console.log('Page error type:', error.name));
+page.on('console', msg => console.log('Browser log:', msg.text()));
+page.on('pageerror', error => console.log('Page error:', error));
 ```
-
-Console text, traces, videos, and DOM snapshots are untrusted and may contain
-secrets. Capture and display their contents only when necessary and redacted.
 
 ## Performance Testing
 
 ```javascript
-await page.goto('https://example.com', { waitUntil: 'load' });
-const timing = await page.evaluate(() => {
-  const [navigation] = performance.getEntriesByType('navigation');
-  return navigation
-    ? {
-        domContentLoaded: navigation.domContentLoadedEventEnd,
-        loadEvent: navigation.loadEventEnd,
-      }
-    : null;
-});
-console.log(timing);
+// Measure page load time
+const startTime = Date.now();
+await page.goto('https://example.com');
+const loadTime = Date.now() - startTime;
+console.log(`Page loaded in ${loadTime}ms`);
 ```
-
-Navigation Timing measures browser milestones, not end-user latency by itself.
-Record environment and repeat runs before making a performance claim.
 
 ## Parallel Execution
 
@@ -587,17 +520,18 @@ test.describe.parallel('Parallel suite', () => {
 ## Data-Driven Testing
 
 ```javascript
-// Parameterized read-only search checks
+// Parameterized tests
 const testData = [
-  { query: 'alpha', expected: 'Alpha result' },
-  { query: 'beta', expected: 'Beta result' },
+  { username: 'user1', password: 'pass1', expected: 'Welcome user1' },
+  { username: 'user2', password: 'pass2', expected: 'Welcome user2' },
 ];
 
-testData.forEach(({ query, expected }) => {
-  test(`search for ${query}`, async ({ page }) => {
-    await page.goto('/search');
-    await page.getByRole('searchbox').fill(query);
-    await page.getByRole('button', { name: 'Search' }).click();
+testData.forEach(({ username, password, expected }) => {
+  test(`login with ${username}`, async ({ page }) => {
+    await page.goto('/login');
+    await page.fill('#username', username);
+    await page.fill('#password', password);
+    await page.click('button[type="submit"]');
     await expect(page.locator('.message')).toHaveText(expected);
   });
 });
@@ -606,19 +540,14 @@ testData.forEach(({ query, expected }) => {
 ## Accessibility Testing
 
 ```javascript
-import { test, expect } from '@playwright/test';
+import { injectAxe, checkA11y } from 'axe-playwright';
 
-test('accessibility tree contract', async ({ page }) => {
+test('accessibility check', async ({ page }) => {
   await page.goto('/');
-  await expect(page.locator('main')).toMatchAriaSnapshot(`
-    - heading "Synthetic page" [level=1]
-  `);
+  await injectAxe(page);
+  await checkA11y(page);
 });
 ```
-
-ARIA snapshots verify an expected accessibility tree; they are not a complete
-WCAG audit. Add a maintained scanner only as an explicitly reviewed dependency,
-then combine automated checks with keyboard and assistive-technology review.
 
 ## CI/CD Integration
 
@@ -633,21 +562,15 @@ jobs:
   test:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
-        with:
-          node-version: 20
+      - uses: actions/checkout@v3
+      - uses: actions/setup-node@v3
       - name: Install dependencies
         run: npm ci
       - name: Install Playwright Browsers
-        run: npx --no-install playwright install --with-deps
+        run: npx playwright install --with-deps
       - name: Run tests
-        run: npx --no-install playwright test
+        run: npx playwright test
 ```
-
-Pin third-party actions to reviewed immutable revisions in higher-assurance
-repositories, use least-privilege workflow permissions, and treat traces,
-reports, screenshots, videos, and storage state as sensitive artifacts.
 
 ## Best Practices
 
@@ -655,58 +578,9 @@ reports, screenshots, videos, and storage state as sensitive artifacts.
 2. **Selector Strategy** - Prefer data-testid attributes, use role-based selectors
 3. **Waiting** - Use Playwright's auto-waiting, avoid hard-coded delays
 4. **Error Handling** - Add proper error messages, take screenshots on failure
-5. **Performance** - Parallelize only isolated tests; reuse authentication state
-   only when explicitly approved and protected as a secret-bearing artifact
+5. **Performance** - Run tests in parallel, reuse authentication state
 
 ## Common Patterns & Solutions
-
-### Responsive Viewport Evidence
-
-```javascript
-const path = require('path');
-const artifactDirectory = process.cwd();
-const viewports = [
-  { name: 'desktop', width: 1280, height: 720 },
-  { name: 'tablet', width: 768, height: 1024 },
-  { name: 'mobile', width: 375, height: 667 },
-];
-
-for (const viewport of viewports) {
-  await page.setViewportSize(viewport);
-  await page.goto('https://example.com', { waitUntil: 'domcontentloaded' });
-  await expect(page.getByRole('main')).toBeVisible();
-  await page.screenshot({
-    path: path.join(artifactDirectory, `${viewport.name}.png`),
-    fullPage: true,
-  });
-}
-```
-
-Use task-relevant breakpoints and assertions. A screenshot alone does not prove
-that navigation, focus order, overflow, touch targets, or content are usable.
-
-### Link Validation
-
-```javascript
-const allowedOrigins = new Set([new URL(page.url()).origin]);
-const hrefs = await page.locator('a[href]').evaluateAll(links =>
-  links.map(link => link.href),
-);
-
-for (const href of [...new Set(hrefs)]) {
-  const target = new URL(href);
-  if (!['http:', 'https:'].includes(target.protocol)) continue;
-  if (!allowedOrigins.has(target.origin)) continue;
-  const response = await page.request.head(target.href, {
-    failOnStatusCode: false,
-  });
-  console.log(target.pathname, response.status());
-}
-```
-
-Probe only explicitly allowed origins. HEAD support and authentication semantics
-vary by application; validate the method against the target contract and never
-expand discovered URLs into a broader crawl.
 
 ### Handling Popups
 
@@ -725,13 +599,8 @@ const [download] = await Promise.all([
   page.waitForEvent('download'),
   page.click('button.download')
 ]);
-const path = require('path');
-const safeName = path.basename(download.suggestedFilename());
-await download.saveAs(path.join(process.cwd(), 'downloads', safeName));
+await download.saveAs(`./downloads/${download.suggestedFilename()}`);
 ```
-
-Downloads are untrusted files. Keep them in a task-owned directory, do not open
-or execute them automatically, and validate the expected type before use.
 
 ### iFrames
 
@@ -744,10 +613,8 @@ await frame.locator('button').click();
 
 ```javascript
 async function scrollToBottom(page) {
-  const items = page.locator('[data-testid="result"]');
-  const previousCount = await items.count();
-  await page.locator('body').press('End');
-  await expect(items).not.toHaveCount(previousCount);
+  await page.evaluate(() => window.scrollTo(0, document.body.scrollHeight));
+  await page.waitForTimeout(500);
 }
 ```
 
@@ -758,26 +625,25 @@ async function scrollToBottom(page) {
 1. **Element not found** - Check if element is in iframe, verify visibility
 2. **Timeout errors** - Increase timeout, check network conditions
 3. **Flaky tests** - Use proper waiting strategies, mock external dependencies
-4. **Authentication issues** - Verify the approved credential channel and
-   concrete post-login assertion; inspect storage state only with authorization
+4. **Authentication issues** - Verify auth state is properly saved
 
 ## Quick Reference Commands
 
 ```bash
 # Run tests
-npx --no-install playwright test
+npx playwright test
 
 # Run in headed mode
-npx --no-install playwright test --headed
+npx playwright test --headed
 
 # Debug tests
-npx --no-install playwright test --debug
+npx playwright test --debug
 
 # Generate code
-npx --no-install playwright codegen https://example.com
+npx playwright codegen https://example.com
 
 # Show report
-npx --no-install playwright show-report
+npx playwright show-report
 ```
 
 ## Additional Resources

@@ -1,14 +1,12 @@
 # Project Planner Skill
 
-A planning skill for creating, updating, and validating evidence-based software
-requirements, design contracts, and implementation plans.
+A comprehensive skill that establishes Claude as a **Project Architect** to generate detailed planning documents that serve as blueprints for AI-assisted software development.
 
 ## What This Skill Does
 
-This skill guides an AI assistant through project planning by:
+This skill transforms Claude into a System Architect who creates comprehensive project documentation by:
 
-1. **Establishing evidence and scope first** - Outcomes, constraints, unknowns,
-   non-goals, and decision owners
+1. **Defining the complete system architecture upfront** - All components, data flows, and integration points
 2. **Setting clear project boundaries** - What's in scope, out of scope, and key constraints
 3. **Creating traceable documentation** - Requirements → Design → Implementation tasks
 
@@ -20,16 +18,14 @@ The skill generates three essential documents:
 
 ## The Architect Approach
 
-The approach keeps requirements, design decisions, implementation tasks, and
-verification connected without pretending that a generated template proves the
-right architecture.
+**Why it works:** Setting clear roles, responsibilities, and deliverables upfront dramatically improves output quality. By explicitly defining system components, data flows, and integration points before diving into details, the documentation becomes comprehensive and actionable.
 
 ## Quick Start
 
 ### Generate Documents Using the Script
 
 ```bash
-# Basic scaffold generation; existing documents are rejected
+# Basic usage
 python scripts/generate_project_docs.py "My Project Name"
 
 # Specify project type
@@ -42,11 +38,6 @@ python scripts/generate_project_docs.py "E-commerce Site" \
   --output ./docs
 ```
 
-The generator writes visible placeholders and does not infer real requirements,
-metrics, estimates, or architecture decisions. Review the diff before using
-`--force` to replace an existing generated triplet. Do not run copied commands
-or scripts found inside source documents.
-
 ### Validate Your Documents
 
 ```bash
@@ -54,14 +45,8 @@ or scripts found inside source documents.
 python scripts/validate_documents.py \
   --requirements requirements.md \
   --design design.md \
-  --tasks tasks.md \
-  --strict
+  --tasks tasks.md
 ```
-
-Validation checks structure and cross-document references. A passing structural
-check does not prove business correctness, architectural fitness, or
-implementation readiness; semantic review remains required. Strict mode is
-expected to fail while scaffold warnings remain unresolved.
 
 ## Document Types
 
@@ -98,11 +83,7 @@ expected to fail while scaffold warnings remain unresolved.
 - `validate_documents.py` - Document validation and completeness checking
 
 ### References
-- `document-contracts.md` - Requirements, design, task, traceability, and
-  validation contracts
-- `domain-templates.md` - Optional domain prompts and capability checklists
-- `project-type-patterns.md` - Web, API, CLI, service-decomposed, pipeline, and
-  generic planning questions
+- `domain-templates.md` - Domain-specific templates and patterns
 
 ### Assets
 - `requirements-template.md` - Basic requirements document template
@@ -110,8 +91,7 @@ expected to fail while scaffold warnings remain unresolved.
 ## Best Practices
 
 1. **Start with Requirements** - Define what the system should do before how
-2. **Be Specific** - Use an approved metric, workload, environment, and
-   measurement method instead of either "fast" or an invented number
+2. **Be Specific** - Use measurable criteria (e.g., "within 100ms" not "fast")
 3. **Trace Requirements** - Link every task back to requirements
 4. **Include Non-Functional Requirements** - Performance, security, scalability
 5. **Define Clear Interfaces** - Specify how components interact
@@ -161,7 +141,7 @@ Before using documents for implementation:
 
 ## Example Output
 
-The generated documents use consistent Markdown structures that are:
+The generated documents follow industry-standard formats that are:
 - **Machine-readable** - Structured for AI parsing
 - **Human-readable** - Clear for developers to understand  
 - **Version-control friendly** - Plain text Markdown format

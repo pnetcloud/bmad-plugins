@@ -1,8 +1,6 @@
 # Kubernetes Manifests
 
-Kubernetes configuration examples. Replace every name, image, port, resource
-value, probe, label, namespace, and policy selector from observed application
-and cluster contracts. These examples do not authorize applying resources.
+Production Kubernetes configuration examples.
 
 ## Complete Application Stack
 
@@ -15,8 +13,6 @@ metadata:
   name: myapp
   labels:
     app: myapp
-    pod-security.kubernetes.io/enforce: restricted
-    pod-security.kubernetes.io/warn: restricted
 ```
 
 ### ConfigMap
@@ -44,12 +40,14 @@ data:
 apiVersion: v1
 kind: Secret
 metadata:
-  name: app-secrets-manual-example
+  name: app-secrets
   namespace: myapp
 type: Opaque
-data: {}
+stringData:
+  DATABASE_URL: postgres://user:pass@db:5432/app
+  API_KEY: supersecretkey
 ---
-# External secret integration
+# External Secrets (for AWS Secrets Manager, etc.)
 apiVersion: external-secrets.io/v1beta1
 kind: ExternalSecret
 metadata:
@@ -58,24 +56,15 @@ metadata:
 spec:
   refreshInterval: 1h
   secretStoreRef:
-    name: approved-secret-store
+    name: aws-secrets-manager
     kind: SecretStore
   target:
     name: app-secrets
   data:
   - secretKey: DATABASE_URL
     remoteRef:
-      key: example/application-database-url
+      key: myapp/database-url
 ```
-
-The empty `Secret` shape is structural only. Do not commit a real value or
-deploy it as working configuration. It is deliberately named differently from
-the `ExternalSecret` target so the two examples never claim ownership of one
-object. Choose exactly one approved mechanism. If a deployment-time workflow
-creates a native Secret, remove the `ExternalSecret` and deliberately align its
-name and required keys with the Deployment. Prefer the cluster's approved
-external-secret, sealed-secret, or deployment-time injection mechanism; verify
-access policy and avoid rendering values into review logs.
 
 ### Deployment
 
@@ -108,14 +97,10 @@ spec:
         prometheus.io/port: "8000"
     spec:
       serviceAccountName: app-service-account
-      automountServiceAccountToken: false
       securityContext:
         runAsNonRoot: true
         runAsUser: 1000
-        runAsGroup: 1000
         fsGroup: 1000
-        seccompProfile:
-          type: RuntimeDefault
       containers:
       - name: app
         image: myregistry/myapp:1.0.0
@@ -136,7 +121,6 @@ spec:
               name: app-secrets
               key: DATABASE_URL
         resources:
-          # Examples only; derive requests and limits from measured behavior.
           requests:
             memory: "128Mi"
             cpu: "100m"
@@ -312,9 +296,8 @@ metadata:
   namespace: myapp
 rules:
 - apiGroups: [""]
-  resources: ["configmaps"]
-  resourceNames: ["app-config"]
-  verbs: ["get"]
+  resources: ["configmaps", "secrets"]
+  verbs: ["get", "list"]
 ---
 apiVersion: rbac.authorization.k8s.io/v1
 kind: RoleBinding
@@ -330,47 +313,6 @@ roleRef:
   name: app-role
   apiGroup: rbac.authorization.k8s.io
 ```
-
-The primary Deployment above consumes ConfigMap and Secret data through native
-pod references and therefore does not need Kubernetes API permission. Keep
-`automountServiceAccountToken: false` for that case.
-
-If a workload must call the Kubernetes API, grant only the reviewed resources
-and add an explicit, short-lived projected token rather than enabling the
-ambient mount:
-
-```yaml
-spec:
-  automountServiceAccountToken: false
-  containers:
-  - name: app
-    volumeMounts:
-    - name: api-identity
-      mountPath: /var/run/secrets/example-api
-      readOnly: true
-  volumes:
-  - name: api-identity
-    projected:
-      defaultMode: 0400
-      sources:
-      - serviceAccountToken:
-          audience: kubernetes.default.svc
-          expirationSeconds: 3600
-          path: token
-      - configMap:
-          name: kube-root-ca.crt
-          items:
-          - key: ca.crt
-            path: ca.crt
-      - downwardAPI:
-          items:
-          - path: namespace
-            fieldRef:
-              fieldPath: metadata.namespace
-```
-
-Verify the API audience and client paths for the target cluster. A projected
-token is a credential artifact: never print, copy, or persist it.
 
 ### NetworkPolicy
 
@@ -399,26 +341,16 @@ spec:
   - to:
     - namespaceSelector:
         matchLabels:
-          kubernetes.io/metadata.name: database
+          name: database
     ports:
     - protocol: TCP
       port: 5432
   - to:
-    - namespaceSelector:
-        matchLabels:
-          kubernetes.io/metadata.name: kube-system
-      podSelector:
-        matchLabels:
-          k8s-app: kube-dns
+    - namespaceSelector: {}
     ports:
     - protocol: UDP
-      port: 53
-    - protocol: TCP
-      port: 53
+      port: 53  # DNS
 ```
-
-DNS labels vary by distribution. Confirm the actual DNS pods and network plugin;
-an empty namespace selector is not a narrow DNS rule.
 
 ### CronJob
 
@@ -437,71 +369,13 @@ spec:
     spec:
       template:
         spec:
-          automountServiceAccountToken: false
           restartPolicy: OnFailure
-          securityContext:
-            runAsNonRoot: true
-            seccompProfile:
-              type: RuntimeDefault
           containers:
           - name: cleanup
             image: myregistry/myapp:1.0.0
             command: ["python", "-m", "src.jobs.cleanup"]
-            securityContext:
-              allowPrivilegeEscalation: false
-              readOnlyRootFilesystem: true
-              capabilities:
-                drop: ["ALL"]
             resources:
               limits:
                 memory: "256Mi"
                 cpu: "200m"
-```
-
-Before mutation, parse the YAML, validate it against the target Kubernetes
-version and repository policies, and review the rendered diff. Client-side
-dry-run does not evaluate admission; server-side dry-run contacts the selected
-cluster and can invoke admission behavior. Apply, delete, rollout, scale, and
-port-forward require the exact authorized context and namespace.
-
-## kubectl Quick Reference
-
-Populate these lowercase shell variables only from a user-confirmed target:
-
-```bash
-context_name="REVIEWED_CONTEXT"
-namespace_name="REVIEWED_NAMESPACE"
-```
-
-Read operations can still expose protected workload data:
-
-```bash
-kubectl --context "$context_name" --namespace "$namespace_name" get pods
-kubectl --context "$context_name" --namespace "$namespace_name" logs <pod>
-kubectl --context "$context_name" --namespace "$namespace_name" describe pod <pod>
-kubectl --context "$context_name" --namespace "$namespace_name" \
-  rollout status deployment/app
-```
-
-Interactive access and local forwarding widen access; use them only when the
-exact pod, command, local bind, and retention behavior are authorized:
-
-```bash
-kubectl --context "$context_name" --namespace "$namespace_name" \
-  exec -it <pod> -- sh
-kubectl --context "$context_name" --namespace "$namespace_name" \
-  port-forward --address localhost service/app 8080:80
-```
-
-The first command contacts the cluster and can invoke admission without
-persisting the object. The final two mutate cluster state. Review the
-server-side diff and obtain the corresponding read or mutation authority:
-
-```bash
-kubectl --context "$context_name" --namespace "$namespace_name" \
-  apply --server-side --dry-run=server -f manifest.yaml
-kubectl --context "$context_name" --namespace "$namespace_name" \
-  apply --server-side -f manifest.yaml
-kubectl --context "$context_name" --namespace "$namespace_name" \
-  rollout restart deployment/app
 ```

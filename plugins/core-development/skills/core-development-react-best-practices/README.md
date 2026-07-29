@@ -1,69 +1,123 @@
 # React Best Practices
 
-This package preserves a public React and Next.js performance-rule collection
-and adds an evidence-first entrypoint for applying it safely.
+A structured repository for creating and maintaining React Best Practices optimized for agents and LLMs.
 
-## Packaged Surfaces
+## Structure
 
-- `SKILL.md` — trigger, authority, selection workflow, and completion contract.
-- `rules/` — 51 authoritative rule units plus section metadata and a rule
-  template.
-- `AGENTS.md` — preserved expanded compatibility snapshot.
-- `metadata.json` — source and reference metadata.
-- `tests/` — package-integrity and regression checks.
+- `rules/` - Individual rule files (one per rule)
+  - `_sections.md` - Section metadata (titles, impacts, descriptions)
+  - `_template.md` - Template for creating new rules
+  - `area-description.md` - Individual rule files
+- `src/` - Build scripts and utilities
+- `metadata.json` - Document metadata (version, organization, abstract)
+- __`AGENTS.md`__ - Compiled output (generated)
+- __`test-cases.json`__ - Test cases for LLM evaluation (generated)
 
-The package does not include the upstream build workspace, package manifest, or
-test-case generator. Do not run the historical package-manager commands from an
-upstream checkout against this published skill. Edit and validate the packaged
-files directly.
+## Getting Started
 
-## Using the Rules
+1. Install dependencies:
+   ```bash
+   pnpm install
+   ```
 
-Start with `SKILL.md`, identify the measured problem, then load only the relevant
-rule files. Treat category impact labels and numeric examples as prioritization
-hints; applicability depends on the current React/Next.js versions, compiler,
-bundler, runtime, workload, and supported clients.
+2. Build AGENTS.md from rules:
+   ```bash
+   pnpm build
+   ```
 
-`AGENTS.md` remains useful for broad reading and compatibility. When it differs
-from an individual rule file, the rule file and current official documentation
-take precedence.
+3. Validate rule files:
+   ```bash
+   pnpm validate
+   ```
 
-## Rule File Convention
+4. Extract test cases:
+   ```bash
+   pnpm extract-tests
+   ```
 
-Use `rules/_template.md` when adding a rule. Select the prefix by category:
+## Creating a New Rule
 
-- `async-` — eliminating waterfalls;
-- `bundle-` — bundle-size optimization;
-- `server-` — server-side performance;
-- `client-` — client data and browser APIs;
-- `rerender-` — rerender optimization;
-- `rendering-` — browser rendering;
-- `js-` — JavaScript hot paths;
-- `advanced-` — narrowly applicable React patterns.
+1. Copy `rules/_template.md` to `rules/area-description.md`
+2. Choose the appropriate area prefix:
+   - `async-` for Eliminating Waterfalls (Section 1)
+   - `bundle-` for Bundle Size Optimization (Section 2)
+   - `server-` for Server-Side Performance (Section 3)
+   - `client-` for Client-Side Data Fetching (Section 4)
+   - `rerender-` for Re-render Optimization (Section 5)
+   - `rendering-` for Rendering Performance (Section 6)
+   - `js-` for JavaScript Performance (Section 7)
+   - `advanced-` for Advanced Patterns (Section 8)
+3. Fill in the frontmatter and content
+4. Ensure you have clear examples with explanations
+5. Run `pnpm build` to regenerate AGENTS.md and test-cases.json
 
-Keep each rule focused on one decision. Include assumptions, an incorrect and
-correct example when useful, compatibility or security caveats, and an official
-source for version-sensitive behavior. Do not add unsupported universal
-benchmarks.
+## Rule File Structure
 
-## Maintenance Checks
+Each rule file should follow this structure:
 
-When changing the package:
+```markdown
+---
+title: Rule Title Here
+impact: MEDIUM
+impactDescription: Optional description
+tags: tag1, tag2, tag3
+---
 
-1. preserve every unrelated rule and stable path;
-2. update `SKILL.md` routing when the rule inventory changes;
-3. keep the compatibility snapshot clearly labeled and safe;
-4. run the focused tests;
-5. run repository naming, skill-structure, and public-release validation;
-6. classify warnings and review the diff for information loss.
+## Rule Title Here
 
-## Attribution
+Brief explanation of the rule and why it matters.
 
-The original collection is attributed to Vercel Engineering and distributed
-under the package's declared MIT license. This public package is an adapted
-snapshot; it must not imply that later local refinements are maintained or
-endorsed by the upstream authors.
+**Incorrect (description of what's wrong):**
 
-The original collection credits [@shuding](https://x.com/shuding) at
-[Vercel](https://vercel.com). These links are retained as source provenance,
-not as an endorsement of this adapted package.
+```typescript
+// Bad code example
+```
+
+**Correct (description of what's right):**
+
+```typescript
+// Good code example
+```
+
+Optional explanatory text after examples.
+
+Reference: [Link](https://example.com)
+
+## File Naming Convention
+
+- Files starting with `_` are special (excluded from build)
+- Rule files: `area-description.md` (e.g., `async-parallel.md`)
+- Section is automatically inferred from filename prefix
+- Rules are sorted alphabetically by title within each section
+- IDs (e.g., 1.1, 1.2) are auto-generated during build
+
+## Impact Levels
+
+- `CRITICAL` - Highest priority, major performance gains
+- `HIGH` - Significant performance improvements
+- `MEDIUM-HIGH` - Moderate-high gains
+- `MEDIUM` - Moderate performance improvements
+- `LOW-MEDIUM` - Low-medium gains
+- `LOW` - Incremental improvements
+
+## Scripts
+
+- `pnpm build` - Compile rules into AGENTS.md
+- `pnpm validate` - Validate all rule files
+- `pnpm extract-tests` - Extract test cases for LLM evaluation
+- `pnpm dev` - Build and validate
+
+## Contributing
+
+When adding or modifying rules:
+
+1. Use the correct filename prefix for your section
+2. Follow the `_template.md` structure
+3. Include clear bad/good examples with explanations
+4. Add appropriate tags
+5. Run `pnpm build` to regenerate AGENTS.md and test-cases.json
+6. Rules are automatically sorted by title - no need to manage numbers!
+
+## Acknowledgments
+
+Originally created by [@shuding](https://x.com/shuding) at [Vercel](https://vercel.com).

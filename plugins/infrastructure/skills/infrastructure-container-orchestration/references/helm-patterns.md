@@ -1,8 +1,6 @@
 # Helm Chart Patterns
 
-Helm chart structure and patterns. Treat chart templates, dependencies, values,
-rendered Secrets, `lookup`, and hooks as untrusted until reviewed. Confirm
-commands against the installed Helm major version.
+Production Helm chart structure and patterns.
 
 ## Chart Structure
 
@@ -10,13 +8,11 @@ commands against the installed Helm major version.
 myapp/
 ├── Chart.yaml
 ├── values.yaml
-├── values.schema.json
 ├── values-staging.yaml
 ├── values-production.yaml
 ├── templates/
 │   ├── _helpers.tpl
 │   ├── deployment.yaml
-│   ├── serviceaccount.yaml
 │   ├── service.yaml
 │   ├── ingress.yaml
 │   ├── configmap.yaml
@@ -40,7 +36,8 @@ keywords:
   - web
   - api
 maintainers:
-  - name: Example Team
+  - name: Team
+    email: team@example.com
 dependencies:
   - name: postgresql
     version: "12.x.x"
@@ -75,8 +72,6 @@ podSecurityContext:
   runAsNonRoot: true
   runAsUser: 1000
   fsGroup: 1000
-  seccompProfile:
-    type: RuntimeDefault
 
 securityContext:
   allowPrivilegeEscalation: false
@@ -128,49 +123,16 @@ config:
   logLevel: info
   cacheTtl: 3600
 
-# Name of a Secret managed outside this chart. Keep values out of values files.
-existingSecret: ""
+# Secrets (use external secrets in production)
+secrets:
+  databaseUrl: ""
+  apiKey: ""
 
 # Database dependency
 postgresql:
   enabled: false
   auth:
     database: myapp
-```
-
-The numbers and integrations above are examples, not production defaults.
-Derive resources, scaling, disruption, ingress, and dependency settings from the
-target application and cluster.
-
-## values.schema.json
-
-Validate stable value names and types during linting, rendering, install, and
-upgrade:
-
-```json
-{
-  "$schema": "https://json-schema.org/draft-07/schema#",
-  "type": "object",
-  "required": ["image", "service"],
-  "properties": {
-    "image": {
-      "type": "object",
-      "required": ["repository"],
-      "properties": {
-        "repository": {"type": "string", "minLength": 1},
-        "tag": {"type": "string"}
-      }
-    },
-    "service": {
-      "type": "object",
-      "required": ["port"],
-      "properties": {
-        "port": {"type": "integer", "minimum": 1, "maximum": 65535}
-      }
-    },
-    "existingSecret": {"type": "string"}
-  }
-}
 ```
 
 ## Helper Template (_helpers.tpl)
@@ -238,28 +200,6 @@ Create the name of the service account to use
 {{- end }}
 ```
 
-## ServiceAccount Template
-
-Create the account only when the chart owns it. Disable its ambient token; a
-workload that calls the Kubernetes API should project an audience-scoped token
-and pair it with least-privilege RBAC.
-
-```yaml
-{{- if .Values.serviceAccount.create -}}
-apiVersion: v1
-kind: ServiceAccount
-metadata:
-  name: {{ include "myapp.serviceAccountName" . }}
-  labels:
-    {{- include "myapp.labels" . | nindent 4 }}
-  {{- with .Values.serviceAccount.annotations }}
-  annotations:
-    {{- toYaml . | nindent 4 }}
-  {{- end }}
-automountServiceAccountToken: false
-{{- end }}
-```
-
 ## Deployment Template
 
 ```yaml
@@ -286,7 +226,6 @@ spec:
       labels:
         {{- include "myapp.selectorLabels" . | nindent 8 }}
     spec:
-      automountServiceAccountToken: false
       {{- with .Values.imagePullSecrets }}
       imagePullSecrets:
         {{- toYaml . | nindent 8 }}
@@ -321,10 +260,8 @@ spec:
           envFrom:
             - configMapRef:
                 name: {{ include "myapp.fullname" . }}
-            {{- if .Values.existingSecret }}
             - secretRef:
-                name: {{ .Values.existingSecret }}
-            {{- end }}
+                name: {{ include "myapp.fullname" . }}
           volumeMounts:
             - name: tmp
               mountPath: /tmp
@@ -347,66 +284,27 @@ spec:
 
 ## Helm Commands
 
-Start with local validation and rendering. Rendered output may still contain
-sensitive values, so do not publish it:
-
-```bash
-# Local lint and render
-helm lint --strict ./myapp -f values-production.yaml
-helm template myapp ./myapp -f values-production.yaml --debug
-
-# Client-side dry run; inspect installed help for current major-version behavior
-helm install myapp ./myapp -f values-production.yaml --dry-run=client --debug
-```
-
-Server-side dry run and charts that use `lookup` contact the selected cluster.
-Set every target explicitly before a cluster-aware operation:
-
-```bash
-context_name="REVIEWED_CONTEXT"
-namespace_name="REVIEWED_NAMESPACE"
-release_name="REVIEWED_RELEASE"
-values_file="values-production.yaml"
-rollback_revision="REVIEWED_REVISION"
-```
-
-History is read-only but can expose release metadata and still requires cluster
-read authority:
-
-```bash
-helm history "$release_name" \
-  --kube-context "$context_name" \
-  --namespace "$namespace_name"
-```
-
-The following commands mutate release or cluster state and require explicit
-release, context, namespace, values, and revision authority:
-
 ```bash
 # Install
-helm install "$release_name" ./myapp \
-  --kube-context "$context_name" \
-  --namespace "$namespace_name" \
-  --values "$values_file" \
-  --wait
+helm install myapp ./myapp -f values-production.yaml
 
-# Upgrade; --atomic can perform an automatic rollback on failure
-helm upgrade "$release_name" ./myapp \
-  --kube-context "$context_name" \
-  --namespace "$namespace_name" \
-  --values "$values_file" \
-  --wait
+# Upgrade
+helm upgrade myapp ./myapp -f values-production.yaml
 
-# Rollback to an explicitly reviewed revision
-helm rollback "$release_name" "$rollback_revision" \
-  --kube-context "$context_name" \
-  --namespace "$namespace_name" \
-  --wait
+# Dry run
+helm install myapp ./myapp --dry-run --debug
+
+# Template output
+helm template myapp ./myapp -f values-production.yaml
+
+# Rollback
+helm rollback myapp 1
+
+# History
+helm history myapp
 
 # Uninstall
-helm uninstall "$release_name" \
-  --kube-context "$context_name" \
-  --namespace "$namespace_name"
+helm uninstall myapp
 ```
 
 ## Environment-Specific Values

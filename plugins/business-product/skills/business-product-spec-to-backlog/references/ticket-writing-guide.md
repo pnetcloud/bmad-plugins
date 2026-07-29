@@ -2,21 +2,6 @@
 
 Guidelines for creating clear, actionable Jira tickets with effective summaries and descriptions.
 
-The examples are synthetic and demonstrate writing shape only. Do not copy their
-technologies, thresholds, identifiers, links, architecture, or acceptance
-criteria into a real backlog unless the authoritative source supplies them.
-
-## Contents
-
-- Summary guidelines
-- Issue type selection
-- Description structure and examples
-- Guidance by task type
-- Acceptance criteria
-- Technical notes
-- Common mistakes
-- Length guidance
-
 ## Summary Guidelines
 
 The ticket summary should be a clear, concise action statement that immediately tells someone what needs to be done.
@@ -64,28 +49,6 @@ The ticket summary should be a clear, concise action statement that immediately 
 
 **Testing:**
 - Test, Verify, Validate
-
----
-
-## Issue Type Selection
-
-Use the target project's current metadata and hierarchy first. Names and
-semantics vary by project, so the categories below are drafting clues, not an
-automatic classifier:
-
-- A defect type such as **Bug** may fit source-backed incorrect behavior,
-  failures, regressions, or data inconsistencies.
-- A user-outcome type such as **Story** may fit a source-backed capability or
-  experience change.
-- An enabling-work type such as **Task** may fit investigation,
-  infrastructure, refactoring, configuration, documentation, or tooling.
-- A **Subtask** is valid only when project metadata permits it beneath the
-  approved parent type.
-
-Words such as "fix", "feature", or "configure" are weak evidence. Read the full
-intent, honor project conventions, and ask when the choice changes workflow or
-reporting. Never fall back to the first available issue type merely because it
-is accepted by the API.
 
 ---
 
@@ -148,8 +111,8 @@ Users need to create accounts through our REST API. This endpoint will be used b
 - [ ] Unit tests cover happy path and error cases
 
 ## Resources
-- API Spec: [source API specification link]
-- Related: [related issue key]
+- API Spec: https://company.atlassian.net/wiki/API-Design
+- Related: AUTH-123 (Login endpoint)
 ```
 
 ### Example 2: Bug Fix
@@ -182,8 +145,8 @@ The pagination offset calculation doesn't account for items with identical times
 - [ ] Performance impact < 5ms per query
 
 ## Resources
-- Bug Report: [source bug report link]
-- Related: [related issue key]
+- Bug Report: https://company.atlassian.net/wiki/BUG-456
+- Related: SEARCH-789 (Original search implementation)
 ```
 
 ### Example 3: Infrastructure Task
@@ -216,9 +179,9 @@ First step in database migration from PG12 to PG15. Need staging environment to 
 - [ ] Backup configured and tested (restore test)
 
 ## Resources
-- Migration RFC: [source migration design link]
-- Infrastructure docs: [source infrastructure documentation link]
-- Parent: [approved parent issue key]
+- Migration RFC: https://company.atlassian.net/wiki/PG15-Migration
+- Infrastructure docs: https://wiki/Database-Setup
+- Parent Epic: INFRA-100
 ```
 
 ### Example 4: Frontend Task
@@ -254,8 +217,8 @@ Part of notification system. Need UI component showing unread notification count
 
 ## Resources
 - Design mockup: [Figma link]
-- Event API docs: [source event API documentation link]
-- Related: [related issue key]
+- WebSocket docs: https://wiki/Notifications-API
+- Related: NOTIF-123 (Notification panel component)
 ```
 
 ---
