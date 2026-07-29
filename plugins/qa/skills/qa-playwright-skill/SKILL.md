@@ -4,7 +4,7 @@ description: Complete browser automation with Playwright. Auto-detects dev serve
 ---
 
 **IMPORTANT - Path Resolution:**
-This skill can be installed in different locations (plugin system, manual installation, global, or project-specific). Before executing any commands, determine the skill directory based on where you loaded this SKILL.md file, and use that path in all commands below. Replace `$SKILL_DIR` with the actual discovered path.
+This skill can be installed in different locations (plugin system, manual installation, global, or project-specific). Before executing any commands, determine the skill directory based on where you loaded this SKILL.md file, and use that path in all commands below. Replace `"/absolute/path/to/qa-playwright-skill"` with the actual discovered path.
 
 Common installation paths:
 
@@ -21,7 +21,7 @@ General-purpose browser automation skill. I'll write custom Playwright code for 
 1. **Auto-detect dev servers** - For localhost testing, ALWAYS run server detection FIRST:
 
    ```bash
-   cd $SKILL_DIR && node -e "require('./lib/helpers').detectDevServers().then(servers => console.log(JSON.stringify(servers)))"
+   cd "/absolute/path/to/qa-playwright-skill" && node -e "require('./lib/helpers').detectDevServers().then(servers => console.log(JSON.stringify(servers)))"
    ```
 
    - If **1 server found**: Use it automatically, inform user
@@ -39,14 +39,14 @@ General-purpose browser automation skill. I'll write custom Playwright code for 
 1. You describe what you want to test/automate
 2. I auto-detect running dev servers (or ask for URL if testing external site)
 3. I write custom Playwright code in `/tmp/playwright-test-*.js` (won't clutter your project)
-4. I execute it via: `cd $SKILL_DIR && node run.js /tmp/playwright-test-*.js`
+4. I execute it via: `cd "/absolute/path/to/qa-playwright-skill" && node run.js /tmp/playwright-test-*.js`
 5. Results displayed in real-time, browser window visible for debugging
 6. Test files auto-cleaned from /tmp by your OS
 
 ## Setup (First Time)
 
 ```bash
-cd $SKILL_DIR
+cd "/absolute/path/to/qa-playwright-skill"
 npm run setup
 ```
 
@@ -57,7 +57,7 @@ This installs Playwright and Chromium browser. Only needed once.
 **Step 1: Detect dev servers (for localhost testing)**
 
 ```bash
-cd $SKILL_DIR && node -e "require('./lib/helpers').detectDevServers().then(s => console.log(JSON.stringify(s)))"
+cd "/absolute/path/to/qa-playwright-skill" && node -e "require('./lib/helpers').detectDevServers().then(s => console.log(JSON.stringify(s)))"
 ```
 
 **Step 2: Write test script to /tmp with URL parameter**
@@ -67,13 +67,13 @@ cd $SKILL_DIR && node -e "require('./lib/helpers').detectDevServers().then(s => 
 const { chromium } = require('playwright');
 
 // Parameterized URL (detected or user-provided)
-const TARGET_URL = 'http://localhost:3001'; // <-- Auto-detected or from user
+const targetUrl = 'http://localhost:3001'; // <-- Auto-detected or from user
 
 (async () => {
   const browser = await chromium.launch({ headless: false });
   const page = await browser.newPage();
 
-  await page.goto(TARGET_URL);
+  await page.goto(targetUrl);
   console.log('Page loaded:', await page.title());
 
   await page.screenshot({ path: '/tmp/screenshot.png', fullPage: true });
@@ -86,7 +86,7 @@ const TARGET_URL = 'http://localhost:3001'; // <-- Auto-detected or from user
 **Step 3: Execute from skill directory**
 
 ```bash
-cd $SKILL_DIR && node run.js /tmp/playwright-test-page.js
+cd "/absolute/path/to/qa-playwright-skill" && node run.js /tmp/playwright-test-page.js
 ```
 
 ## Common Patterns
@@ -97,7 +97,7 @@ cd $SKILL_DIR && node run.js /tmp/playwright-test-page.js
 // /tmp/playwright-test-responsive.js
 const { chromium } = require('playwright');
 
-const TARGET_URL = 'http://localhost:3001'; // Auto-detected
+const targetUrl = 'http://localhost:3001'; // Auto-detected
 
 (async () => {
   const browser = await chromium.launch({ headless: false, slowMo: 100 });
@@ -105,7 +105,7 @@ const TARGET_URL = 'http://localhost:3001'; // Auto-detected
 
   // Desktop test
   await page.setViewportSize({ width: 1920, height: 1080 });
-  await page.goto(TARGET_URL);
+  await page.goto(targetUrl);
   console.log('Desktop - Title:', await page.title());
   await page.screenshot({ path: '/tmp/desktop.png', fullPage: true });
 
@@ -123,13 +123,13 @@ const TARGET_URL = 'http://localhost:3001'; // Auto-detected
 // /tmp/playwright-test-login.js
 const { chromium } = require('playwright');
 
-const TARGET_URL = 'http://localhost:3001'; // Auto-detected
+const targetUrl = 'http://localhost:3001'; // Auto-detected
 
 (async () => {
   const browser = await chromium.launch({ headless: false });
   const page = await browser.newPage();
 
-  await page.goto(`${TARGET_URL}/login`);
+  await page.goto(`${targetUrl}/login`);
 
   await page.fill('input[name="email"]', 'test@example.com');
   await page.fill('input[name="password"]', 'password123');
@@ -149,13 +149,13 @@ const TARGET_URL = 'http://localhost:3001'; // Auto-detected
 // /tmp/playwright-test-form.js
 const { chromium } = require('playwright');
 
-const TARGET_URL = 'http://localhost:3001'; // Auto-detected
+const targetUrl = 'http://localhost:3001'; // Auto-detected
 
 (async () => {
   const browser = await chromium.launch({ headless: false, slowMo: 50 });
   const page = await browser.newPage();
 
-  await page.goto(`${TARGET_URL}/contact`);
+  await page.goto(`${targetUrl}/contact`);
 
   await page.fill('input[name="name"]', 'John Doe');
   await page.fill('input[name="email"]', 'john@example.com');
@@ -240,7 +240,7 @@ const { chromium } = require('playwright');
 // /tmp/playwright-test-responsive-full.js
 const { chromium } = require('playwright');
 
-const TARGET_URL = 'http://localhost:3001'; // Auto-detected
+const targetUrl = 'http://localhost:3001'; // Auto-detected
 
 (async () => {
   const browser = await chromium.launch({ headless: false });
@@ -262,7 +262,7 @@ const TARGET_URL = 'http://localhost:3001'; // Auto-detected
       height: viewport.height,
     });
 
-    await page.goto(TARGET_URL);
+    await page.goto(targetUrl);
     await page.waitForTimeout(1000);
 
     await page.screenshot({
@@ -282,7 +282,7 @@ For quick one-off tasks, you can execute code inline without creating files:
 
 ```bash
 # Take a quick screenshot
-cd $SKILL_DIR && node run.js "
+cd "/absolute/path/to/qa-playwright-skill" && node run.js "
 const browser = await chromium.launch({ headless: false });
 const page = await browser.newPage();
 await page.goto('http://localhost:3001');
@@ -340,14 +340,14 @@ Configure custom headers for all HTTP requests via environment variables. Useful
 
 ```bash
 PW_HEADER_NAME=X-Automated-By PW_HEADER_VALUE=playwright-skill \
-  cd $SKILL_DIR && node run.js /tmp/my-script.js
+  cd "/absolute/path/to/qa-playwright-skill" && node run.js /tmp/my-script.js
 ```
 
 **Multiple headers (JSON format):**
 
 ```bash
 PW_EXTRA_HEADERS='{"X-Automated-By":"playwright-skill","X-Debug":"true"}' \
-  cd $SKILL_DIR && node run.js /tmp/my-script.js
+  cd "/absolute/path/to/qa-playwright-skill" && node run.js /tmp/my-script.js
 ```
 
 ### How It Works
@@ -386,7 +386,7 @@ For comprehensive Playwright API documentation, see [API_REFERENCE.md](API_REFER
 - **CRITICAL: Detect servers FIRST** - Always run `detectDevServers()` before writing test code for localhost testing
 - **Custom headers** - Use `PW_HEADER_NAME`/`PW_HEADER_VALUE` env vars to identify automated traffic to your backend
 - **Use /tmp for test files** - Write to `/tmp/playwright-test-*.js`, never to skill directory or user's project
-- **Parameterize URLs** - Put detected/provided URL in a `TARGET_URL` constant at the top of every script
+- **Parameterize URLs** - Put detected/provided URL in a `targetUrl` constant at the top of every script
 - **DEFAULT: Visible browser** - Always use `headless: false` unless user explicitly asks for headless mode
 - **Headless mode** - Only use `headless: true` when user specifically requests "headless" or "background" execution
 - **Slow down:** Use `slowMo: 100` to make actions visible and easier to follow
@@ -399,7 +399,7 @@ For comprehensive Playwright API documentation, see [API_REFERENCE.md](API_REFER
 **Playwright not installed:**
 
 ```bash
-cd $SKILL_DIR && npm run setup
+cd "/absolute/path/to/qa-playwright-skill" && npm run setup
 ```
 
 **Module not found:**
@@ -422,7 +422,7 @@ Codex: I'll test the marketing page across multiple viewports. Let me first dete
 I found your dev server running on http://localhost:3001
 
 [Writes custom automation script to /tmp/playwright-test-marketing.js with URL parameterized]
-[Runs: cd $SKILL_DIR && node run.js /tmp/playwright-test-marketing.js]
+[Runs: cd "/absolute/path/to/qa-playwright-skill" && node run.js /tmp/playwright-test-marketing.js]
 [Shows results with screenshots from /tmp/]
 ```
 
@@ -439,7 +439,7 @@ I found 2 dev servers. Which one should I test?
 User: "Use 3001"
 
 [Writes login automation to /tmp/playwright-test-login.js]
-[Runs: cd $SKILL_DIR && node run.js /tmp/playwright-test-login.js]
+[Runs: cd "/absolute/path/to/qa-playwright-skill" && node run.js /tmp/playwright-test-login.js]
 [Reports: ✅ Login successful, redirected to /dashboard]
 ```
 
