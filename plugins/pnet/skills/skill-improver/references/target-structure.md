@@ -12,7 +12,10 @@ Use this reference when reorganizing a skill, splitting a large entrypoint, or d
 
 ## Standard Shape
 
-Create only directories that have a real consumer. Do not add empty scaffolding.
+Create new directories only when they have a real consumer. Do not add empty
+scaffolding. Treat an existing directory as part of the baseline contract until
+its contents and consumers have been accounted for; this shape is guidance, not
+a migration mandate.
 
 ```text
 skill-name/
@@ -83,13 +86,15 @@ Add focused tests for non-trivial scripts, validators, parsers, and safety gates
 
 Measure both lines and words because dense prose can evade a line-only limit.
 
-| Surface | Goal | Structural review threshold | Completion limit |
+| Surface | Goal | Structural review threshold | Exception threshold |
 |---|---:|---:|---:|
 | Frontmatter description | 80–500 characters | Above 500 characters | 1024 characters |
 | Complete `SKILL.md` | 80–180 lines and 600–1500 words | Above 250 lines or 2000 words | 500 lines |
 | Default loaded guidance | At most 3000 words | Above 4000 words | Must be justified by the active task |
 
-Do not complete an improvement with `SKILL.md` above 500 lines. Move conditional detail into resources while preserving required behavior.
+Treat an entrypoint above 500 lines as an exception requiring an explicit
+structural rationale and follow-up plan. Do not force a split when it would make
+the active workflow incomplete or less usable.
 
 An entrypoint below the goal is acceptable when it remains complete. Never add filler to hit a minimum.
 
@@ -105,10 +110,12 @@ knowledge into directly reachable, topic-focused resources. A source cache or
 Git history is provenance and recovery evidence, not part of the installed
 skill's usable capability.
 
-Before deleting more than three files, more than 20 percent of package lines, or
-an entire resource type, require the large-deletion review defined in
-`review-prompt.md`. Package reduction is an outcome only when every valid
-capability has a reachable destination and regression scenario.
+Default to zero deleted files and zero retired capabilities. Before deleting
+more than three files, more than 20 percent of package lines, or an entire
+resource type, require the large-deletion review and explicit user approval
+defined in `review-prompt.md`. Package reduction is an incidental outcome only
+when every valid capability has a reachable destination and regression
+scenario.
 
 ## Resource Budgets
 
@@ -132,5 +139,6 @@ These are decision thresholds, not quality scores. Exceed a goal only when evide
 - Do tests cover parsers, scripts, safety gates, and important edge cases?
 - Does the active path stay within the context budget?
 - Did the refactor preserve public paths and valid behavior?
+- Does the before/after manifest explain every missing or renamed file?
 - Does the retention matrix account for every removed file and capability?
 - If the large-deletion gate triggered, was information loss reviewed separately?

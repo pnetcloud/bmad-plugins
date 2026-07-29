@@ -73,30 +73,36 @@ Stop when an authoritative source or two strong independent examples resolve the
 Classify each proposed delta:
 
 - **Keep** — specific, correct behavior worth preserving.
-- **Cut** — duplication, filler, stale claims, fictional tools, or unused context.
-- **Replace** — vague advice with an executable decision or checkable criterion.
-- **Move** — conditional detail into a directly linked resource.
+- **Refine** — correct unclear, stale, or unsafe material while retaining its
+  valid purpose.
+- **Move** — put conditional detail in a directly linked resource while
+  preserving stable paths or verified consumers.
 - **Add** — only behavior needed to close demonstrated gaps.
+- **Retire** — exceptionally remove material only after the retirement gate.
 
-Read `target-structure.md` for every review before planning the delta. Keep the entrypoint within its context-budget goals; the full skill package may remain large through progressive disclosure.
+Read `target-structure.md` before planning a delta that reorganizes resources,
+splits the entrypoint, changes public paths, or crosses a structural review
+threshold. Keep the entrypoint within its context-budget goals; the full skill
+package may remain large through progressive disclosure.
 
 Do not optimize for a score, line count, or directory template at the expense of correctness. Do not create empty resource directories.
 
-Create a capability-retention matrix before implementation:
+Create a baseline file manifest and capability-retention matrix before
+implementation:
 
 | Capability | Current artifact | Decision | Destination | Evidence | Regression scenario |
 | --- | --- | --- | --- | --- | --- |
 
-List each independently useful workflow, decision rule, reference topic,
+List every packaged file and each independently useful workflow, decision rule, reference topic,
 example, template, deterministic operation, validation gate, and output
-contract. Default valid knowledge to Keep or Move. Do not use Git history,
+contract. Default each artifact to Keep. Do not use Git history,
 ignored caches, upstream availability, age, or package size as substitutes for
 preserving behavior in the published package.
 
-A Cut requires one of these recorded reasons:
+A Retire decision requires one of these recorded reasons:
 
 - exact generated duplication with one authoritative copy retained;
-- non-behavioral filler or unreachable scaffolding;
+- non-behavioral filler with no legitimate consumer;
 - unsafe executable behavior with no legitimate consumer;
 - private or unpublishable content whose reusable method is preserved elsewhere;
 - a false or stale claim replaced by an identified authoritative source.
@@ -104,11 +110,17 @@ A Cut requires one of these recorded reasons:
 When an unsafe example also teaches a valid concept, rewrite or move the concept
 instead of deleting both.
 
+Treat an unreachable resource as a routing defect first: link it from the
+entrypoint, document its selection rule, or preserve its compatibility path.
+Inability to find a consumer is uncertainty, not proof that none exists.
+
 Trigger a large-deletion review when the diff removes more than three files,
 more than 20 percent of package lines, or an entire resource type. In a separate
 pass, compare the original package, matrix, and proposed result. Every valid
-capability must have a reachable destination and a regression scenario. Stop
-the deletion when any row is unaccounted for.
+capability must have a reachable destination and a regression scenario. Present
+the scope and expected information loss to the user and obtain explicit approval
+before implementation. Without approval or complete accounting, preserve the
+material and defer the deletion.
 
 ### 4. Implement One Coherent Delta
 
@@ -159,6 +171,7 @@ Compare before and after for:
 - task success and instruction adherence;
 - trigger precision;
 - preservation of valid behavior;
+- complete before/after file-manifest accounting;
 - complete disposition of removed files and capabilities;
 - security and authority boundaries;
 - broken links or fictional capabilities;
@@ -199,6 +212,7 @@ Then review the improvement process itself:
 - Did provenance retain URL, revision, license, candidate, and disposition?
 - Did folder placement follow progressive disclosure?
 - Does the retention matrix account for every removed artifact and valid behavior?
+- Were unchanged resources preserved instead of normalized away?
 - Did a large-deletion review use preservation evidence rather than line counts?
 - Did validation exercise behavior rather than exact prose?
 - Did the reviewer receive uncontaminated artifacts?
@@ -212,8 +226,9 @@ Return:
 ```text
 Improved: <target skill>
 Changed: <behavioral deltas>
-Removed: <bloat, stale guidance, or unsafe behavior>
-Structure: <entrypoint size and resources added, moved, or removed>
+Retired: <exceptionally removed material and evidence, or none>
+Preserved: <capabilities kept or moved and their destinations>
+Structure: <entrypoint size and resources added, moved, or retired>
 Evidence: <validators, tests, scenarios, before/after>
 Sources: <adopted and rejected practices with provenance, or none>
 Security: <findings and dispositions>

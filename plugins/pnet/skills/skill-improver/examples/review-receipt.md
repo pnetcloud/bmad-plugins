@@ -3,9 +3,9 @@
 ```text
 Improved: example-skill
 Changed: tightened triggers; added an explicit failure path; made source selection conditional
-Removed: duplicated examples and an unavailable tool assumption
+Retired: one exact generated duplicate; retained the authoritative example
 Preserved: provider workflows moved to references/provider.md; output template retained in assets/
-Structure: SKILL.md 340 → 142 lines; moved provider details to references/provider.md
+Structure: SKILL.md 176 → 164 lines; provider details remain reachable in references/provider.md
 Retention: 9 capabilities accounted for; large-deletion gate not triggered
 Evidence: structure validator; 12 tests; baseline capability scenarios plus positive, negative, main, and permission-denied cases
 Sources: adopted one retrieval rule from source/revision/license; rejected installer and credential handling
