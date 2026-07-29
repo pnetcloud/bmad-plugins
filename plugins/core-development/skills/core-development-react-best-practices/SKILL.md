@@ -9,7 +9,7 @@ metadata:
 
 # Vercel React Best Practices
 
-Comprehensive performance optimization guide for React and Next.js applications, maintained by Vercel. Contains 45 rules across 8 categories, prioritized by impact to guide automated refactoring and code generation.
+Comprehensive performance optimization guide for React and Next.js applications, maintained by Vercel. Contains 51 rules across 8 categories, prioritized by impact to guide automated refactoring and code generation.
 
 ## When to Apply
 
@@ -56,6 +56,8 @@ Reference these guidelines when:
 - `server-cache-react` - Use React.cache() for per-request deduplication
 - `server-cache-lru` - Use LRU cache for cross-request caching
 - `server-serialization` - Minimize data passed to client components
+- `server-auth-actions` - Authenticate and authorize inside Server Actions
+- `server-dedup-props` - Reuse RSC prop references to avoid duplicate serialization
 - `server-parallel-fetching` - Restructure components to parallelize fetches
 - `server-after-nonblocking` - Use after() for non-blocking operations
 
@@ -63,6 +65,8 @@ Reference these guidelines when:
 
 - `client-swr-dedup` - Use SWR for automatic request deduplication
 - `client-event-listeners` - Deduplicate global event listeners
+- `client-localstorage-schema` - Version keys and minimize stored data
+- `client-passive-event-listeners` - Use passive touch and wheel listeners when appropriate
 
 ### 5. Re-render Optimization (MEDIUM)
 
@@ -73,6 +77,8 @@ Reference these guidelines when:
 - `rerender-functional-setstate` - Use functional setState for stable callbacks
 - `rerender-lazy-state-init` - Pass function to useState for expensive values
 - `rerender-transitions` - Use startTransition for non-urgent updates
+- `rerender-memo-with-default-value` - Hoist non-primitive default props for memoized components
+- `rerender-simple-expression-in-memo` - Avoid useMemo for cheap primitive expressions
 
 ### 6. Rendering Performance (MEDIUM)
 
