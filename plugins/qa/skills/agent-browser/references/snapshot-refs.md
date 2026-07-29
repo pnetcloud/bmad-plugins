@@ -18,12 +18,12 @@ Compact element references that reduce context usage dramatically for AI agents.
 
 Traditional approach:
 ```
-Full DOM/HTML → AI parses → CSS selector → Action (~3000-5000 tokens)
+Full DOM/HTML → model parses → selector → action (large context)
 ```
 
 agent-browser approach:
 ```
-Compact snapshot → @refs assigned → Direct interaction (~200-400 tokens)
+Compact snapshot → refs assigned → direct interaction (bounded context)
 ```
 
 ## The Snapshot Command
@@ -69,10 +69,10 @@ Once you have refs, interact directly:
 agent-browser click @e6
 
 # Fill email input
-agent-browser fill @e10 "user@example.com"
+agent-browser fill @e10 "SYNTHETIC_ACCOUNT"
 
 # Fill password
-agent-browser fill @e11 "password123"
+agent-browser fill @e11 "SECRET_FROM_APPROVED_INPUT"
 
 # Submit the form
 agent-browser click @e12
@@ -176,8 +176,8 @@ agent-browser snapshot -i
 # @e6 [button] "Cancel"
 
 # Interact with iframe elements directly using their refs
-agent-browser fill @e3 "4111111111111111"
-agent-browser fill @e4 "12/28"
+agent-browser fill @e3 "TEST_CARD_VALUE"
+agent-browser fill @e4 "TEST_EXPIRY_VALUE"
 agent-browser click @e5
 ```
 

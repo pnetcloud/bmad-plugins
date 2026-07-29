@@ -26,7 +26,7 @@ agent-browser --session auth open https://app.example.com/login
 agent-browser --session public open https://example.com
 
 # Commands are isolated by session
-agent-browser --session auth fill @e1 "user@example.com"
+agent-browser --session auth fill @e1 "SYNTHETIC_ACCOUNT"
 agent-browser --session public get text body
 ```
 
@@ -46,14 +46,14 @@ Each session has independent:
 
 ```bash
 # Save cookies, storage, and auth state
-agent-browser state save /path/to/auth-state.json
+agent-browser state save .browser-state/auth.json
 ```
 
 ### Load Session State
 
 ```bash
 # Restore saved state
-agent-browser state load /path/to/auth-state.json
+agent-browser state load .browser-state/auth.json
 
 # Continue with authenticated session
 agent-browser open https://app.example.com/dashboard
@@ -75,28 +75,14 @@ agent-browser open https://app.example.com/dashboard
 ### Authenticated Session Reuse
 
 ```bash
-#!/bin/bash
-# Save login state once, reuse many times
-
-STATE_FILE="/tmp/auth-state.json"
-
-# Check if we have saved state
-if [[ -f "$STATE_FILE" ]]; then
-    agent-browser state load "$STATE_FILE"
-    agent-browser open https://app.example.com/dashboard
-else
-    # Perform login
-    agent-browser open https://app.example.com/login
-    agent-browser snapshot -i
-    agent-browser fill @e1 "$USERNAME"
-    agent-browser fill @e2 "$PASSWORD"
-    agent-browser click @e3
-    agent-browser wait --load networkidle
-
-    # Save for future use
-    agent-browser state save "$STATE_FILE"
-fi
+# Derive a collision-resistant session name, then use installed-version restore.
+session_name="$(agent-browser session id --scope worktree --prefix authenticated)"
+agent-browser --session "$session_name" --restore open https://app.example.com
 ```
+
+Use only state that the user authorized for this task. Do not perform or script a
+fresh login merely because restore failed; verify the account and request a
+credential-safe path.
 
 ### Concurrent Scraping
 
@@ -104,10 +90,10 @@ fi
 #!/bin/bash
 # Scrape multiple sites concurrently
 
-# Start all sessions
-agent-browser --session site1 open https://site1.com &
-agent-browser --session site2 open https://site2.com &
-agent-browser --session site3 open https://site3.com &
+# Start a bounded authorized set of sessions
+agent-browser --session site1 open https://site1.example &
+agent-browser --session site2 open https://site2.example &
+agent-browser --session site3 open https://site3.example &
 wait
 
 # Extract from each
@@ -121,12 +107,15 @@ agent-browser --session site2 close
 agent-browser --session site3 close
 ```
 
+Concurrency multiplies traffic and external effects. Bound it from the target's
+rate limits and authorization; never use parallel sessions to evade controls.
+
 ### A/B Testing Sessions
 
 ```bash
 # Test different user experiences
-agent-browser --session variant-a open "https://app.com?variant=a"
-agent-browser --session variant-b open "https://app.com?variant=b"
+agent-browser --session variant-a open "https://app.example?variant=a"
+agent-browser --session variant-b open "https://app.example?variant=b"
 
 # Compare
 agent-browser --session variant-a screenshot /tmp/variant-a.png
@@ -160,8 +149,8 @@ agent-browser session list
 
 ```bash
 # GOOD: Clear purpose
-agent-browser --session github-auth open https://github.com
-agent-browser --session docs-scrape open https://docs.example.com
+agent-browser --session account-check open https://app.example
+agent-browser --session docs-review open https://docs.example
 
 # AVOID: Generic names
 agent-browser --session s1 open https://github.com
@@ -177,17 +166,12 @@ agent-browser --session scrape close
 
 ### 3. Handle State Files Securely
 
-```bash
-# Don't commit state files (contain auth tokens!)
-echo "*.auth-state.json" >> .gitignore
-
-# Delete after use
-rm /tmp/auth-state.json
-```
+State and profile files can contain cookies, tokens, history, and personal data.
+Choose a task-owned location outside version control, verify the repository's
+ignore rules without editing them implicitly, restrict permissions, and remove
+only the exact owned artifact when its retention period ends.
 
 ### 4. Timeout Long Sessions
 
-```bash
-# Set timeout for automated scripts
-timeout 60 agent-browser --session long-task get text body
-```
+Apply a bounded deadline through the caller or installed CLI. On expiry, close
+the owned session and report whether any action or artifact is left uncertain.

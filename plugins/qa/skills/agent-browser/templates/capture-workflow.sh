@@ -1,69 +1,77 @@
-#!/bin/bash
-# Template: Content Capture Workflow
-# Purpose: Extract content from web pages (text, screenshots, PDF)
-# Usage: ./capture-workflow.sh <url> [output-dir]
+#!/usr/bin/env bash
+# Template: Capture text, structure, screenshot, and PDF from one authorized URL.
+# Usage: ./capture-workflow.sh <url> <allowed-domains> [output-dir]
 #
 # Outputs:
-#   - page-full.png: Full page screenshot
-#   - page-structure.txt: Page element structure with refs
-#   - page-text.txt: All text content
-#   - page.pdf: PDF version
-#
-# Optional: Load auth state for protected pages
+#   page-full.png
+#   page-structure.txt
+#   page-text.txt
+#   page.pdf
 
 set -euo pipefail
 
-TARGET_URL="${1:?Usage: $0 <url> [output-dir]}"
-OUTPUT_DIR="${2:-.}"
+target_url="${1:?Usage: $0 <url> <allowed-domains> [output-dir]}"
+allowed_domains="${2:?Usage: $0 <url> <allowed-domains> [output-dir]}"
+output_dir="${3:-./browser-artifacts}"
 
-echo "Capturing: $TARGET_URL"
-mkdir -p "$OUTPUT_DIR"
+case "$output_dir" in
+    ""|"."|".."|"/"|/*|"../"*|*/"../"*|*/"..")
+        printf '%s\n' "output directory must be a task-owned relative path" >&2
+        exit 2
+        ;;
+esac
 
-# Optional: Load authentication state
-# if [[ -f "./auth-state.json" ]]; then
-#     echo "Loading authentication state..."
-#     agent-browser state load "./auth-state.json"
-# fi
+reject_symlink_ancestors() {
+    local path="$1"
+    local current=""
+    local part
+    local remaining="${path#./}"
 
-# Navigate to target
-agent-browser open "$TARGET_URL"
-agent-browser wait --load networkidle
+    while [[ -n "$remaining" ]]; do
+        if [[ "$remaining" == */* ]]; then
+            part="${remaining%%/*}"
+            remaining="${remaining#*/}"
+        else
+            part="$remaining"
+            remaining=""
+        fi
+        [[ -z "$part" || "$part" == "." ]] && continue
+        current="${current:+$current/}$part"
+        if [[ -L "$current" ]]; then
+            printf '%s\n' "output path must not contain a symlink" >&2
+            exit 2
+        fi
+    done
+}
 
-# Get metadata
-TITLE=$(agent-browser get title)
-URL=$(agent-browser get url)
-echo "Title: $TITLE"
-echo "URL: $URL"
+reject_symlink_ancestors "$output_dir"
 
-# Capture full page screenshot
-agent-browser screenshot --full "$OUTPUT_DIR/page-full.png"
-echo "Saved: $OUTPUT_DIR/page-full.png"
+if ! command -v agent-browser >/dev/null 2>&1; then
+    printf '%s\n' "agent-browser is required but was not found" >&2
+    exit 2
+fi
 
-# Get page structure with refs
-agent-browser snapshot -i > "$OUTPUT_DIR/page-structure.txt"
-echo "Saved: $OUTPUT_DIR/page-structure.txt"
+mkdir -p -- "$output_dir"
+session_name="$(agent-browser session id --scope worktree --prefix capture)"
+cleanup() {
+    agent-browser --session "$session_name" close >/dev/null 2>&1 || true
+}
+trap cleanup EXIT
 
-# Extract all text content
-agent-browser get text body > "$OUTPUT_DIR/page-text.txt"
-echo "Saved: $OUTPUT_DIR/page-text.txt"
+agent-browser --session "$session_name" \
+    --allowed-domains "$allowed_domains" \
+    --content-boundaries \
+    --max-output 20000 \
+    open "$target_url"
+agent-browser --session "$session_name" wait --load networkidle
 
-# Save as PDF
-agent-browser pdf "$OUTPUT_DIR/page.pdf"
-echo "Saved: $OUTPUT_DIR/page.pdf"
+agent-browser --session "$session_name" screenshot --full "$output_dir/page-full.png"
+agent-browser --session "$session_name" snapshot -i > "$output_dir/page-structure.txt"
+agent-browser --session "$session_name" get text body > "$output_dir/page-text.txt"
+agent-browser --session "$session_name" pdf "$output_dir/page.pdf"
 
-# Optional: Extract specific elements using refs from structure
-# agent-browser get text @e5 > "$OUTPUT_DIR/main-content.txt"
-
-# Optional: Handle infinite scroll pages
-# for i in {1..5}; do
-#     agent-browser scroll down 1000
-#     agent-browser wait 1000
-# done
-# agent-browser screenshot --full "$OUTPUT_DIR/page-scrolled.png"
-
-# Cleanup
-agent-browser close
-
-echo ""
-echo "Capture complete:"
-ls -la "$OUTPUT_DIR"
+printf '%s\n' \
+    "$output_dir/page-full.png" \
+    "$output_dir/page-structure.txt" \
+    "$output_dir/page-text.txt" \
+    "$output_dir/page.pdf"
