@@ -9,7 +9,9 @@
     "analysis_version": "3.0.0",
     "source_type": "community",
     "content_hash": "009d444603b85056bf27dac4c57fe352f5b78365364a3c0e69811f6d3cba9b11",
-    "tree_hash": "412259a91e00cfab4baf99f748677e7bd6830db6fad23938240d3211fed85164"
+    "tree_hash": "412259a91e00cfab4baf99f748677e7bd6830db6fad23938240d3211fed85164",
+    "scope": "historical-upstream-snapshot",
+    "review_notice": "This report describes the recorded upstream snapshot. It is retained for provenance and is not current framework guidance, validation evidence, or authority to apply its claims without checking the active skill references and target project."
   },
   "skill": {
     "name": "frontend-dev-guidelines",
@@ -683,7 +685,9 @@
       },
       {
         "question": "Is my data safe when using Server Components?",
-        "answer": "Yes. Server Components execute on your infrastructure. Data never leaves your server - it is fetched and rendered before sending HTML to the client."
+        "historical_answer": "Yes. Server Components execute on your infrastructure. Data never leaves your server - it is fetched and rendered before sending HTML to the client.",
+        "review_status": "rejected-unsafe-absolute",
+        "answer": "Server Components execute on the server, but intended rendered output and serialized values can reach the browser. Keep secrets and privileged records behind server-only boundaries, minimize returned data, and inspect every value passed to Client Components or rendered into output."
       },
       {
         "question": "Why is my component rendering on the client instead of server?",

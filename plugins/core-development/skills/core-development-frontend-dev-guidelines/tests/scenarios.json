@@ -1,0 +1,111 @@
+[
+  {
+    "id": "next-app-router-component",
+    "tags": ["positive-trigger", "main-task"],
+    "given": "A Next.js App Router project asks for an interactive component using its existing TypeScript and UI conventions.",
+    "require": [
+      "Inspect installed versions and project primitives.",
+      "Keep the client boundary around the required interaction.",
+      "Implement relevant interaction and accessibility states."
+    ],
+    "forbid": [
+      "Replace the project design system or directory layout with an example."
+    ]
+  },
+  {
+    "id": "backend-only-change",
+    "tags": ["negative-trigger"],
+    "given": "The request changes only a backend worker and has no frontend contract.",
+    "require": [
+      "Do not activate this skill."
+    ],
+    "forbid": [
+      "Introduce frontend framework guidance into the backend task."
+    ]
+  },
+  {
+    "id": "non-next-react-project",
+    "tags": ["negative-trigger", "scope"],
+    "given": "A React project uses another framework and no Next.js migration is requested.",
+    "require": [
+      "Preserve the existing framework and use only generally applicable React guidance."
+    ],
+    "forbid": [
+      "Create App Router files, Server Actions, or Next.js imports."
+    ]
+  },
+  {
+    "id": "server-action-mutation",
+    "tags": ["main-task", "safety"],
+    "given": "A form invokes a Server Action that changes user-owned data.",
+    "require": [
+      "Validate the input on the trusted boundary.",
+      "Authenticate the actor and authorize the exact mutation.",
+      "Make validation errors observable through a compatible action-state consumer.",
+      "Use durable uniqueness or transactional deduplication and verify replay behavior.",
+      "Define pending, error, retry, and duplicate-submission behavior."
+    ],
+    "forbid": [
+      "Treat a hidden client control or Server Component caller as authorization."
+    ]
+  },
+  {
+    "id": "version-sensitive-cache",
+    "tags": ["framework-version", "safety"],
+    "given": "The task changes data freshness but the installed Next.js version and cache contract are not yet known.",
+    "require": [
+      "Inspect the installed version and official matching documentation.",
+      "Establish freshness, cache, revalidation, and invalidation requirements."
+    ],
+    "forbid": [
+      "Copy an old cache default or claim automatic deduplication without evidence."
+    ]
+  },
+  {
+    "id": "customized-ui-primitive",
+    "tags": ["retention", "accessibility"],
+    "given": "A project-owned shadcn/ui primitive was customized and a caller appears to omit accessible behavior.",
+    "require": [
+      "Inspect the installed primitive and wrappers before attributing a call-site defect.",
+      "Verify resulting semantics, keyboard behavior, focus, and state."
+    ],
+    "forbid": [
+      "Assume the component is accessible merely because it originated from shadcn/ui."
+    ]
+  },
+  {
+    "id": "unmeasured-performance-request",
+    "tags": ["performance", "evidence"],
+    "given": "A page feels slow and currently uses no memoization hooks.",
+    "require": [
+      "Capture a relevant baseline and identify the dominant cause.",
+      "Add memoization only for a demonstrated calculation or identity contract."
+    ],
+    "forbid": [
+      "Add useMemo and useCallback to every Client Component."
+    ]
+  },
+  {
+    "id": "legacy-korean-trigger",
+    "tags": ["positive-trigger", "retention-trigger"],
+    "given": "A Korean request asks for 컴포넌트 생성, 데이터 페칭, 스타일링, or 라우팅 in a Next.js frontend.",
+    "require": [
+      "Activate the skill and route to the relevant topic reference."
+    ],
+    "forbid": [
+      "Miss the request because the revised workflow is written in English."
+    ]
+  },
+  {
+    "id": "legacy-file-organization-trigger",
+    "tags": ["positive-trigger", "retention-trigger"],
+    "given": "The request asks only to organize frontend code or improve 파일 구조 in a Next.js project.",
+    "require": [
+      "Activate the skill and preserve the existing project layout unless a change is required.",
+      "Route to the file-organization alternatives."
+    ],
+    "forbid": [
+      "Miss the request or impose the example feature-folder layout."
+    ]
+  }
+]
