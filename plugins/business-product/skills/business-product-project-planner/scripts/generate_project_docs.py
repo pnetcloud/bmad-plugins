@@ -285,8 +285,7 @@ services:
     build: .
     ports:
       - "3000:3000"
-    environment:
-      - DATABASE_URL=${DATABASE_URL}
+    # Add project-specific runtime configuration here.
     depends_on:
       - database
       
@@ -294,8 +293,7 @@ services:
     image: postgres:15
     volumes:
       - db_data:/var/lib/postgresql/data
-    environment:
-      - POSTGRES_PASSWORD=${DB_PASSWORD}
+    # Inject credentials through the deployment environment or secret store.
 
 volumes:
   db_data:
@@ -303,10 +301,7 @@ volumes:
 
 ### Environment Variables
 ```
-DATABASE_URL=postgresql://user:pass@localhost/dbname
-API_KEY=your-api-key
-JWT_SECRET=your-secret-key
-NODE_ENV=production
+<configuration-name>=<value supplied by the deployment environment>
 ```
 
 ## Performance Targets

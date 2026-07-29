@@ -453,7 +453,7 @@ class EntityName:
 
 ### Environment Variables
 ```
-CATEGORY_VAR=description
+<configuration-name>=<description>
 ```
 
 ## Performance Targets
