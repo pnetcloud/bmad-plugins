@@ -1,6 +1,9 @@
 # Advanced Dockerfile Patterns
 
-Production-ready Dockerfile techniques.
+Dockerfile techniques that must be adapted to the application, approved base
+images, lock files, and runtime policy. A build executes the Dockerfile and can
+access the network, build context, daemon cache, and explicitly mounted secrets;
+inspect all of them before building.
 
 ## Multi-Stage Builds
 
@@ -8,7 +11,8 @@ Production-ready Dockerfile techniques.
 
 ```dockerfile
 # Stage 1: Build dependencies
-FROM python:3.11-slim AS builder
+# Replace this example tag with the project-approved version or digest.
+FROM python:3.12-slim AS builder
 
 WORKDIR /app
 
@@ -26,7 +30,7 @@ COPY requirements.txt .
 RUN pip install --no-cache-dir -r requirements.txt
 
 # Stage 2: Production image
-FROM python:3.11-slim
+FROM python:3.12-slim
 
 WORKDIR /app
 
@@ -42,7 +46,7 @@ USER appuser
 COPY --chown=appuser:appuser src/ ./src/
 
 EXPOSE 8000
-CMD ["python", "-m", "uvicorn", "src.main:app", "--host", "0.0.0.0"]
+CMD ["python", "-m", "src.main"]
 ```
 
 ### Node.js Application
@@ -52,7 +56,7 @@ CMD ["python", "-m", "uvicorn", "src.main:app", "--host", "0.0.0.0"]
 FROM node:20-alpine AS deps
 WORKDIR /app
 COPY package*.json ./
-RUN npm ci --only=production
+RUN npm ci --omit=dev
 
 # Stage 2: Build
 FROM node:20-alpine AS builder
@@ -104,6 +108,7 @@ COPY --from=builder /etc/ssl/certs/ca-certificates.crt /etc/ssl/certs/
 # Copy binary
 COPY --from=builder /app/server /server
 
+USER 65532:65532
 EXPOSE 8080
 ENTRYPOINT ["/server"]
 ```
@@ -178,31 +183,36 @@ USER appuser
 # Application writes only to /tmp and /var/log/app
 ```
 
-### No Secrets in Image
+### No Secrets in Image or History
 
 ```dockerfile
-# WRONG - Secret in build arg
-ARG API_KEY
-ENV API_KEY=${API_KEY}
+# WRONG: build arguments and environment instructions persist in metadata.
+ARG package_credential
+ENV package_credential=${package_credential}
 
-# CORRECT - Secret at runtime
-# Pass via environment variable or secret manager
-ENV API_KEY=""  # Set at runtime
+# CORRECT: consume a BuildKit secret only in the instruction that needs it.
+# syntax=docker/dockerfile:1
+RUN --mount=type=secret,id=package_config,target=/run/secrets/package_config \
+    package-manager install --config /run/secrets/package_config
 ```
 
-### Minimal Base Image
+Do not copy the mounted file, print it, or let the consuming command persist it
+in caches or generated configuration. Runtime credentials belong in the
+orchestrator's approved secret integration, not the Dockerfile.
+
+### Minimal Compatible Base Image
 
 ```dockerfile
-# Full image: ~1GB
+# Full distribution image
 FROM python:3.11
 
-# Slim image: ~150MB
+# Slim distribution image
 FROM python:3.11-slim
 
-# Alpine image: ~50MB (but musl libc issues)
+# Alpine image; verify musl compatibility first
 FROM python:3.11-alpine
 
-# Distroless: Minimal, no shell
+# Distroless image; verify debugging and certificate requirements
 FROM gcr.io/distroless/python3-debian12
 ```
 
@@ -226,17 +236,17 @@ HEALTHCHECK --interval=30s --timeout=3s \
 
 ```dockerfile
 # Declare build args
-ARG PYTHON_VERSION=3.11
-ARG APP_ENV=production
+ARG language_version=3.12
+ARG build_mode=production
 
-FROM python:${PYTHON_VERSION}-slim
+FROM python:${language_version}-slim
 
 # Use in ENV
-ARG APP_ENV
-ENV APP_ENV=${APP_ENV}
+ARG build_mode
+ENV app_mode=${build_mode}
 
 # Conditional logic
-RUN if [ "$APP_ENV" = "development" ]; then \
+RUN if [ "$build_mode" = "development" ]; then \
         pip install debugpy pytest; \
     fi
 ```
@@ -321,10 +331,13 @@ WORKDIR /app
 COPY requirements.txt .
 RUN pip install -r requirements.txt
 COPY src/ ./src/
+RUN useradd --create-home --shell /usr/sbin/nologin appuser
 
 # Debug stage
 FROM base AS debug
 RUN pip install debugpy
+USER appuser
+# Bind inside the isolated container; publish only to host loopback.
 CMD ["python", "-m", "debugpy", "--listen", "0.0.0.0:5678", "-m", "src.main"]
 
 # Production stage
@@ -335,6 +348,17 @@ CMD ["python", "-m", "src.main"]
 
 Build specific target:
 ```bash
-docker build --target debug -t myapp:debug .
-docker build --target production -t myapp:latest .
+docker build --target debug -t example-app:debug-review .
+docker build --target production -t example-app:release-1 .
 ```
+
+After reviewing the image entrypoint and authorizing local code execution,
+attach to the debug target without exposing the debugger beyond the host:
+
+```bash
+docker run --rm --publish 127.0.0.1:5678:5678 example-app:debug-review
+```
+
+Do not publish a debugger in a shared or production environment. The wildcard
+listener is contained inside the container; the host-side mapping remains
+loopback-only.
