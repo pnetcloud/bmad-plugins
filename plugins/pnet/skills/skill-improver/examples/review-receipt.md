@@ -2,20 +2,21 @@
 
 ```text
 Improved: example-skill
-Changed: tightened triggers; added an explicit failure path; made source selection conditional
-Retired: one exact generated duplicate; retained the authoritative example
-Preserved: provider workflows moved to references/provider.md; output template retained in assets/
-Removal ledger: baseline `references/generated-provider.md`; duplicated provider lookup; Retire exact generated duplicate; destination `references/provider.md`; identical lookup and its scenario remain
-Structure: SKILL.md 176 → 164 lines; provider details remain reachable in references/provider.md
-Retention: 9 capabilities accounted for; large-deletion gate not triggered
-Evidence: structure validator; 12 tests; baseline capability scenarios plus positive, negative, main, and permission-denied cases
+Changed: clarified that a remote write requires explicit authority
+Retired: none
+Preserved: existing read and write workflows, examples, paths, and output shape
+Removal ledger: empty
+Structure: no files added, removed, renamed, or moved; SKILL.md 92 → 95 lines
+Affected surfaces: authority paragraph and remote-write completion rule
+Evidence: structure validator; existing focused tests; read-only, authorized-write, and permission-denied cases recorded in the local receipt
 Sources: adopted one retrieval rule from source/revision/license; rejected installer and credential handling
 Security: 0 blocking findings; two heuristic warnings reviewed as defensive guidance
-Review: one link finding patched; no unresolved blocking findings
+Review: independent review not required for this non-executable narrow wording correction
 Remaining: provider B behavior needs runtime evidence
 ```
 
 The receipt reports behavioral evidence, preservation, and unresolved
 uncertainty. It does not treat fewer lines, fewer files, or a scanner score as
-proof of improvement. When the large-deletion gate triggers, attach the
-capability-retention matrix and the separate information-loss review.
+proof of improvement. For an approved structural change, attach the
+capability-retention matrix, removal ledger, and separate information-loss
+review.

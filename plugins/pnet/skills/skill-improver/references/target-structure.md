@@ -4,18 +4,18 @@ Use this reference when reorganizing a skill, splitting a large entrypoint, or d
 
 ## Contents
 
-- Standard shape
+- Available shape
 - Placement rules
-- Entrypoint budgets
-- Resource budgets
+- Entrypoint review signals
+- Resource review signals
 - Structural review checklist
 
-## Standard Shape
+## Available Shape
 
-Create new directories only when they have a real consumer. Do not add empty
-scaffolding. Treat an existing directory as part of the baseline contract until
-its contents and consumers have been accounted for; this shape is guidance, not
-a migration mandate.
+These directories are options, not a target every skill should reach. Create a
+directory only when a real task will use it. Do not add empty scaffolding,
+scenario catalogs, generic references, or contract tests to normalize a
+collection. Treat the existing shape as the default contract.
 
 ```text
 skill-name/
@@ -82,25 +82,23 @@ Store files intended for produced output and not normally loaded as instruction 
 
 Add focused tests for non-trivial scripts, validators, parsers, and safety gates. Do not create tests that merely assert exact prose.
 
-## Entrypoint Budgets
+## Entrypoint Review Signals
 
 Measure both lines and words because dense prose can evade a line-only limit.
 
-| Surface | Goal | Structural review threshold | Exception threshold |
-|---|---:|---:|---:|
-| Frontmatter description | 80–500 characters | Above 500 characters | 1024 characters |
-| Complete `SKILL.md` | 80–180 lines and 600–1500 words | Above 250 lines or 2000 words | 500 lines |
-| Default loaded guidance | At most 3000 words | Above 4000 words | Must be justified by the active task |
+| Surface | Review signal | Hard format limit |
+|---|---:|---:|
+| Frontmatter description | Above 500 characters | 1024 characters |
+| Complete `SKILL.md` | Above 250 lines or 2000 words | None |
+| Default-loaded guidance | Evidence of irrelevant loading in real tasks | None |
 
-Treat an entrypoint above 500 lines as an exception requiring an explicit
-structural rationale and follow-up plan. Do not force a split when it would make
-the active workflow incomplete or less usable.
+These signals trigger a question, not a rewrite: would moving one coherent,
+conditionally used topic reduce loaded context without weakening the active
+workflow? If the answer is unproven, keep the entrypoint unchanged.
 
-An entrypoint below the goal is acceptable when it remains complete. Never add filler to hit a minimum.
-For an existing skill, these bands trigger review rather than authorize a
-rewrite. Prefer improving routing and moving a coherent conditional topic with
-its full detail; retain the current entrypoint when a safe, lossless split is
-not yet demonstrated.
+There is no minimum line or word count. Never expand a concise skill to satisfy
+a size band. There is also no automatic maximum: retain a large entrypoint when
+splitting would make the workflow harder to follow or risks losing knowledge.
 
 The total package has no fixed size limit. A large skill is healthy when:
 
@@ -114,23 +112,24 @@ knowledge into directly reachable, topic-focused resources. A source cache or
 Git history is provenance and recovery evidence, not part of the installed
 skill's usable capability.
 
-Default to zero deleted files and zero retired capabilities. Before deleting
-more than three files, more than 20 percent of package lines, or an entire
-resource type, require the large-deletion review and explicit user approval
-defined in `review-prompt.md`. Package reduction is an incidental outcome only
-when every valid capability has a reachable destination and regression
-scenario. Changes below those thresholds still require a Retire disposition or
-removal-ledger entry; the thresholds are not a safe deletion budget.
+Default to zero deleted or renamed files and zero retired capabilities. Any
+such structural change requires the complete pre-approval proposal and
+retention matrix defined in `review-prompt.md`. Package reduction is incidental
+and never a quality goal.
 
-## Resource Budgets
+## Resource Review Signals
 
-- Reference goal: one topic, normally no more than 300 lines or 2500 words.
-- Reference split threshold: 500 lines, multiple independent topics, or repeated irrelevant loading.
-- Example goal: no more than 120 lines per scenario.
-- Scripts and tests: no prose-size target; control complexity through modularity and focused tests.
-- Assets: no context-size target because they are loaded only when needed.
+- A reference should serve one coherent conditional topic. Split only when
+  tasks repeatedly load unrelated material.
+- Keep examples discriminating and reusable; do not turn every local review
+  scenario into a published file.
+- Add scripts for repeated or fragile deterministic operations, then test them.
+- Add tests for executable behavior or stable machine contracts, not for exact
+  prose, heading presence, or a desired file count.
+- Assets have no context-size target because they are loaded only when needed.
 
-These are decision thresholds, not quality scores. Exceed a goal only when evidence shows splitting would reduce correctness or usability.
+Size is diagnostic evidence only. A large, useful resource can remain large; a
+small, unused resource should not be created.
 
 ## Structural Review Checklist
 
@@ -146,4 +145,4 @@ These are decision thresholds, not quality scores. Exceed a goal only when evide
 - Did the refactor preserve public paths and valid behavior?
 - Does the before/after manifest explain every missing or renamed file?
 - Does the retention matrix account for every removed file and capability?
-- If the large-deletion gate triggered, was information loss reviewed separately?
+- If a structural change was approved, was information loss reviewed separately?

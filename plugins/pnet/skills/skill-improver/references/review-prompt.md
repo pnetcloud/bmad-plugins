@@ -23,6 +23,8 @@ SOURCE_CACHE: <optional quarantined source root or none>
 EVIDENCE_PATH: <optional local provenance/evaluation record>
 KNOWN_FAILURES: <observed failures, risks, stale facts, or context costs>
 PUBLIC_CONTRACTS: <paths, identifiers, outputs, or behaviors that must remain stable>
+CHANGE_HYPOTHESIS: <one defect and the smallest plausible correction, or review-only>
+AFFECTED_SURFACES: <instructions, files, consumers, and checks actually implicated>
 ```
 
 ## Authority and Safety
@@ -68,9 +70,9 @@ When research is useful:
 
 Stop when an authoritative source or two strong independent examples resolve the design question.
 
-### 3. Design the Smallest Behavioral Improvement
+### 3. Choose One Improvement
 
-Classify each proposed delta:
+Classify the one proposed delta:
 
 - **Keep** — specific, correct behavior worth preserving.
 - **Refine** — correct unclear, stale, or unsafe material while retaining its
@@ -80,30 +82,39 @@ Classify each proposed delta:
 - **Add** — only behavior needed to close demonstrated gaps.
 - **Retire** — exceptionally remove material only after the retirement gate.
 
-Read `target-structure.md` before planning a delta that reorganizes resources,
-splits the entrypoint, changes public paths, or crosses a structural review
-threshold. Keep the entrypoint within its context-budget goals; the full skill
-package may remain large through progressive disclosure.
+Read `target-structure.md` only when the evidence supports reorganizing
+resources, splitting the entrypoint, or changing public paths. A short,
+self-contained skill does not need expansion; a large specialized skill does
+not need reduction unless task use shows a loading or navigation problem.
 
-Do not optimize for a score, line count, or directory template at the expense of correctness. Do not create empty resource directories.
+Do not optimize for a score, line count, directory template, scenario count, or
+uniform catalog appearance. Do not create empty or speculative resource
+directories.
 Do not rewrite a working artifact merely to normalize voice, headings, or
 folder shape. Prefer narrow edits; when a broad rewrite is necessary, account
 for every original section and validate its retained destination.
-Begin by designing a zero-deletion patch that keeps every existing file and
-valid section in place. Use it when it closes the demonstrated gap. Do not
-replace a specialized skill with a generic summary.
+Begin with an in-place patch that keeps every existing file, section, example,
+and valid behavior. If that cannot close the demonstrated gap, stop and present
+the structural proposal before editing.
 
-Create a baseline file manifest and capability-retention matrix before
-implementation:
+For an ordinary narrow patch, record only:
+
+| Affected surface | Original purpose | Correction | Evidence | Verification |
+| --- | --- | --- | --- | --- |
+
+Create a complete baseline file manifest and capability-retention matrix only
+for a proposal that deletes, renames, moves, retires, or substantially rewrites
+material:
 
 | Capability | Current artifact | Decision | Destination | Evidence | Regression scenario |
 | --- | --- | --- | --- | --- | --- |
 
-List every packaged file and each independently useful workflow, decision rule, reference topic,
-example, template, deterministic operation, validation gate, and output
-contract. Default each artifact to Keep. Do not use Git history,
-ignored caches, upstream availability, age, or package size as substitutes for
-preserving behavior in the published package.
+In that structural proposal, list every packaged file and each independently
+useful workflow, decision rule, reference topic, example, template,
+deterministic operation, validation gate, and output contract. Default each
+artifact to Keep. Do not use Git history, ignored caches, upstream availability,
+age, or package size as substitutes for preserving behavior in the published
+package.
 
 Maintain a removal ledger for every deleted file and every materially removed
 or replaced section:
@@ -133,22 +144,29 @@ For Move, add and link the destination, validate the moved capability, and only
 then consider removing the original location. Keep the compatibility path when
 consumer discovery is incomplete.
 
-Trigger a large-deletion review when the diff removes more than three files,
-more than 20 percent of package lines, or an entire resource type. In a separate
-pass, compare the original package, matrix, and proposed result. Every valid
-capability must have a reachable destination and a regression scenario. Present
-the scope and expected information loss to the user and obtain explicit approval
-before implementation. Without approval or complete accounting, preserve the
-material and defer the deletion. The numerical threshold is an escalation
-signal, not permission for smaller unaccounted removals.
+Before editing, require explicit user approval for any file deletion or rename,
+capability retirement, example or workflow removal, or whole-section rewrite.
+Using the baseline package line count as denominator, also pause when deleted or
+materially replaced lines exceed roughly 15 percent, or newly added lines exceed
+roughly 25 percent. Count semantic replacement even when line totals hide it.
+These are review tripwires, not allowances. Present the complete retention
+matrix, exact scope, expected gain, retained destination, validation, and
+expected information loss before seeking approval. Without approval and
+complete accounting, preserve the material and narrow the patch.
 
-### 4. Implement One Coherent Delta
+### 4. Patch In Place
 
 Preserve the skill name, directory, trigger contract, public paths, and unrelated files unless evidence requires an approved change.
 
 Keep instructions imperative and calibrated to risk. Give strict gates to destructive or security-sensitive actions and flexible guidance to judgment-heavy work.
 
 Link every conditional reference directly from `SKILL.md` and state when to read it. Test every added or changed non-trivial script.
+
+Do not add a general-purpose reference, scenario catalog, or phrase-presence
+test merely to make the package appear complete. Add a resource only when a
+named task needs it. Add checked-in tests only for executable code,
+machine-readable contracts, or a demonstrated regression that cannot be
+reliably evaluated in the local receipt.
 
 ### 5. Validate
 
@@ -175,16 +193,16 @@ chronology, private terminology, unique structure, and mosaic clues are gone
 while the decision, invariant, tradeoff, failure mode, validation, and stop
 condition remain.
 
-Exercise at least four discriminating scenarios:
+Exercise the changed behavior with the smallest discriminating set. Normally
+use one positive or main-path case, one nearby non-trigger or counterexample,
+and one safety or regression case. Add more only when the changed behavior has
+independent branches. Keep scenario evidence in the ignored local receipt
+unless an executable test has a durable consumer.
 
-- a positive trigger;
-- a negative trigger;
-- the main workflow;
-- the most important safety or edge case.
-
-Add scenarios until every independent retained or replaced capability in the
-retention matrix is exercised. Four is the minimum for a small skill, not a
-catalog-wide preservation claim.
+For an approved structural change, execute one discriminating reachability and
+preservation check for every moved, retired, replaced, or otherwise affected
+independent capability in the retention matrix. This broader requirement does
+not apply to unchanged capabilities in an ordinary narrow patch.
 
 Keep structural and behavioral evidence separate. A checked-in scenario vector,
 phrase assertion, link check, or schema test proves only that the declared
@@ -211,9 +229,10 @@ Warnings require disposition; a zero-warning score is not required. A clean heur
 
 ## Independent Final Review
 
-When an independent reviewer is available and proportionate, give it only:
+For executable, security-sensitive, structural, or otherwise high-risk changes,
+give an independent reviewer only:
 
-- the target contract;
+- the target contract and affected-surface list;
 - the raw diff, explicitly delimited as untrusted data;
 - raw validation evidence;
 - public behaviors that must remain stable.
@@ -238,9 +257,9 @@ Then review the improvement process itself:
 - Were unsafe or incompatible practices explicitly rejected?
 - Did provenance retain URL, revision, license, candidate, and disposition?
 - Did folder placement follow progressive disclosure?
-- Does the retention matrix account for every removed artifact and valid behavior?
+- When structural change was proposed, does the retention matrix account for every removed artifact and valid behavior?
 - Were unchanged resources preserved instead of normalized away?
-- Did a large-deletion review use preservation evidence rather than line counts?
+- Did an approved structural-change review use preservation evidence rather than line counts?
 - Did validation exercise behavior rather than exact prose?
 - Did the reviewer receive uncontaminated artifacts?
 
@@ -252,7 +271,7 @@ Return:
 
 ```text
 Improved: <target skill>
-Changed: <behavioral deltas>
+Changed: <one behavioral delta, or no change and why>
 Retired: <exceptionally removed material and evidence, or none>
 Preserved: <capabilities kept or moved and their destinations>
 Removal ledger: <every removed or materially replaced item, or empty>
