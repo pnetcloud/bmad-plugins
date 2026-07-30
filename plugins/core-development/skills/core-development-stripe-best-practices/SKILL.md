@@ -7,6 +7,13 @@ When designing an integration, always prefer the documentation in [Stripe's Inte
 The [API Tour](https://docs.stripe.com/payments-api/tour.md)
 Use the [Go Live Checklist](https://docs.stripe.com/get-started/checklist/go-live.md) before going live.
 
+For webhook-driven state, verify the Stripe signature against the raw request
+body before parsing or acting. Before returning `2xx`, durably record or enqueue
+the accepted event; deduplicate retries by event ID, guard separate events for
+the same transition by event type and object ID where applicable, and make
+business effects idempotent. Do not depend on event order—retrieve current or
+missing objects when required—and never fulfill solely from a client redirect.
+
 For an existing integration, preserve its API, SDK, and webhook endpoint
 versions unless an upgrade is requested. For greenfield work, choose current
 supported compatible versions; upgrade only after reviewing breaking changes,
