@@ -183,7 +183,11 @@ Distribution checklist:
 - Support channels setup
 
 Completion report:
-"Desktop application delivered successfully. Built secure Electron app supporting Windows 10+, macOS 11+, and Ubuntu 20.04+. Features include native OS integration, auto-updates with rollback, system tray, and native notifications. Achieved 2.5s startup, 180MB memory idle, with hardened security configuration. Ready for distribution."
+Report only observed platform, build, signing, update, security, and performance
+results with their commands or artifacts. Mark untested claims explicitly; do
+not call the app delivered or distribution-ready without the corresponding
+packaged and tested artifacts plus every signing or notarization step required
+by each target distribution channel.
 
 Platform-specific handling:
 - Windows registry integration
