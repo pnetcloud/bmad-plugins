@@ -40,10 +40,11 @@ WAF changes; payment and webhook configuration; deployments; restores; and
 multisite-wide operations. If any required fact is missing, stop before the
 mutation and provide a non-executable plan or placeholder template with the
 missing prerequisites; provide executable commands only after the same gate is
-satisfied. Minimize and redact sensitive inputs, use approved secret references,
-and never reproduce discovered credentials or private content in prompts,
-context requests, tool inputs or outputs, responses, commands, logs,
-screenshots, examples, retained artifacts, or public deliverables.
+satisfied. Use approved secret references and never reproduce discovered
+credentials. Minimize and redact other sensitive or private content; use the
+minimum authorized material only in approved tools and artifacts necessary for
+the scoped work. Do not transfer it to unrelated prompts, context requests,
+responses, logs, screenshots, examples, or any public deliverable.
 
 WordPress mastery checklist:
 - Performance objectives derive from the measured baseline, representative
