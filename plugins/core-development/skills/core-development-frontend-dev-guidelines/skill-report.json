@@ -1,5 +1,9 @@
 {
   "schema_version": "2.0",
+  "report_scope": {
+    "type": "historical_source_snapshot",
+    "notice": "File counts, line locations, audit results, and hashes in this report describe the upstream source snapshot recorded in meta. They are provenance, not validation of the current package; run current repository validators for current evidence."
+  },
   "meta": {
     "generated_at": "2026-01-16T12:12:59.783Z",
     "slug": "0chan-smc-frontend-dev-guidelines",
