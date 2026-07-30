@@ -12,5 +12,9 @@ description: Next.js standards for App Router, components, SEO, routing, and dat
 - Use dynamic imports for heavy components (code splitting).
 - Organize routes in nested folders with `layout.tsx` for shared layouts.
 - Implement i18n with Next.js built-in internationalization support.
-- Prefer `getServerSideProps` or `generateStaticParams` for data fetching depending on use case.
+- In App Router, fetch data directly from its source in async Server Components;
+  use Route Handlers when a Client Component or external caller needs an HTTP
+  endpoint. Choose caching or revalidation explicitly. Use
+  `generateStaticParams` only to prebuild dynamic route segments; do not use
+  Pages Router data functions such as `getServerSideProps` under `app/`.
 - Use API Routes only for lightweight tasks; keep business logic in backend services.
