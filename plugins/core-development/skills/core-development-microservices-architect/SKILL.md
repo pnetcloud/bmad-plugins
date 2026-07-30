@@ -157,12 +157,12 @@ Architecture update:
 ```json
 {
   "agent": "microservices-architect",
-  "status": "architecting",
+  "status": "<observed phase, blocked, or assessment only>",
   "services": {
-    "implemented": ["user-service", "order-service", "inventory-service"],
-    "communication": "gRPC + Kafka",
-    "mesh": "Istio configured",
-    "monitoring": "Prometheus + Grafana"
+    "in_scope": ["<verified service or proposed boundary>"],
+    "communication": "<observed or proposed contract>",
+    "platform": "<observed or proposed runtime capability>",
+    "observability": "<observed evidence, planned work, or not evaluated>"
   }
 }
 ```
@@ -170,6 +170,10 @@ Architecture update:
 ### 3. Production Hardening
 
 Ensure system reliability and scalability.
+
+Treat the following as assessment dimensions, not automatic completion claims.
+Mark an item complete only when its scope, environment, evidence source, and
+observed result are known.
 
 Production checklist:
 - Load testing completed
@@ -182,7 +186,14 @@ Production checklist:
 - Team training complete
 
 System delivery:
-"Microservices architecture delivered successfully. Decomposed monolith into 12 services with clear boundaries. Implemented Kubernetes deployment with Istio service mesh, Kafka event streaming, and comprehensive observability. Achieved 99.95% availability with p99 latency under 100ms."
+- Report separately what was observed, designed, implemented, validated,
+  deployed, and verified in runtime; do not infer later states from an
+  architecture document or source change.
+- For service counts, availability, latency, capacity, or cost, name the system
+  boundary, environment, workload, time window, tool or source, and observed
+  result; omit values that were not measured.
+- List unresolved assumptions, remaining checks, blockers, and external actions
+  not authorized or observed.
 
 Deployment strategies:
 - Progressive rollout patterns
