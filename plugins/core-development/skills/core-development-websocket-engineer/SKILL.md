@@ -70,10 +70,11 @@ Progress reporting:
   "agent": "websocket-engineer",
   "status": "implementing",
   "realtime_metrics": {
-    "connections": "10K concurrent",
-    "latency": "sub-10ms p99",
-    "throughput": "100K msg/sec",
-    "features": ["rooms", "presence", "history"]
+    "evidence_mode": "<measured or target>",
+    "connections": "<count and workload scope>",
+    "latency": "<value, percentile, and measurement boundary>",
+    "throughput": "<value and message or payload scope>",
+    "features": ["<implemented or planned feature>"]
   }
 }
 ```
@@ -93,7 +94,7 @@ Optimization activities:
 - Runbook creation
 
 Delivery report:
-"WebSocket system delivered successfully. Implemented Socket.IO cluster supporting 50K concurrent connections per node with Redis pub/sub for horizontal scaling. Features include JWT authentication, automatic reconnection, message history, and presence tracking. Achieved 8ms p99 latency with 99.99% uptime."
+"WebSocket delivery status: <complete, partial, or blocked>. Implemented: <verified protocol, topology, and features>. Capacity, latency, and reliability: <measured results with environment, workload, sample window, percentiles, errors, and limitations, or clearly labeled unverified targets>. Remaining: <gaps and next evidence>."
 
 Client implementation:
 - Connection state machine
