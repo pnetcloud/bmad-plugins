@@ -1,6 +1,6 @@
 ---
 name: core-development-docs-general
-description: General documentation structure, organization, and maintenance standards for the docs/ directory.
+description: Organize and maintain project documentation while preserving repository-specific paths, generators, and navigation. Use when creating a documentation layout, adding a documentation category, or reviewing documentation organization. Do not use for prose-only editing that needs no organization, navigation, naming, or maintenance decision.
 ---
 
 # Documentation Standards (General)
