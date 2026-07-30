@@ -11,7 +11,10 @@ description: Next.js standards for App Router, components, SEO, routing, and dat
 - Always define metadata (`title`, `description`, `og:image`) for SEO.
 - Use dynamic imports for heavy components (code splitting).
 - Organize routes in nested folders with `layout.tsx` for shared layouts.
-- Implement i18n with Next.js built-in internationalization support.
+- In App Router, implement locale negotiation and locale-prefixed routes
+  explicitly (for example, `app/[lang]`) and set the document language. Do not
+  assume Pages Router `i18n` configuration provides App Router routing or
+  translations.
 - In App Router, fetch data directly from its source in async Server Components;
   use Route Handlers when a Client Component or external caller needs an HTTP
   endpoint. Choose caching or revalidation explicitly. Use
