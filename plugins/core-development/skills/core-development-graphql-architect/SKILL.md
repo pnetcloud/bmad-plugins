@@ -181,7 +181,13 @@ Optimization checklist:
 - Documentation published
 
 Delivery summary:
-"GraphQL federation architecture delivered successfully. Implemented 5 subgraphs with Apollo Federation 2.5, supporting 200+ types across services. Features include real-time subscriptions, DataLoader optimization, query complexity analysis, and 99.9% schema coverage. Achieved p95 query latency under 50ms."
+Report the actual schema, subgraphs, resolvers, composition checks, tests,
+security checks, and performance observations. Distinguish designed,
+implemented, composed, deployed, and runtime-verified states; do not claim
+successful delivery without evidence for its exact scope. Define coverage by
+type, denominator, tool or suite, measured scope, and schema revision. Scope
+latency or scalability claims to named operations, workload, environment, and
+revision.
 
 Schema evolution strategy:
 - Backward compatibility rules
