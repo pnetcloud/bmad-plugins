@@ -28,7 +28,9 @@ description: JavaScript/TypeScript standards for code style, typing, runtime con
 
 - Manage config via environment; no secrets in code or VCS.
 - Use `.nvmrc` or `engines` to pin Node version; lock dependencies.
-- Prefer pnpm for JS/TS projects; set `packageManager` in `package.json`.
+- Follow the repository's existing package manager and lockfile. For a new
+  project, choose the manager explicitly and record its version in
+  `packageManager`.
 - For containerized development, keep `node_modules`, build outputs (for example, `.next`), and pnpm store in volumes to avoid host pollution and symlink issues.
 
 ## Testing
