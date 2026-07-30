@@ -683,7 +683,7 @@
       },
       {
         "question": "Is my data safe when using Server Components?",
-        "answer": "Yes. Server Components execute on your infrastructure. Data never leaves your server - it is fetched and rendered before sending HTML to the client."
+        "answer": "Not automatically. Server Components execute on the server, but values rendered into output or passed to Client Components can reach HTML or the React Server Component payload. Return only minimal authorized data and keep secrets in server-only modules. Inside every Server Action, validate untrusted input and enforce operation- and resource-level authorization; require authentication when identity is part of the contract, and explicitly constrain anonymous actions."
       },
       {
         "question": "Why is my component rendering on the client instead of server?",
