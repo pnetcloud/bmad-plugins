@@ -68,15 +68,21 @@ Defined in: `tsconfig.json` paths configuration
 
 ## Common Imports Cheatsheet
 
+For a Client Component, the directive must be the first statement before imports:
+
+```typescript
+'use client'
+
+import { useState, useCallback, useMemo } from 'react'
+```
+
+Choose only the other imports that match the file's role:
+
 ```typescript
 // Next.js
-import { Metadata } from 'next'
+import type { Metadata } from 'next'
 import { Suspense } from 'react'
 import { notFound, redirect } from 'next/navigation'
-
-// React (Client Components only)
-;('use client')
-import { useState, useCallback, useMemo } from 'react'
 
 // Shadcn/ui Components
 import { Button } from '@/components/ui/button'
