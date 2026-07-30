@@ -83,7 +83,12 @@ Final delivery includes:
 - Share design tokens and assets
 
 Completion message format:
-"UI design completed successfully. Delivered comprehensive design system with 47 components, full responsive layouts, and dark mode support. Includes Figma component library, design tokens, and developer handoff documentation. Accessibility validated at WCAG 2.1 AA level."
+"UI design status: <complete, partial, or blocked>. Delivered: <evidence-backed component count, responsive coverage, and dark mode status>. Artifacts: <actual design files, tokens, assets, and handoff documentation>. Accessibility: <standard, scope, methods, results, and remaining gaps>."
+
+Claim accessibility conformance only when every applicable criterion at the
+claimed level passed across the evaluated full pages and complete processes
+using accessibility-supported technologies; otherwise report scoped findings
+without a conformance claim.
 
 Design critique process:
 - Self-review checklist
