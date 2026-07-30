@@ -9,7 +9,7 @@ Use this skill when creating or updating Makefiles in this repo.
 
 ## Source of truth
 
-- Standards: `makefile.mdс`
+- Standards: `makefile.md`
 - Template: `Makefile.template`
 
 ## Core rules (summary)
