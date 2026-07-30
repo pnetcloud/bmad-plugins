@@ -9,5 +9,9 @@ description: GitLab CI/CD standards for stages, rules, caching, artifacts, and s
 - Use `rules:` instead of `only/except` for clarity.
 - Cache dependencies with proper keys.
 - Store artifacts with expirations; limit retention.
-- Use protected variables for secrets.
+- Keep secrets out of the repository and job output; prefer an external secrets
+  provider. When GitLab variables are required, mask, hide, protect, and
+  environment-scope them, and expose them only to reviewed trusted jobs on
+  protected refs and environments. Treat masking as log redaction, not access
+  control, and stop when pipeline code or source trust is unresolved.
 - Require pipeline green status before merge.
