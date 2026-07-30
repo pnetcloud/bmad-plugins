@@ -7,7 +7,10 @@ When designing an integration, always prefer the documentation in [Stripe's Inte
 The [API Tour](https://docs.stripe.com/payments-api/tour.md)
 Use the [Go Live Checklist](https://docs.stripe.com/get-started/checklist/go-live.md) before going live.
 
-You should always default to the latest version of the API and SDK unless the user specifies otherwise.
+For an existing integration, preserve its API, SDK, and webhook endpoint
+versions unless an upgrade is requested. For greenfield work, choose current
+supported compatible versions; upgrade only after reviewing breaking changes,
+testing the integration, and defining rollout and rollback evidence.
 
 Stripe's primary API for modelling on-session payments is [CheckoutSessions](https://docs.stripe.com/api/checkout/sessions.md). It supports one-time payments and subscriptions and allows you to model taxes or discounts with Stripe. Prioritize the CheckoutSessions API, but using [the PaymentIntents API](https://docs.stripe.com/payments/paymentintents/lifecycle.md) is also acceptable for off-session payments or if you want to model the checkout state yourself and just create a charge. Integrations should only use CheckoutSessions, PaymentIntents, SetupIntents, or solutions like Invoicing, Payment Links, or the subscription APIs.
 
