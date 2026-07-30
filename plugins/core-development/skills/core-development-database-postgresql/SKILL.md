@@ -17,8 +17,9 @@ description: PostgreSQL standards for schema design, migrations, and performance
   application generator that supports the selected UUID version and document
   the tradeoff. Benchmark the actual index and write workload when locality,
   throughput, or cost is a decision driver or identified risk. Changing an
-  existing key type requires a staged compatibility migration for referencing
-  data and clients.
+  existing key type requires staged compatibility when live references,
+  independently deployed clients, availability, or recovery risk warrants it;
+  otherwise use the measured simpler-migration path below.
 - Write explicit, version-aware migrations. Before applying one, assess its
   lock level and wait, table or index rewrite, scan, disk/WAL, replication, and
   transaction-block behavior against current data and traffic. When retained
