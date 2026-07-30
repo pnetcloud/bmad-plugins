@@ -124,7 +124,11 @@ Do not define conversion only as “CTA click.” For docs pages, activation or 
 
 ### 4. Metadata Contract
 
-- Title: usually 50 to 60 visible characters, query early when natural.
+- Title: concise, distinct, and descriptive. Google has no fixed title length
+  limit and may truncate the displayed title link to fit the device width. It
+  may instead generate a different title link from multiple page and link
+  signals when the supplied title is inaccurate, stale, boilerplate, or
+  unclear. Prioritize useful page identity over a character-count target.
 - Meta description: sell the click with value, not repetition.
 - H1: close to title but written for the page, not the SERP only.
 - Breadcrumbs: include only if they reflect real site hierarchy.

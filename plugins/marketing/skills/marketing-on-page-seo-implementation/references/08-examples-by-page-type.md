@@ -2,6 +2,10 @@
 
 Use these as implementation patterns, not copy templates. The goal is to help teams choose the right page shape, required blocks, linking behavior, schema, and indexation posture.
 
+Schema suggestions describe truthful page semantics, not guaranteed search
+features. In particular, valid `FAQPage` markup can still serve schema.org or
+other consumers, but Google removed its FAQ rich result in May 2026.
+
 ## 1. Feature Page
 
 ### Best For

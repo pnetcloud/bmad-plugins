@@ -40,6 +40,11 @@ Do not stack multiple schema types just to look sophisticated.
 
 ### FAQPage
 
+Visible, useful FAQs can still be described with `FAQPage` for schema.org or
+other consumers, but Google removed its FAQ rich result in May 2026. Do not
+treat this markup as a current Google SERP opportunity; verify the requirements
+of any other intended consumer before adding it.
+
 Do not use when:
 
 - the page does not visibly expose FAQs
