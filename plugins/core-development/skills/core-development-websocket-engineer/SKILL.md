@@ -57,7 +57,16 @@ Build robust WebSocket systems with production readiness.
 Development focus:
 - WebSocket server setup
 - Connection handler implementation
-- Authentication middleware
+- Authenticate during the handshake when the protocol permits, or use an
+  explicit post-upgrade pre-authentication state that rejects application
+  subscriptions and messages until a server-side identity is bound
+- For browser clients, validate the handshake `Origin` against an allowlist;
+  treat it as a browser cross-site defense, not as non-browser identity
+- Authorize every subscription and message action against server-side identity
+  and resource state; define session expiry, revocation, and re-authentication
+- Validate message type, schema, and size, and enforce connection and message
+  rate limits before expensive processing, routing, or fan-out
+- Use bounded queues and an explicit backpressure or slow-consumer policy
 - Message router creation
 - Event system design
 - Client library development
