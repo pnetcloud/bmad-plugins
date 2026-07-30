@@ -47,6 +47,30 @@ When invoked for implementation work, produce as many of these artifacts as the 
 4. Product pages, docs pages, comparison pages, and programmatic page families follow different ranking rules; do not treat them as interchangeable.
 5. If a page is weak, duplicative, or operationally unsafe, the correct answer is often to merge, noindex, or not build it yet.
 
+## Authority And Evidence Boundaries
+
+- Treat audit and review requests as read-only. A specification request may
+  write only the requested artifact in its authorized location; change product
+  code, content, routing, or runtime configuration only when implementation is
+  requested.
+- Before an external redirect, removal, `noindex`, canonical, robots, sitemap,
+  publish, or deploy action, confirm the active identity, exact target and
+  environment, accountable owner, authorization, and proposed scope. Include
+  exact URLs for traffic moves and affected user-agents, path patterns,
+  generated URLs, or publication endpoints for robots and sitemap changes. If
+  any required fact is missing, produce the recommendation and stop before the
+  external mutation.
+- For a destructive or traffic-moving change, preserve a validated snapshot,
+  confirm recovery is authorized and executable, and define observation,
+  abort, and rollback criteria before execution.
+- Report evidence with its source, property or account scope, timestamp,
+  current revision, and exact URL, query, and device when relevant. Keep source
+  inspection, local rendering, preview deployment, production observation,
+  crawling, indexing, declared and selected canonicals, and search appearance
+  as separate states. Do not infer a later state from an earlier one.
+- Never promise ranking, indexing, canonical selection, or a rich result.
+  Distinguish planned, implemented, verified, and externally observed outcomes.
+
 ## Ownership Model
 
 Use these boundaries unless the repo explicitly defines another split.
