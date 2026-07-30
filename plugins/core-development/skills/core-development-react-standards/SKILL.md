@@ -35,7 +35,9 @@ description: React standards for components, state management, performance, acce
 
 ## Data and APIs
 
-- Keep data fetching in hooks or containers; handle loading/error states.
+- Follow the framework's data-loading boundary. Without one, use the project's
+  client cache or a focused hook for client-owned data; handle loading and error
+  states.
 - Cancel in-flight requests on unmount when applicable.
 
 ## Testing
