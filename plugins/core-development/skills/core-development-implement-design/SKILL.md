@@ -120,7 +120,11 @@ Strive for pixel-perfect visual parity with the Figma design.
 
 ### Step 7: Validate Against Figma
 
-Before marking complete, validate the final UI against the Figma screenshot.
+Before marking complete, render the implementation in its target runtime at the
+matching viewport and state, capture the actual result, and compare it with the
+Figma screenshot. Treat the Figma image as visual reference, not evidence of
+runtime behavior, responsive states, or accessibility; validate those
+separately and record the scope and result.
 
 **Validation checklist:**
 
@@ -130,7 +134,7 @@ Before marking complete, validate the final UI against the Figma screenshot.
 - [ ] Interactive states work as designed (hover, active, disabled)
 - [ ] Responsive behavior follows Figma constraints
 - [ ] Assets render correctly
-- [ ] Accessibility standards met
+- [ ] Accessibility checks recorded with their standard, scope, and result
 
 ## Implementation Rules
 
