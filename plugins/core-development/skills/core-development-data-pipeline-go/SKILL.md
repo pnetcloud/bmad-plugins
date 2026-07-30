@@ -5,13 +5,13 @@ description: ETL data pipeline patterns for Go with Temporal orchestration and K
 
 # Data Pipeline Patterns (Go + Temporal + Kafka)
 
-Curated from generic ETL/stream/orchestration best practices, rewritten for our stack:
+Curated from generic ETL/stream/orchestration best practices for a stack using
 Go, `segmentio/kafka-go`, `pgx`, Temporal workflows.
 
 ## When to Use
 
-- Building Kafka consumer activities (IngestBlocks, etc.)
-- Designing batch INSERT pipelines (raw_* tables)
+- Building Kafka consumer activities (for example, ProcessBatch)
+- Designing batch INSERT pipelines for append-only ingest tables
 - Implementing idempotent data processing
 - Configuring Temporal workflows for long-lived data pipelines
 
@@ -63,29 +63,25 @@ func (a *Activities) IngestBatch(ctx context.Context, batchSize int) (int, error
 ## 2. Batch INSERT — pgx.Batch with ON CONFLICT
 
 ```go
-func (s *PgxRawStore) InsertRawSwaps(ctx context.Context, swaps []RawSwap) (int64, error) {
+func (s *PgxStore) InsertRecords(ctx context.Context, records []IngestRecord) (int64, error) {
     batch := &pgx.Batch{}
-    for _, sw := range swaps {
+    for _, record := range records {
         batch.Queue(`
-            INSERT INTO raw_swaps (chain_id, block_number, tx_hash, log_index,
-                block_time, pair_address, factory, protocol,
-                token0_address, token1_address,
-                token0_in, token0_out, token1_in, token1_out,
-                task_code, collected_at)
-            VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,NOW())
+            INSERT INTO ingest_records (
+                source_id, sequence, event_id, item_index,
+                occurred_at, entity_key, payload, collected_at
+            )
+            VALUES ($1,$2,$3,$4,$5,$6,$7,NOW())
             ON CONFLICT DO NOTHING`,
-            sw.ChainID, sw.BlockNumber, sw.TxHash, sw.LogIndex,
-            sw.BlockTime, sw.PairAddress, sw.Factory, sw.Protocol,
-            sw.Token0Address, sw.Token1Address,
-            sw.Token0In, sw.Token0Out, sw.Token1In, sw.Token1Out,
-            sw.TaskCode,
+            record.SourceID, record.Sequence, record.EventID, record.ItemIndex,
+            record.OccurredAt, record.EntityKey, record.Payload,
         )
     }
     br := s.pool.SendBatch(ctx, batch)
     defer br.Close()
 
     var inserted int64
-    for range swaps {
+    for range records {
         ct, err := br.Exec()
         if err != nil {
             return inserted, fmt.Errorf("batch exec: %w", err)
@@ -101,8 +97,8 @@ func (s *PgxRawStore) InsertRawSwaps(ctx context.Context, swaps []RawSwap) (int6
 ```
 ❌ Individual INSERTs in a loop → N round-trips
 ❌ INSERT ON CONFLICT UPDATE for append-only data → wasted writes
-❌ No ON CONFLICT → crashes on retried/duplicate blocks
-❌ float64 for token amounts → precision loss (use TEXT for big.Int)
+❌ No ON CONFLICT → crashes on retried/duplicate records
+❌ float64 for large exact values → precision loss (use an exact representation)
 ❌ SELECT * in production → specify columns explicitly
 ```
 
@@ -114,15 +110,15 @@ const maxIterations = 100
 func IngestWorkflow(ctx workflow.Context, state IngestState) error {
     for state.Iteration < maxIterations {
         var result IngestOutput
-        err := workflow.ExecuteActivity(actCtx, "ingest_blocks", input).Get(ctx, &result)
+        err := workflow.ExecuteActivity(actCtx, "process_batch", input).Get(ctx, &result)
         if err != nil {
             return err
         }
 
-        state.TotalBlocks += result.Blocks
+        state.TotalRecords += result.Records
         state.Iteration++
 
-        if result.Blocks == 0 {
+        if result.Records == 0 {
             _ = workflow.Sleep(ctx, 1*time.Second) // no data, backoff
         }
     }
@@ -146,24 +142,24 @@ func IngestWorkflow(ctx workflow.Context, state IngestState) error {
 | Layer | Technique |
 |-------|-----------|
 | Kafka | Manual offset commit after processing |
-| DB PK | `(chain_id, block_number, tx_hash, log_index)` |
+| DB PK | Stable source, sequence, event, and item identity |
 | SQL | `ON CONFLICT DO NOTHING` (append-only) |
-| Temporal | Same Workflow ID → singleton per network |
+| Temporal | Same Workflow ID → singleton per logical source |
 | Activity | Stateless — all state in DB/Kafka |
 
 ## 5. Data Validation at Ingest
 
 ```go
 // Validate BEFORE batch INSERT — reject bad rows
-func validateRawSwap(sw *RawSwap) error {
-    if sw.TxHash == "" {
-        return fmt.Errorf("empty tx_hash")
+func validateRecord(record *IngestRecord) error {
+    if record.EventID == "" {
+        return fmt.Errorf("empty event_id")
     }
-    if sw.LogIndex < 0 || sw.LogIndex > 32767 { // smallint range
-        return fmt.Errorf("log_index %d out of smallint range", sw.LogIndex)
+    if record.ItemIndex < 0 || record.ItemIndex > 32767 { // smallint range
+        return fmt.Errorf("item_index %d out of smallint range", record.ItemIndex)
     }
-    if sw.PairAddress == "" {
-        return fmt.Errorf("empty pair_address")
+    if record.EntityKey == "" {
+        return fmt.Errorf("empty entity_key")
     }
     return nil
 }
@@ -186,7 +182,7 @@ func validateRawSwap(sw *RawSwap) error {
 ✅ ON CONFLICT skipped rate — high = too many duplicates
 ✅ Activity duration p95 — trending up = performance issue
 ✅ Workflow iteration count — sanity check for ContinueAsNew
-✅ Last ingested block — per network, freshness indicator
+✅ Last ingested sequence — per source, freshness indicator
 ```
 
 ## 7. Graceful Shutdown
@@ -207,6 +203,6 @@ defer kafkaReader.Close()
 
 ## Related
 
-- [chaindata.prd.md §24.7-24.8](docs/00-planning/prd/datasets/chaindata.prd.md) — raw schema + ingest workflow
-- [Epic 2 stories](docs/10-implementation/data-platform/) — implementation stories
-- `services/migrator/schema/chaindata_raw.hcl` — Atlas schema
+- Review the owning project's data contract for schema and ingest workflow.
+- Review its delivery stories or equivalent acceptance records.
+- Review the repository's schema or migration source of truth.
