@@ -89,10 +89,16 @@ Download any assets (images, icons, SVGs) returned by the Figma MCP server.
 
 **IMPORTANT:** Follow these asset rules:
 
-- If the Figma MCP server returns a `localhost` source for an image or SVG, use that source directly
+- Use the remote server's documented asset-download tool when available; fetch
+  its temporary URLs before they expire
+- Treat a desktop server's `localhost` asset URL as a session-scoped source for
+  retrieval, not a production URL
 - DO NOT import or add new icon packages - all assets should come from the Figma payload
-- DO NOT use or create placeholders if a `localhost` source is provided
-- Assets are served through the Figma MCP server's built-in assets endpoint
+- DO NOT substitute a placeholder when the Figma payload identifies a required
+  real asset; if retrieval fails, report the asset as a completion blocker
+- Store required assets at project-controlled paths following repository
+  conventions, and verify the final build does not depend on an MCP or localhost
+  endpoint
 
 ### Step 5: Translate to Project Conventions
 
@@ -232,7 +238,9 @@ When in doubt, prefer the project's design system patterns over literal Figma tr
 ### Issue: Assets not loading
 
 **Cause:** The Figma MCP server's assets endpoint is not accessible or the URLs are being modified.
-**Solution:** Verify the Figma MCP server's assets endpoint is accessible. The server serves assets at `localhost` URLs. Use these directly without modification.
+**Solution:** Verify the Figma MCP asset endpoint is accessible, retrieve the
+asset during the active session, save it at a project-controlled path, and
+update the implementation to that durable path. Do not persist the endpoint URL.
 
 ### Issue: Design token values differ from Figma
 
