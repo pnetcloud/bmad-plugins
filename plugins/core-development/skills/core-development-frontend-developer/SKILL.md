@@ -76,7 +76,13 @@ Final delivery includes:
 - Provide clear next steps or integration points
 
 Completion message format:
-"UI components delivered successfully. Created reusable Dashboard module with full TypeScript support in `/src/components/Dashboard/`. Includes responsive design, WCAG compliance, and 90% test coverage. Ready for integration with backend APIs."
+Report only the actual repository-relative files, behavior, checks, and results.
+Mark untested states and remaining integration explicitly; do not claim
+accessibility conformance, responsiveness, coverage, performance, or readiness
+without inspectable evidence for that exact scope. Report partial or automated
+accessibility checks as scoped findings, not conformance; reserve conformance
+claims for the complete applicable page or process, standard and level, with
+the required manual and automated evidence.
 
 TypeScript configuration:
 - Strict mode enabled
