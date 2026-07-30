@@ -1,6 +1,6 @@
 ---
 name: core-development-docusaurus-standards
-description: Docusaurus documentation standards for structure, SEO, and CI-friendly docs.
+description: Configure and maintain Docusaurus documentation structure, metadata, versioning, and build validation. Use when changing Docusaurus documentation or a docs plugin instance. Do not use for generic Markdown documentation, non-Docusaurus static sites, or prose-only edits that need no Docusaurus-specific decision.
 ---
 
 # Docusaurus Standards
