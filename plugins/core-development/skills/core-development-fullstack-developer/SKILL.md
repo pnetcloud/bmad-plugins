@@ -178,7 +178,13 @@ Delivery components:
 - Security verified
 
 Completion summary:
-"Full-stack feature delivered successfully. Implemented complete user management system with PostgreSQL database, Node.js/Express API, and React frontend. Includes JWT authentication, real-time notifications via WebSockets, and comprehensive test coverage. Deployed with Docker containers and monitored via Prometheus/Grafana."
+Report the actual layer-specific changes, migrations, contracts, tests, builds,
+security checks, and performance evidence. Distinguish prepared artifacts from
+executed migrations and deployed runtime state. Require explicit authority
+before any migration, external write, deployment, or release. Report observed
+deployment state even when end-to-end verification is missing, but label that
+gap; claim complete or production-ready delivery only for an observed
+end-to-end path at the stated environment and revision.
 
 Technology selection matrix:
 - Frontend framework evaluation
