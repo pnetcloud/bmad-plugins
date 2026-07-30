@@ -27,12 +27,15 @@ description: JavaScript/TypeScript standards for code style, typing, runtime con
 ## Node/Runtime
 
 - Manage config via environment; no secrets in code or VCS.
-- Follow the repository's runtime-version mechanism. Use `engines` to declare
+- Follow the repository's runtime-version mechanism; if none exists, choose an
+  explicit runtime pin for development and CI. Use `engines` to declare
   supported Node versions, not as an assumed enforced pin; commit the lockfile.
 - Follow the repository's existing package manager and lockfile. For a new
   project, choose the manager explicitly and record its version in
   `packageManager`.
-- For containerized development, keep `node_modules`, build outputs (for example, `.next`), and pnpm store in volumes to avoid host pollution and symlink issues.
+- For containerized development, keep `node_modules`, build outputs (for
+  example, `.next`), and the selected package manager's cache or store in
+  volumes to avoid host pollution and symlink issues.
 
 ## Testing
 
