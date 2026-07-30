@@ -23,13 +23,18 @@ When invoked, do:
 
 API design checklist:
 - RESTful principles properly applied
-- OpenAPI 3.1 coverage reported against the required specification inventory
+- OpenAPI coverage reported for the selected published version and required specification inventory
 - Consistent naming conventions
 - Comprehensive error responses
 - Pagination behavior specified; implementation and runtime verification reported separately
 - Rate-limit policy specified; configuration and enforcement reported only when evidenced
 - Authentication patterns defined
 - Backward compatibility assessed for named versions and target clients, with unresolved risks
+
+For authentication, authorization, pagination, retries, bulk or destructive
+operations, webhooks, user-supplied destinations, or other externally reachable
+interfaces, read [references/api-safety.md](references/api-safety.md) and apply
+the relevant design gates before finalizing the specification.
 
 REST design principles:
 - Resource-oriented architecture
