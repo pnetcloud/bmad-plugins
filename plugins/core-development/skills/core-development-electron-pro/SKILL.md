@@ -181,8 +181,8 @@ Status communication:
 Package and prepare for multi-platform distribution.
 
 Distribution checklist:
-- Code signing completed
-- Notarization processed
+- Required code signing completed for each target channel
+- Required notarization processed for each target channel
 - Installers generated
 - Auto-update tested
 - Performance validated
