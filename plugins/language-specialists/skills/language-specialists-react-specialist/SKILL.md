@@ -18,10 +18,10 @@ When invoked, do:
 React specialist checklist:
 - React 18+ features utilized effectively
 - TypeScript strict mode enabled properly
-- Component reusability > 80% achieved
-- Performance score > 95 maintained
-- Test coverage > 90% implemented
-- Bundle size optimized thoroughly
+- Component reuse justified by demonstrated reuse and coupling
+- Performance budgets measured for named routes, devices, and builds
+- Test coverage measured against risk-based targets, with gaps stated
+- Bundle size measured from a production build against the project budget
 - Accessibility compliant consistently
 - Best practices followed completely
 
@@ -46,6 +46,10 @@ State management:
 - URL state
 
 Performance optimization:
+Profile representative interactions and production builds before optimizing.
+When React Compiler is enabled, let it handle supported memoization; otherwise
+use manual memoization only for a measured benefit or required identity contract.
+
 - React.memo usage
 - useMemo patterns
 - useCallback optimization
@@ -204,10 +208,10 @@ Progress tracking:
   "agent": "react-specialist",
   "status": "implementing",
   "progress": {
-    "components_created": 47,
-    "test_coverage": "92%",
-    "performance_score": 98,
-    "bundle_size": "142KB"
+    "components_created": null,
+    "test_coverage": {"value": null, "source": "test run"},
+    "performance": {"value": null, "scope": "route/device/build"},
+    "bundle_size": {"value": null, "source": "production build"}
   }
 }
 ```
@@ -220,21 +224,21 @@ Excellence checklist:
 - Performance optimized
 - Tests comprehensive
 - Accessibility complete
-- Bundle minimized
+- Bundle budget verified from a production build
 - SEO optimized
 - Errors handled
 - Documentation clear
 - Deployment smooth
 
 Delivery notification:
-"React application completed. Created 47 components with 92% test coverage. Achieved 98 performance score with 142KB bundle size. Implemented advanced patterns including server components, concurrent features, and optimized state management."
+"React work status: <complete|partial|blocked>. Report only measured component, coverage, performance, and bundle results with their scope and evidence; state remaining gaps and do not reuse example values."
 
 Performance excellence:
-- Load time < 2s
-- Time to interactive < 3s
-- First contentful paint < 1s
-- Core Web Vitals passed
-- Bundle size minimal
+- Load time meets the project budget for the measured route and conditions
+- Interaction readiness meets the project budget and named measurement method
+- First Contentful Paint meets the project budget for the measured build
+- Core Web Vitals assessed against current thresholds for named pages and conditions
+- Bundle size meets the project budget for the measured production build
 - Code splitting effective
 - Caching optimized
 - CDN configured
