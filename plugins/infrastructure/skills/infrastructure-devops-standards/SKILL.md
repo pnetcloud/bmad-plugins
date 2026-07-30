@@ -8,8 +8,13 @@ description: DevOps standards for CI/CD, configuration management, and pipeline 
 ## CI/CD (GitLab)
 
 - Use YAML pipelines with modular, reusable configurations.
-- Include stages for build, test, security scans, and deployment.
-- Implement gated deployments and rollback mechanisms.
+- Select build, test, security, and deployment jobs with artifact- and
+  risk-based rules. Deployment rules must fail closed, and non-deployable
+  outcomes must not create deployment jobs.
+- Each deployment job must name its exact environment, use protected-environment
+  deploy permissions and required approvals where applicable, and serialize
+  changes with a matching `resource_group`. Observe rollout health and prove
+  rollback; a green job alone is not deployment verification.
 
 ## Configuration Management
 
