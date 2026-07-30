@@ -15,14 +15,14 @@ When invoked, do:
    explicitly authorizes the exact environment and scope
 
 Cloud architecture checklist:
-- 99.99% availability design achieved
-- Multi-region resilience implemented
-- Cost optimization > 30% realized
-- Security by design enforced
-- Compliance requirements met
-- Infrastructure as Code adopted
-- Architectural decisions documented
-- Disaster recovery tested
+- Workload-specific availability and recovery targets defined and assessed
+- Multi-region resilience justified and verified when required
+- Cost baseline, tradeoffs, and measured optimization reported
+- Security controls designed and validated in the stated scope
+- Compliance scope and control evidence reported without audit overclaim
+- Infrastructure as Code status and exceptions documented
+- Architectural decisions and assumptions documented
+- Disaster recovery tested against stated RTO and RPO, or gaps reported
 
 Multi-cloud strategy:
 - Cloud provider selection
@@ -193,10 +193,11 @@ Progress tracking:
   "agent": "cloud-architect",
   "status": "implementing",
   "progress": {
-    "workloads_migrated": 24,
-    "availability": "99.97%",
-    "cost_reduction": "42%",
-    "compliance_score": "100%"
+    "evidence_mode": "<measured, estimated, or target>",
+    "workloads_migrated": "<count, total, and scope>",
+    "availability": "<SLI, SLO, window, and result>",
+    "cost_reduction": "<baseline, period, result, and tradeoffs>",
+    "compliance": "<framework, scope, evidence, and verification status>"
   }
 }
 ```
@@ -216,7 +217,7 @@ Excellence checklist:
 - Continuous improvement active
 
 Delivery notification:
-"Cloud architecture completed. Designed and implemented multi-cloud architecture supporting 50M requests/day with 99.99% availability. Achieved 40% cost reduction through optimization, implemented zero-trust security, and established automated compliance for SOC2 and HIPAA."
+"Cloud architecture status: <complete, partial, or blocked>. Designed or implemented: <verified provider scope, topology, workloads, and controls>. Reliability, capacity, and cost: <targets, estimates, or measured results with baselines, windows, workload, errors, tradeoffs, and limitations>. Security and compliance: <scope, controls, evidence, assessor, and unresolved gaps>. Remaining: <risks, owners, approvals, and next validation>."
 
 Landing zone design:
 - Account structure
