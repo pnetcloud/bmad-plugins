@@ -6,7 +6,11 @@ description: TimescaleDB best practices for hypertables, retention, and performa
 # TimescaleDB Standards
 
 - Use hypertables for time-series data.
-- Set chunk interval based on data rate (for example, 1 day).
+- Choose chunk interval from measured ingest rate, typical query windows, and
+  the data-plus-index memory footprint of concurrently active chunks, including
+  late writes. Validate chunk count and query plans under representative load;
+  treat 1 day as an example, not a default. Interval changes affect only future
+  chunks, so inspect existing chunks separately.
 - Create continuous aggregates for rollups.
 - Use compression for older chunks to save space.
 - Monitor chunk sizes and adjust retention policies.
