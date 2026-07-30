@@ -25,6 +25,7 @@ KNOWN_FAILURES: <observed failures, risks, stale facts, or context costs>
 PUBLIC_CONTRACTS: <paths, identifiers, outputs, or behaviors that must remain stable>
 CHANGE_HYPOTHESIS: <one defect and the smallest plausible correction, or review-only>
 AFFECTED_SURFACES: <instructions, files, consumers, and checks actually implicated>
+EXPECTED_DIFF_BOUNDARY: <files and exact decision rules allowed to change; nearby capabilities that must remain semantically unchanged>
 ```
 
 ## Authority and Safety
@@ -96,6 +97,10 @@ for every original section and validate its retained destination.
 Begin with an in-place patch that keeps every existing file, section, example,
 and valid behavior. If that cannot close the demonstrated gap, stop and present
 the structural proposal before editing.
+A single defect may justify edits in several sentences only when each edit
+implements the same decision boundary. Do not bundle independent rules because
+they share a heading or can be rewritten more elegantly together. If editing
+reveals another defect, record it for another iteration.
 
 For an ordinary narrow patch, record only:
 
@@ -146,13 +151,19 @@ consumer discovery is incomplete.
 
 Before editing, require explicit user approval for any file deletion or rename,
 capability retirement, example or workflow removal, or whole-section rewrite.
-Using the baseline package line count as denominator, also pause when deleted or
-materially replaced lines exceed roughly 15 percent, or newly added lines exceed
-roughly 25 percent. Count semantic replacement even when line totals hide it.
-These are review tripwires, not allowances. Present the complete retention
-matrix, exact scope, expected gain, retained destination, validation, and
-expected information loss before seeking approval. Without approval and
-complete accounting, preserve the material and narrow the patch.
+Semantic replacement is removal even when additions make the diff larger.
+Present the complete retention matrix, exact scope, expected gain, retained
+destination, validation, and expected information loss before seeking approval.
+Without approval and complete accounting, preserve the material and narrow the
+patch.
+
+Treat churn thresholds as diagnostics, not permissions or automatic ceremony.
+Deletion or material replacement near 15 percent of the baseline package adds
+an information-loss warning; smaller removal still requires approval. When new
+material exceeds both roughly 25 percent of the baseline package and 20 lines,
+narrow it or identify the concrete consumer and require independent review.
+Do not let a tiny baseline make a few necessary lines look structural, and do
+not let a large baseline hide a semantically broad rewrite.
 
 ### 4. Patch In Place
 
@@ -263,7 +274,15 @@ Then review the improvement process itself:
 - Did validation exercise behavior rather than exact prose?
 - Did the reviewer receive uncontaminated artifacts?
 
-Classify findings as patch, defer, or reject. Fix confirmed patches and validate once more. Stop after at most two improve-and-verify cycles; report unresolved issues honestly.
+Classify findings as patch, defer, or reject. Fix confirmed patches and validate
+once more. The second improve-and-verify attempt may address only findings
+needed to make the same named correction sound; it does not authorize another
+defect or broader scope. Stop after the second failed attempt and report
+unresolved issues honestly.
+
+Begin a later ordinary iteration only from an accepted baseline, with one
+different evidenced defect. Preserve behavior accepted in earlier iterations
+and do not accumulate narrow patches into an undeclared rewrite.
 
 ## Required Result
 

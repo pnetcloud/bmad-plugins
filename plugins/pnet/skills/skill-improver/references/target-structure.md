@@ -39,18 +39,25 @@ Keep:
 
 - `name` and trigger-rich `description` frontmatter;
 - operating boundaries and authority gates;
-- the shortest complete core workflow;
+- the complete core workflow at the minimum detail needed for safe, successful
+  execution;
 - resource selection rules;
 - completion and stop criteria;
 - links that state exactly when each conditional resource must be read.
 
-Move out:
+Consider moving a coherent topic only when task evidence, routing analysis, or
+structural review shows that it is conditional and unnecessary on the main path:
 
 - provider- or framework-specific variants;
 - long schemas, catalogs, lookup tables, and domain references;
 - repeated examples and large output samples;
 - setup manuals and troubleshooting catalogs;
 - deterministic code better expressed and tested as a script.
+
+Moving material is a structural change, not a synonym for shortening. Obtain
+approval for the structural proposal before editing. Then add and route the
+destination, verify its consumer and retained meaning, and only afterward
+consider removing the original path.
 
 ### `references/`
 
@@ -114,8 +121,8 @@ skill's usable capability.
 
 Default to zero deleted or renamed files and zero retired capabilities. Any
 such structural change requires the complete pre-approval proposal and
-retention matrix defined in `review-prompt.md`. Package reduction is incidental
-and never a quality goal.
+retention matrix defined in `review-prompt.md`. Semantic replacement counts as
+removal. Package reduction is incidental and never a quality goal.
 
 ## Resource Review Signals
 

@@ -17,6 +17,9 @@ Improve one existing skill without turning the work into an open-ended rewrite.
   failure. `No change` is a valid result when evidence does not justify a patch.
 - Make one coherent behavioral improvement per iteration. Do not combine a
   useful correction with collection-wide normalization or speculative coverage.
+  A single improvement may touch several sentences only when they implement the
+  same decision boundary; independently useful rules are separate capabilities,
+  not convenient rewrite scope.
 - Measure improvement by task success, safety, clarity, and efficient context
   use—not by line count, file count, uniformity, or apparent completeness.
 - Default to zero deleted or renamed files, zero retired capabilities, and zero
@@ -87,6 +90,11 @@ Complete this step when the single proposed change maps to a target behavior,
 failure, risk, stale fact, or measured context cost. If it does not, stop with a
 review-only result.
 
+Before editing, state the expected diff boundary: the files and exact rules that
+may change, the behavior the patch must alter, and the nearby capabilities that
+must remain semantically unchanged. Treat scope growth discovered during
+editing as a new finding, not permission to widen the current patch.
+
 ### 2. Research Safely
 
 Skip research when the target is already authoritative and the issue is local. Research when domain guidance may be stale, a capability gap is real, or a strong comparison would change the design.
@@ -100,6 +108,8 @@ Complete this step when every adopted external idea is attributable, compatible,
 Start with the smallest in-place refinement that closes the gap. In the ordinary
 improvement mode, do not delete or rename files, retire examples or workflows,
 rewrite a whole section, or replace the skill with a new outline.
+Prefer qualifying a false absolute, repairing a decision rule, or adding the
+missing stop condition in place over recasting neighboring valid guidance.
 
 Create a focused delta using five decisions:
 
@@ -133,12 +143,18 @@ preserving their legitimate teaching goal.
 
 Any file deletion or rename, capability retirement, example/workflow removal, or
 whole-section rewrite requires an explicit proposal and user approval before
-editing. Using the baseline package line count as denominator, also pause when
-deleted or materially replaced lines exceed roughly 15 percent, or newly added
-lines exceed roughly 25 percent. Count semantic replacement even when line
-totals hide it. These are review tripwires, not budgets to consume. Show the
-exact affected surfaces, reason, expected gain, retained destination, and likely
-information loss. Without approval, keep the material and narrow the patch.
+editing. Semantic replacement counts as removal even when line totals grow.
+Show the exact affected surfaces, reason, expected gain, retained destination,
+and likely information loss. Without approval, keep the material and narrow the
+patch.
+
+Use churn only as a diagnostic. Deletion or material replacement near 15 percent
+of the baseline package is an additional information-loss warning, never an
+allowance below the threshold. An addition that exceeds both roughly 25 percent
+of the baseline package and 20 lines must either be narrowed or justified by a
+named consumer and independently reviewed; tiny baselines must not turn a few
+necessary lines into a structural ceremony. No percentage can prove that a
+change is safe, useful, or minimal.
 
 Do not create a broad reference, scenario catalog, or prose-exact contract test
 solely to demonstrate thoroughness. Add checked-in tests only for executable
@@ -172,7 +188,14 @@ Validate proportionately:
 8. Review the improvement run itself for unsupported claims, source misuse,
    accidental scope growth, semantic loss, and context added without value.
 
-Fix confirmed blocking findings and repeat this validation once. After the second failed cycle, stop and report what remains.
+Fix confirmed blocking findings and repeat this validation once. The second
+improve-and-verify attempt may address only findings needed to make the same
+named correction sound; it does not authorize another defect or broader scope.
+After the second failed attempt, stop and report what remains.
+
+A later ordinary iteration begins only from an accepted baseline and may select
+one different evidenced defect. Preserve all behavior accepted in earlier
+iterations; do not accumulate narrow patches into an undeclared rewrite.
 
 Complete only when structural checks pass, no critical security issue remains,
 the named defect is fixed or the review concludes no change is justified, and
