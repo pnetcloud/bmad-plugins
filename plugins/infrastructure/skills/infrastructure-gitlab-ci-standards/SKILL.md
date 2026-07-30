@@ -5,7 +5,9 @@ description: GitLab CI/CD standards for stages, rules, caching, artifacts, and s
 
 # GitLab CI/CD Standards
 
-- Define stages: lint -> test -> build -> deploy.
+- Define only the stages required by artifact- and risk-selected jobs. Preserve
+  `lint -> test -> build -> deploy` when all four apply, and omit `deploy` for
+  non-deployable outcomes.
 - Use `rules:` instead of `only/except` for clarity.
 - Cache dependencies with proper keys.
 - Store artifacts with expirations; limit retention.
