@@ -13,4 +13,8 @@ description: OpenAPI documentation standards for schema-first APIs and validatio
 - Provide examples for each endpoint.
 - Use tags to organize endpoints logically.
 - Generate docs and clients automatically from schemas.
-- Validate schema changes in CI.
+- In CI, validate the fully resolved description and its examples, then compare
+  it with the approved compatibility baseline. For a new API, establish that
+  baseline explicitly; otherwise a missing baseline makes compatibility
+  unverified and must not pass the compatibility gate. Reject breaking changes
+  unless an approved versioning and migration decision updates that contract.
