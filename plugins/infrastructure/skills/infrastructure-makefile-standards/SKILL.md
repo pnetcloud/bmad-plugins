@@ -18,7 +18,7 @@ Use this skill when creating or updating Makefiles in this repo.
 - Put tech-specific commands in `project.mk` overrides, not in the template.
 - Required targets: `help`, `up`, `down`, `restart`, `logs`, `watch`, `build`, `check`, `clean`, `status`.
 - All public targets must include a docstring: `target: ## <Group>: <short description>`.
-- Use `${COMPOSE}` + `${COMPOSE_FILE}` for Docker Compose calls.
+- Use `$(COMPOSE)` + `$(COMPOSE_FILE)` for Docker Compose calls.
 - Prefer POSIX shell; avoid GNU-only utilities and non-deterministic sleeps.
 
 ## Help convention

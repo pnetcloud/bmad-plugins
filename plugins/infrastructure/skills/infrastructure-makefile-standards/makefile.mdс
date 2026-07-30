@@ -57,9 +57,9 @@ Group labels: `Setup`, `Development`, `Quality`, `Build`, `Maintenance`, `Logs`.
 
 ## Docker Compose Expectations
 
-- Use `${COMPOSE}` and `${COMPOSE_FILE}` for all compose calls.
+- Use `$(COMPOSE)` and `$(COMPOSE_FILE)` for all compose calls.
 - Dev service should mount source code and expose required ports.
-- `watch` runs inside the container using `${DEV_SERVICE}` and `${CMD_DEV}`.
+- `watch` runs inside the container using `$(DEV_SERVICE)` and `$(CMD_DEV)`.
 
 ## Cross-platform
 
