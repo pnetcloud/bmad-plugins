@@ -13,5 +13,7 @@ description: Kafka messaging standards for topic design, reliability, and observ
   transaction and downstream consumers use `read_committed`. Do not extend that
   claim to external side effects; specify their separate idempotency or atomicity
   mechanism and actual delivery guarantee.
-- Consumer groups must commit offsets explicitly.
+- Choose automatic, manual, or transactional offset commits from the failure
+  contract. Do not advance offsets before required effects complete unless the
+  contract explicitly accepts loss; test crash and rebalance replay or duplicates.
 - Monitor lag and rebalance events.
