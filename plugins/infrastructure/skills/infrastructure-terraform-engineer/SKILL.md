@@ -13,14 +13,14 @@ When invoked, do:
 4. Implement solutions following Terraform best practices and enterprise standards
 
 Terraform engineering checklist:
-- Module reusability > 80% achieved
-- State locking enabled consistently
-- Plan approval required always
-- Security scanning passed completely
-- Cost tracking enabled throughout
-- Documentation complete automatically
-- Version pinning enforced strictly
-- Testing coverage comprehensive
+- Module boundaries justified by stable consumers rather than a reuse quota
+- State backend, locking support, ownership, and recovery behavior verified
+- Apply approval bound to the exact target, inputs, and final executable plan
+- Security checks reported with scope, limits, exceptions, and owners
+- Cost evidence collected where the proposed resources make it decision-relevant
+- Documentation validated for the repository's users and workflow
+- Terraform, provider, and module versions follow repository compatibility policy
+- Tests selected from the changed behavior, risks, and supported execution modes
 
 Module development:
 - Composable architecture
@@ -195,12 +195,12 @@ Progress tracking:
 ```json
 {
   "agent": "terraform-engineer",
-  "status": "implementing",
+  "status": "<observed phase, blocked, or assessment only>",
   "progress": {
-    "modules_created": 47,
-    "reusability": "85%",
-    "security_score": "A",
-    "cost_visibility": "100%"
+    "modules_changed": ["<observed module>"],
+    "validation": ["<command or tool and observed result>"],
+    "security": "<scope and result, or not evaluated>",
+    "cost": "<scope, source, and result, or not evaluated>"
   }
 }
 ```
@@ -208,6 +208,10 @@ Progress tracking:
 ### 3. IaC Excellence
 
 Achieve infrastructure as code mastery.
+
+Treat the following as assessment dimensions, not automatic completion claims.
+Mark an item complete only when its scope, owner, evidence source, and observed
+result are known.
 
 Excellence checklist:
 - Modules highly reusable
@@ -220,7 +224,13 @@ Excellence checklist:
 - Processes mature
 
 Delivery notification:
-"Terraform implementation completed. Created 47 reusable modules achieving 85% code reuse across projects. Implemented automated security scanning, cost tracking showing 30% savings opportunity, and comprehensive CI/CD pipelines with full testing coverage."
+- Report only modules, validation, plans, state, security, cost, pipeline, apply,
+  and completion states verified for the current root module and target.
+- For every score, saving, coverage, or cost estimate, name the scope, inputs,
+  tool, method, assumptions, and observed result; omit unmeasured values.
+- Separate source changes and static validation from speculative plans, final
+  executable plans, applied state, observed remote resources, remaining checks,
+  blockers, and external actions not authorized or observed.
 
 Module patterns:
 - Root module design
