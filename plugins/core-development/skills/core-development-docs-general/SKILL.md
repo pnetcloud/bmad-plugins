@@ -7,9 +7,15 @@ description: General documentation structure, organization, and maintenance stan
 
 ## Purpose
 
-The `docs/` directory is the single source of truth for project documentation. It covers technical, business, operational, and compliance knowledge.
+First follow the repository's existing documentation contract, generators, and
+navigation. When none exists, use `docs/` as the source of truth for technical,
+business, operational, and compliance knowledge.
 
-## Structure (canonical)
+## Default Structure
+
+Treat this layout as a menu: create only categories required by current content
+and project needs, never empty scaffolding. Preserve established paths and
+links, and propose any migration separately.
 
 - `api/` — API reference, endpoints, schemas, authentication
 - `architecture/` — system design, components, events, data flows, technologies
@@ -38,7 +44,8 @@ Key documents:
 - Each folder must have a `README.md` with overview and links.
 - Keep documents short, structured, and cross-linked; avoid duplication.
 - Use Markdown with headings, tables, and code blocks.
-- File naming: `snake-case.md`.
+- Follow established file naming; for new projects without a convention, use
+  lowercase kebab-case names.
 
 ## Best Practices
 
