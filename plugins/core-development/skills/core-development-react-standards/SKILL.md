@@ -38,7 +38,10 @@ description: React standards for components, state management, performance, acce
 - Follow the framework's data-loading boundary. Without one, use the project's
   client cache or a focused hook for client-owned data; handle loading and error
   states.
-- Cancel in-flight requests on unmount when applicable.
+- For component-owned client async work, abort obsolete requests when supported
+  and appropriate, and ignore stale completions after dependency changes or
+  unmount. Do not cancel mutation or shared-cache work solely because its
+  initiating component unmounted.
 
 ## Testing
 
