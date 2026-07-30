@@ -27,7 +27,8 @@ description: JavaScript/TypeScript standards for code style, typing, runtime con
 ## Node/Runtime
 
 - Manage config via environment; no secrets in code or VCS.
-- Use `.nvmrc` or `engines` to pin Node version; lock dependencies.
+- Follow the repository's runtime-version mechanism. Use `engines` to declare
+  supported Node versions, not as an assumed enforced pin; commit the lockfile.
 - Follow the repository's existing package manager and lockfile. For a new
   project, choose the manager explicitly and record its version in
   `packageManager`.
