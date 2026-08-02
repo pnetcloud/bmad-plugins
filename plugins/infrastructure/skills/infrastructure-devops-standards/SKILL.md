@@ -31,6 +31,21 @@ description: DevOps standards for CI/CD, configuration management, and pipeline 
   inventory source, or mutation boundaries are unresolved. Do not give IaC and
   Ansible overlapping authority over the same resource properties.
 
+## Runtime Provider Limits and Backpressure
+
+- When pipelines or services depend on rate-limited external providers, document
+  both configured and effective throughput in one canonical unit, then expose
+  actual throughput, throttles, 429/limit responses, timeouts, retry backlog,
+  overdue retry checkpoints, and drain ETA separately.
+- Treat free, proxy, or development-provider modes as constrained operating
+  modes, not production assumptions. Lower request rates and wait through
+  expected throttling when that mode is selected; require subscription/API-mode
+  limits and acceptance evidence before claiming production readiness.
+- Preserve baseline safety holds, but avoid letting transient provider failures
+  block durable stream progress indefinitely: persist retryable work before
+  acknowledging source offsets, replay it from a retry scheduler or parking lot,
+  and verify backlog drains before closing the change.
+
 ## Testing
 
 - Test pipelines in sandbox environments.
