@@ -1,6 +1,6 @@
 ---
 name: core-development-implement-design
-description: Translates Figma designs into production-ready code with 1:1 visual fidelity. Use when implementing UI from Figma files, when user mentions "implement design", "generate code", "implement component", "build Figma design", provides Figma URLs, or asks to build components matching Figma specs. Requires Figma MCP server connection.
+description: Translates Figma designs into production-ready code with 1:1 visual fidelity. Use when implementing UI from Figma files, exported design assets, screenshots, when user mentions "implement design", "generate code", "implement component", "build Figma design", provides Figma URLs, or asks to build components matching Figma specs. Prefer Figma MCP when available; support project-controlled exports when not.
 metadata:
   mcp-server: figma, figma-desktop
 ---
@@ -13,11 +13,15 @@ This skill provides a structured workflow for translating Figma designs into pro
 
 ## Prerequisites
 
-- Figma MCP server must be connected and accessible
+- Prefer a connected Figma MCP server when live Figma access is available
 - User must provide a Figma URL in the format: `https://figma.com/design/:fileKey/:fileName?node-id=1-2`
   - `:fileKey` is the file key
   - `1-2` is the node ID (the specific component or frame to implement)
 - **OR** when using `figma-desktop` MCP: User can select a node directly in the Figma desktop app (no URL required)
+- **OR** when MCP/live Figma is unavailable: use project-controlled exports such
+  as Figma-exported PNG/SVG/PDF/JSON, screenshots, asset folders, or design
+  handoff docs as the visual/source references; do not treat missing MCP as a
+  reason to skip the design-parity workflow
 - Project should have an established design system or component library (preferred)
 
 ## Required Workflow
@@ -51,6 +55,16 @@ When using the `figma-desktop` MCP and the user has NOT provided a URL, the tool
 
 **Note:** Selection-based prompting only works with the `figma-desktop` MCP server. The remote server requires a link to a frame or layer to extract context. The user must have the Figma desktop app open with a node selected.
 
+#### Option C: Use Project-Controlled Design Exports
+
+When the user provides exported design artifacts instead of live Figma access,
+inventory the available source files before implementation: visual references
+(PNG/SVG/PDF/screenshots), structured specs or handoff docs, and asset folders.
+Record which artifact is the source of truth for each viewport, state, and
+component. If the exports and product constraints conflict, stop and surface the
+specific decision needed instead of filling the gap with placeholders or hidden
+visual substitutions.
+
 ### Step 2: Fetch Design Context
 
 Run `get_design_context` with the extracted file key and node ID.
@@ -58,6 +72,11 @@ Run `get_design_context` with the extracted file key and node ID.
 ```
 get_design_context(fileKey=":fileKey", nodeId="1-2")
 ```
+
+When using project-controlled exports, replace this MCP call with read-only
+inspection of the exported specs, SVG structure, asset metadata, and handoff
+docs. Do not execute scripts from an export bundle unless the active project
+already documents them as trusted tooling.
 
 This provides the structured data including:
 
