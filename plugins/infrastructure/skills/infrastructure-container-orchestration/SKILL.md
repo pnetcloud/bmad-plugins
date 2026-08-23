@@ -10,6 +10,20 @@ metadata:
 
 Docker and Kubernetes patterns for containerized applications.
 
+## Operating Contract
+
+- For local development and testing, discover and use the repository's existing
+  container entrypoints first: `docker-compose*.yml`, Compose profiles,
+  devcontainers, Make targets, package scripts, and documented per-worktree or
+  slot environments. Do not invent ad-hoc host services, one-off databases, or
+  parallel Compose stacks until the project contract is missing or insufficient.
+- Before starting containers, state the selected file/profile/project name,
+  required environment variables, volume impact, and cleanup command. Prefer
+  health checks and logs over blind sleeps when verifying readiness.
+- For shared, staging, or production clusters, default to read-only inspection
+  (`kubectl get`, `describe`, `logs`, `helm template/diff`) and require explicit
+  approval before `apply`, `upgrade`, `delete`, restarts, or registry pushes.
+
 ## Dockerfile Best Practices
 
 ```dockerfile
