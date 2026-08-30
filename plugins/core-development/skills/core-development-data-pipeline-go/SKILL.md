@@ -173,7 +173,22 @@ func validateRecord(record *IngestRecord) error {
 ❌ uint64 → smallint without bounds check → runtime panic
 ```
 
-## 6. Monitoring Checklist
+## 6. Source Freshness and Enrichment Budget
+
+When a pipeline depends on an external or authoritative source, treat freshness
+as a data contract instead of a universal SLA. First verify the source's
+published cadence, observed update history, and allowed lag before blocking a
+workflow on an age threshold. If the source legitimately updates slowly, surface
+`stale-but-valid` or `source-waiting` status instead of failing the pipeline.
+
+For enrichment, prefer data already present in the consumed event, batch,
+snapshot, or warehouse row. Extra network/RPC/API fetches need an explicit cost
+budget: expected call count, rate limit, timeout, retry/backoff, cache key,
+fan-out cap, and p95 impact. Lightweight lookups can run inline; heavy or
+high-fan-out lookups should move to a bounded side pipeline, prefetch table, or
+operator-approved backfill.
+
+## 7. Monitoring Checklist
 
 ```
 ✅ Kafka consumer lag — growing lag = ingest slower than collect
@@ -181,11 +196,13 @@ func validateRecord(record *IngestRecord) error {
 ✅ INSERT rate — rows/sec per table
 ✅ ON CONFLICT skipped rate — high = too many duplicates
 ✅ Activity duration p95 — trending up = performance issue
+✅ External source freshness vs its published/observed cadence
+✅ Enrichment call count, cache hit rate, retries, and p95 latency
 ✅ Workflow iteration count — sanity check for ContinueAsNew
 ✅ Last ingested sequence — per source, freshness indicator
 ```
 
-## 7. Graceful Shutdown
+## 8. Graceful Shutdown
 
 ```go
 // KafkaReader must be closed on worker shutdown
