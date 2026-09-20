@@ -6,6 +6,10 @@ description: Kafka messaging standards for topic design, reliability, and observ
 # Kafka Standards
 
 - Design topics carefully: `domain.entity.event`.
+- Treat every topic as a versioned contract: document owner, event key, ordering
+  scope, retention or compaction policy, schema subject, and compatibility mode
+  before producers write to it. Add a new topic or version for incompatible
+  semantics instead of silently changing an existing stream.
 - Always specify partitions and replication factor.
 - Use a schema registry (Avro/JSON/Protobuf) for compatibility.
 - Use idempotent producers for retry safety. Claim Kafka exactly-once processing
