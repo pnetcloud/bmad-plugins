@@ -56,6 +56,19 @@ Run the passive scanner and repository validators before editing. Record line an
 
 Do not infer a weakness from personal style preference.
 
+When access is authorized, supplement chats with targeted searches of persistent
+memory and knowledge-base records relevant to the target behavior. Read selected
+records, not whole archives. In the private evidence record, distinguish explicit
+user corrections, derived summaries, historical notes, and verified current
+facts; retain source locators and freshness, deduplicate one event across stores,
+and resolve conflicts against supporting records and current technical evidence.
+A summary is a discovery lead, not proof of acceptance or a second independent
+observation. Report unavailable sources and do not rely on unsupported claims.
+For public targets, publish only rules useful without the originating user's
+preferences or project context. Keep private provenance outside the package;
+apply the publication abstraction gate to every source, including memory and
+knowledge-base content.
+
 ### 2. Research Only When It Can Change the Design
 
 Skip external research for a purely local, authoritative defect.

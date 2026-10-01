@@ -58,6 +58,13 @@ A public skill may be specific to a public discipline, standard, framework, or
 technology. It must remain abstract about the private organization, project,
 customer, case, dataset, strategy, and implementation that produced the lesson.
 
+Apply this boundary equally to chats, persistent memories, knowledge-base notes,
+and summaries derived from them. Retrieval authorization is not publication
+authorization. Keep personal preferences, project-specific policy, private source
+locators, and provenance outside public artifacts, metadata, and commit messages.
+Publish a rule only when it remains useful without the originating user's setup;
+otherwise retain it privately rather than disguising it as universal guidance.
+
 Do not pseudonymize a real example by changing only its names. Replace it with a
 synthetic or composite example and alter identifying combinations of:
 
