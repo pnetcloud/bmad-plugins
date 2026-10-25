@@ -16,4 +16,11 @@ description: GitLab CI/CD standards for stages, rules, caching, artifacts, and s
   environment-scope them, and expose them only to reviewed trusted jobs on
   protected refs and environments. Treat masking as log redaction, not access
   control, and stop when pipeline code or source trust is unresolved.
+- When optimizing slow pipelines, measure queue/setup time, test/job durations,
+  and the critical path before changing test selection. Compare representative
+  before/after runs with the same required checks and runner resources; record
+  cache state. Do not treat cache hits, test splitting, or a green pipeline with
+  skipped required checks as proof of faster equivalent validation. If timings
+  or coverage equivalence cannot be verified, report the gap rather than claim
+  an improvement.
 - Require pipeline green status before merge.
