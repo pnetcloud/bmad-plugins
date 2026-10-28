@@ -1,0 +1,341 @@
+{
+  "schema_version": 1,
+  "skills": [
+    {
+      "old_id": "cloudflare",
+      "new_id": "infrastructure-cloudflare",
+      "path": "plugins/infrastructure/skills/infrastructure-cloudflare",
+      "source": "https://github.com/cloudflare/skills/tree/be9f5e1e940fcf8567ff723cc03b8a8448c4082f/skills/cloudflare",
+      "license": "Apache-2.0"
+    },
+    {
+      "old_id": "design-postgres-tables",
+      "new_id": "core-development-design-postgres-tables",
+      "path": "plugins/core-development/skills/core-development-design-postgres-tables",
+      "source": "https://github.com/timescale/pg-aiguide/tree/5d3b76b5c986693b30753828b404aa66ba34c31a/skills/design-postgres-tables",
+      "license": "Apache-2.0"
+    },
+    {
+      "old_id": "email-marketing-bible",
+      "new_id": "marketing-email-marketing-bible",
+      "path": "plugins/marketing/skills/marketing-email-marketing-bible",
+      "source": "https://github.com/CosmoBlk/email-marketing-bible/tree/962648c1b147652244c4e4953e96c65421a79e70/",
+      "license": "MIT"
+    },
+    {
+      "old_id": "linkedin-comment-drafter",
+      "new_id": "marketing-linkedin-comment-drafter",
+      "path": "plugins/marketing/skills/marketing-linkedin-comment-drafter",
+      "source": "https://github.com/sergebulaev/linkedin-skills/tree/8f8bc4b40a2d5419b2dcf898772b85712cfbdf41/skills/linkedin-comment-drafter",
+      "license": "MIT"
+    },
+    {
+      "old_id": "linkedin-content-planner",
+      "new_id": "marketing-linkedin-content-planner",
+      "path": "plugins/marketing/skills/marketing-linkedin-content-planner",
+      "source": "https://github.com/sergebulaev/linkedin-skills/tree/8f8bc4b40a2d5419b2dcf898772b85712cfbdf41/skills/linkedin-content-planner",
+      "license": "MIT"
+    },
+    {
+      "old_id": "linkedin-employee-advocacy",
+      "new_id": "marketing-linkedin-employee-advocacy",
+      "path": "plugins/marketing/skills/marketing-linkedin-employee-advocacy",
+      "source": "https://github.com/sergebulaev/linkedin-skills/tree/8f8bc4b40a2d5419b2dcf898772b85712cfbdf41/skills/linkedin-employee-advocacy",
+      "license": "MIT"
+    },
+    {
+      "old_id": "linkedin-engager-analytics",
+      "new_id": "marketing-linkedin-engager-analytics",
+      "path": "plugins/marketing/skills/marketing-linkedin-engager-analytics",
+      "source": "https://github.com/sergebulaev/linkedin-skills/tree/8f8bc4b40a2d5419b2dcf898772b85712cfbdf41/skills/linkedin-engager-analytics",
+      "license": "MIT"
+    },
+    {
+      "old_id": "linkedin-hook-extractor",
+      "new_id": "marketing-linkedin-hook-extractor",
+      "path": "plugins/marketing/skills/marketing-linkedin-hook-extractor",
+      "source": "https://github.com/sergebulaev/linkedin-skills/tree/8f8bc4b40a2d5419b2dcf898772b85712cfbdf41/skills/linkedin-hook-extractor",
+      "license": "MIT"
+    },
+    {
+      "old_id": "linkedin-humanizer",
+      "new_id": "marketing-linkedin-humanizer",
+      "path": "plugins/marketing/skills/marketing-linkedin-humanizer",
+      "source": "https://github.com/sergebulaev/linkedin-skills/tree/8f8bc4b40a2d5419b2dcf898772b85712cfbdf41/skills/linkedin-humanizer",
+      "license": "MIT"
+    },
+    {
+      "old_id": "linkedin-interviewer",
+      "new_id": "marketing-linkedin-interviewer",
+      "path": "plugins/marketing/skills/marketing-linkedin-interviewer",
+      "source": "https://github.com/sergebulaev/linkedin-skills/tree/8f8bc4b40a2d5419b2dcf898772b85712cfbdf41/skills/linkedin-interviewer",
+      "license": "MIT"
+    },
+    {
+      "old_id": "linkedin-post-writer",
+      "new_id": "marketing-linkedin-post-writer",
+      "path": "plugins/marketing/skills/marketing-linkedin-post-writer",
+      "source": "https://github.com/sergebulaev/linkedin-skills/tree/8f8bc4b40a2d5419b2dcf898772b85712cfbdf41/skills/linkedin-post-writer",
+      "license": "MIT"
+    },
+    {
+      "old_id": "linkedin-profile-optimizer",
+      "new_id": "marketing-linkedin-profile-optimizer",
+      "path": "plugins/marketing/skills/marketing-linkedin-profile-optimizer",
+      "source": "https://github.com/sergebulaev/linkedin-skills/tree/8f8bc4b40a2d5419b2dcf898772b85712cfbdf41/skills/linkedin-profile-optimizer",
+      "license": "MIT"
+    },
+    {
+      "old_id": "linkedin-reply-handler",
+      "new_id": "marketing-linkedin-reply-handler",
+      "path": "plugins/marketing/skills/marketing-linkedin-reply-handler",
+      "source": "https://github.com/sergebulaev/linkedin-skills/tree/8f8bc4b40a2d5419b2dcf898772b85712cfbdf41/skills/linkedin-reply-handler",
+      "license": "MIT"
+    },
+    {
+      "old_id": "linkedin-repurposer",
+      "new_id": "marketing-linkedin-repurposer",
+      "path": "plugins/marketing/skills/marketing-linkedin-repurposer",
+      "source": "https://github.com/sergebulaev/linkedin-skills/tree/8f8bc4b40a2d5419b2dcf898772b85712cfbdf41/skills/linkedin-repurposer",
+      "license": "MIT"
+    },
+    {
+      "old_id": "linkedin-thread-monitor",
+      "new_id": "marketing-linkedin-thread-monitor",
+      "path": "plugins/marketing/skills/marketing-linkedin-thread-monitor",
+      "source": "https://github.com/sergebulaev/linkedin-skills/tree/8f8bc4b40a2d5419b2dcf898772b85712cfbdf41/skills/linkedin-thread-monitor",
+      "license": "MIT"
+    },
+    {
+      "old_id": "postgres-database-migration",
+      "new_id": "core-development-postgres-database-migration",
+      "path": "plugins/core-development/skills/core-development-postgres-database-migration",
+      "source": "https://github.com/timescale/pg-aiguide/tree/5d3b76b5c986693b30753828b404aa66ba34c31a/skills/postgres-database-migration",
+      "license": "Apache-2.0"
+    },
+    {
+      "old_id": "redis-core",
+      "new_id": "core-development-redis-core",
+      "path": "plugins/core-development/skills/core-development-redis-core",
+      "source": "https://github.com/redis/agent-skills/tree/a84871d065f398fed55e1633f66b66f731eb4e2b/skills/redis-core",
+      "license": "MIT"
+    },
+    {
+      "old_id": "schema-exploration",
+      "new_id": "core-development-schema-exploration",
+      "path": "plugins/core-development/skills/core-development-schema-exploration",
+      "source": "https://github.com/timescale/pg-aiguide/tree/5d3b76b5c986693b30753828b404aa66ba34c31a/skills/schema-exploration",
+      "license": "Apache-2.0"
+    },
+    {
+      "old_id": "seo",
+      "new_id": "marketing-seo",
+      "path": "plugins/marketing/skills/marketing-seo",
+      "source": "https://github.com/AgriciDaniel/claude-seo/tree/6be93f45064ffbadced572b5d5c95f55fd263af0/skills/seo",
+      "license": "MIT"
+    },
+    {
+      "old_id": "seo-agentic",
+      "new_id": "marketing-seo-agentic",
+      "path": "plugins/marketing/skills/marketing-seo-agentic",
+      "source": "https://github.com/AgriciDaniel/claude-seo/tree/6be93f45064ffbadced572b5d5c95f55fd263af0/skills/seo-agentic",
+      "license": "MIT"
+    },
+    {
+      "old_id": "seo-audit",
+      "new_id": "marketing-seo-audit",
+      "path": "plugins/marketing/skills/marketing-seo-audit",
+      "source": "https://github.com/AgriciDaniel/claude-seo/tree/6be93f45064ffbadced572b5d5c95f55fd263af0/skills/seo-audit",
+      "license": "MIT"
+    },
+    {
+      "old_id": "seo-backlinks",
+      "new_id": "marketing-seo-backlinks",
+      "path": "plugins/marketing/skills/marketing-seo-backlinks",
+      "source": "https://github.com/AgriciDaniel/claude-seo/tree/6be93f45064ffbadced572b5d5c95f55fd263af0/skills/seo-backlinks",
+      "license": "MIT"
+    },
+    {
+      "old_id": "seo-cluster",
+      "new_id": "marketing-seo-cluster",
+      "path": "plugins/marketing/skills/marketing-seo-cluster",
+      "source": "https://github.com/AgriciDaniel/claude-seo/tree/6be93f45064ffbadced572b5d5c95f55fd263af0/skills/seo-cluster",
+      "license": "MIT"
+    },
+    {
+      "old_id": "seo-competitor-pages",
+      "new_id": "marketing-seo-competitor-pages",
+      "path": "plugins/marketing/skills/marketing-seo-competitor-pages",
+      "source": "https://github.com/AgriciDaniel/claude-seo/tree/6be93f45064ffbadced572b5d5c95f55fd263af0/skills/seo-competitor-pages",
+      "license": "MIT"
+    },
+    {
+      "old_id": "seo-content",
+      "new_id": "marketing-seo-content",
+      "path": "plugins/marketing/skills/marketing-seo-content",
+      "source": "https://github.com/AgriciDaniel/claude-seo/tree/6be93f45064ffbadced572b5d5c95f55fd263af0/skills/seo-content",
+      "license": "MIT"
+    },
+    {
+      "old_id": "seo-content-brief",
+      "new_id": "marketing-seo-content-brief",
+      "path": "plugins/marketing/skills/marketing-seo-content-brief",
+      "source": "https://github.com/AgriciDaniel/claude-seo/tree/6be93f45064ffbadced572b5d5c95f55fd263af0/skills/seo-content-brief",
+      "license": "MIT"
+    },
+    {
+      "old_id": "seo-dataforseo",
+      "new_id": "marketing-seo-dataforseo",
+      "path": "plugins/marketing/skills/marketing-seo-dataforseo",
+      "source": "https://github.com/AgriciDaniel/claude-seo/tree/6be93f45064ffbadced572b5d5c95f55fd263af0/skills/seo-dataforseo",
+      "license": "MIT"
+    },
+    {
+      "old_id": "seo-drift",
+      "new_id": "marketing-seo-drift",
+      "path": "plugins/marketing/skills/marketing-seo-drift",
+      "source": "https://github.com/AgriciDaniel/claude-seo/tree/6be93f45064ffbadced572b5d5c95f55fd263af0/skills/seo-drift",
+      "license": "MIT"
+    },
+    {
+      "old_id": "seo-ecommerce",
+      "new_id": "marketing-seo-ecommerce",
+      "path": "plugins/marketing/skills/marketing-seo-ecommerce",
+      "source": "https://github.com/AgriciDaniel/claude-seo/tree/6be93f45064ffbadced572b5d5c95f55fd263af0/skills/seo-ecommerce",
+      "license": "MIT"
+    },
+    {
+      "old_id": "seo-flow",
+      "new_id": "marketing-seo-flow",
+      "path": "plugins/marketing/skills/marketing-seo-flow",
+      "source": "https://github.com/AgriciDaniel/claude-seo/tree/6be93f45064ffbadced572b5d5c95f55fd263af0/skills/seo-flow",
+      "license": "MIT AND CC-BY-4.0"
+    },
+    {
+      "old_id": "seo-geo",
+      "new_id": "marketing-seo-geo",
+      "path": "plugins/marketing/skills/marketing-seo-geo",
+      "source": "https://github.com/AgriciDaniel/claude-seo/tree/6be93f45064ffbadced572b5d5c95f55fd263af0/skills/seo-geo",
+      "license": "MIT"
+    },
+    {
+      "old_id": "seo-google",
+      "new_id": "marketing-seo-google",
+      "path": "plugins/marketing/skills/marketing-seo-google",
+      "source": "https://github.com/AgriciDaniel/claude-seo/blob/6be93f45064ffbadced572b5d5c95f55fd263af0/skills/seo-google/SKILL.md",
+      "license": "MIT"
+    },
+    {
+      "old_id": "seo-hreflang",
+      "new_id": "marketing-seo-hreflang",
+      "path": "plugins/marketing/skills/marketing-seo-hreflang",
+      "source": "https://github.com/AgriciDaniel/claude-seo/blob/6be93f45064ffbadced572b5d5c95f55fd263af0/skills/seo-hreflang/SKILL.md",
+      "license": "MIT"
+    },
+    {
+      "old_id": "seo-image-gen",
+      "new_id": "marketing-seo-image-gen",
+      "path": "plugins/marketing/skills/marketing-seo-image-gen",
+      "source": "https://github.com/AgriciDaniel/claude-seo/blob/6be93f45064ffbadced572b5d5c95f55fd263af0/skills/seo-image-gen/SKILL.md",
+      "license": "MIT"
+    },
+    {
+      "old_id": "seo-images",
+      "new_id": "marketing-seo-images",
+      "path": "plugins/marketing/skills/marketing-seo-images",
+      "source": "https://github.com/AgriciDaniel/claude-seo/blob/6be93f45064ffbadced572b5d5c95f55fd263af0/skills/seo-images/SKILL.md",
+      "license": "MIT"
+    },
+    {
+      "old_id": "seo-local",
+      "new_id": "marketing-seo-local",
+      "path": "plugins/marketing/skills/marketing-seo-local",
+      "source": "https://github.com/AgriciDaniel/claude-seo/blob/6be93f45064ffbadced572b5d5c95f55fd263af0/skills/seo-local/SKILL.md",
+      "license": "MIT"
+    },
+    {
+      "old_id": "seo-maps",
+      "new_id": "marketing-seo-maps",
+      "path": "plugins/marketing/skills/marketing-seo-maps",
+      "source": "https://github.com/AgriciDaniel/claude-seo/blob/6be93f45064ffbadced572b5d5c95f55fd263af0/skills/seo-maps/SKILL.md",
+      "license": "MIT"
+    },
+    {
+      "old_id": "seo-page",
+      "new_id": "marketing-seo-page",
+      "path": "plugins/marketing/skills/marketing-seo-page",
+      "source": "https://github.com/AgriciDaniel/claude-seo/blob/6be93f45064ffbadced572b5d5c95f55fd263af0/skills/seo-page/SKILL.md",
+      "license": "MIT"
+    },
+    {
+      "old_id": "seo-plan",
+      "new_id": "marketing-seo-plan",
+      "path": "plugins/marketing/skills/marketing-seo-plan",
+      "source": "https://github.com/AgriciDaniel/claude-seo/blob/6be93f45064ffbadced572b5d5c95f55fd263af0/skills/seo-plan/SKILL.md",
+      "license": "MIT"
+    },
+    {
+      "old_id": "seo-programmatic",
+      "new_id": "marketing-seo-programmatic",
+      "path": "plugins/marketing/skills/marketing-seo-programmatic",
+      "source": "https://github.com/AgriciDaniel/claude-seo/blob/6be93f45064ffbadced572b5d5c95f55fd263af0/skills/seo-programmatic/SKILL.md",
+      "license": "MIT"
+    },
+    {
+      "old_id": "seo-schema",
+      "new_id": "marketing-seo-schema",
+      "path": "plugins/marketing/skills/marketing-seo-schema",
+      "source": "https://github.com/AgriciDaniel/claude-seo/blob/6be93f45064ffbadced572b5d5c95f55fd263af0/skills/seo-schema/SKILL.md",
+      "license": "MIT"
+    },
+    {
+      "old_id": "seo-sitemap",
+      "new_id": "marketing-seo-sitemap",
+      "path": "plugins/marketing/skills/marketing-seo-sitemap",
+      "source": "https://github.com/AgriciDaniel/claude-seo/blob/6be93f45064ffbadced572b5d5c95f55fd263af0/skills/seo-sitemap/SKILL.md",
+      "license": "MIT"
+    },
+    {
+      "old_id": "seo-sxo",
+      "new_id": "marketing-seo-sxo",
+      "path": "plugins/marketing/skills/marketing-seo-sxo",
+      "source": "https://github.com/AgriciDaniel/claude-seo/blob/6be93f45064ffbadced572b5d5c95f55fd263af0/skills/seo-sxo/SKILL.md",
+      "license": "MIT"
+    },
+    {
+      "old_id": "seo-technical",
+      "new_id": "marketing-seo-technical",
+      "path": "plugins/marketing/skills/marketing-seo-technical",
+      "source": "https://github.com/AgriciDaniel/claude-seo/blob/6be93f45064ffbadced572b5d5c95f55fd263af0/skills/seo-technical/SKILL.md",
+      "license": "MIT"
+    },
+    {
+      "old_id": "setup-timescaledb-hypertables",
+      "new_id": "core-development-setup-timescaledb-hypertables",
+      "path": "plugins/core-development/skills/core-development-setup-timescaledb-hypertables",
+      "source": "https://github.com/timescale/pg-aiguide/tree/5d3b76b5c986693b30753828b404aa66ba34c31a/skills/setup-timescaledb-hypertables",
+      "license": "Apache-2.0"
+    },
+    {
+      "old_id": "stripe-best-practices",
+      "new_id": "core-development-stripe-integration-guidance",
+      "path": "plugins/core-development/skills/core-development-stripe-integration-guidance",
+      "source": "https://github.com/stripe/ai/tree/6780831d12912f6a592f7a94d2bae0dc70eda6bb/skills/stripe-best-practices",
+      "license": "MIT"
+    },
+    {
+      "old_id": "timescaledb-hyperfunctions",
+      "new_id": "core-development-timescaledb-hyperfunctions",
+      "path": "plugins/core-development/skills/core-development-timescaledb-hyperfunctions",
+      "source": "https://github.com/timescale/pg-aiguide/tree/5d3b76b5c986693b30753828b404aa66ba34c31a/skills/timescaledb-hyperfunctions",
+      "license": "Apache-2.0"
+    },
+    {
+      "old_id": "upgrade-stripe",
+      "new_id": "core-development-upgrade-stripe",
+      "path": "plugins/core-development/skills/core-development-upgrade-stripe",
+      "source": "https://github.com/stripe/ai/tree/acbfbb292b3d88d209d4511006c2a89a46c11f8e/skills/upgrade-stripe",
+      "license": "MIT"
+    }
+  ]
+}

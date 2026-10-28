@@ -322,3 +322,13 @@ Remaining: <none or explicit unresolved issues>
 ```
 
 Persist an evidence record when external sources materially affect the result. See `examples/review-receipt.md` for a compact golden shape.
+
+## Collection Instruction Contract
+
+When the target belongs to a collection with an authoritative instruction contract,
+read that contract before evaluating its entry. For this collection use
+[instruction-standard.md](instruction-standard.md). Record the standard/revision
+and authorized target set in the private review input. Apply the ordinary one-target
+loop per entry; an explicitly authorized migration additionally requires a complete
+inventory, per-skill retention and independent collection review. This exception
+does not authorize future bulk edits or substitute headings for behavioral evidence.

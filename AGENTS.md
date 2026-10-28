@@ -114,3 +114,18 @@ python3 <skill-creator-dir>/scripts/quick_validate.py \
 ```
 
 Do not encode the absolute validator path into published skill behavior; it is a local development command and may be unavailable to consumers.
+
+## Instruction Authoring Standard
+
+For skill authoring and explicitly authorized contract migrations, follow
+[the canonical instruction standard](plugins/pnet/skills/skill-improver/references/instruction-standard.md).
+Use its six-section entry contract while preserving the skill-specific rules,
+examples, resources, commands, public identifiers and authority gates. A uniform
+shape is not evidence of uniform behavior or a reason to discard expertise.
+Ordinary improvements remain preservation-first and narrowly scoped; whole-catalog
+migrations require explicit authorization and per-skill retention evidence.
+
+The six-section entry schema is an explicit repository format contract. Run
+`python3 scripts/check_instruction_contracts.py` and its parser regression tests
+in `scripts/tests/` alongside existing validators. These checks validate Markdown
+structure only; retain independent semantic, preservation and publication review.

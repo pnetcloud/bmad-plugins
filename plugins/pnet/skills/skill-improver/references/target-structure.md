@@ -153,3 +153,12 @@ small, unused resource should not be created.
 - Does the before/after manifest explain every missing or renamed file?
 - Does the retention matrix account for every removed file and capability?
 - If a structural change was approved, was information loss reviewed separately?
+
+## Collection Entry Contract
+
+For this collection, [instruction-standard.md](instruction-standard.md) defines the
+required six-section entry schema. Organize existing domain material inside that
+contract without turning optional directories into required scaffolding. A local
+format linter and its parser tests may enforce an explicitly adopted schema; they
+do not test semantic completeness, preservation or execution quality. Other
+collections retain their own authoritative shape unless migration is authorized.

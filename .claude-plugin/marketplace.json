@@ -4,7 +4,7 @@
     "name": "pnetcloud",
     "url": "https://github.com/pnetcloud"
   },
-  "license": "MIT",
+  "license": "MIT AND Apache-2.0 AND CC-BY-4.0",
   "homepage": "https://github.com/pnetcloud/bmad-plugins",
   "repository": "https://github.com/pnetcloud/bmad-plugins",
   "keywords": [
@@ -23,7 +23,7 @@
     "devops"
   ],
   "metadata": {
-    "version": "0.1.2",
+    "version": "0.2.0",
     "description": "Structured BMad plugin collection curated by pnetcloud."
   },
   "plugins": [
@@ -31,7 +31,7 @@
       "name": "pnet",
       "source": "./plugins/pnet",
       "description": "pNet meta-skills for improving and maintaining Agent Skills safely and efficiently.",
-      "version": "0.1.2",
+      "version": "0.2.0",
       "author": {
         "name": "pnetcloud",
         "url": "https://github.com/pnetcloud"
@@ -51,14 +51,53 @@
     {
       "name": "pnet-marketing",
       "source": "./plugins/marketing",
-      "description": "Marketing-oriented implementation skills for on-page SEO, search-ready product surfaces, and growth-aware web delivery.",
-      "version": "0.1.1",
+      "description": "Marketing knowledge for on-page SEO implementation, SEO assessment, LinkedIn workflows, and email campaign safety; external runtimes and provider bindings are separate prerequisites.",
+      "version": "0.2.0",
       "author": {
         "name": "pnetcloud",
         "url": "https://github.com/pnetcloud"
       },
       "skills": [
-        "./plugins/marketing/skills/marketing-on-page-seo-implementation"
+        "./plugins/marketing/skills/marketing-on-page-seo-implementation",
+        "./plugins/marketing/skills/marketing-email-marketing-bible",
+        "./plugins/marketing/skills/marketing-linkedin-comment-drafter",
+        "./plugins/marketing/skills/marketing-linkedin-content-planner",
+        "./plugins/marketing/skills/marketing-linkedin-employee-advocacy",
+        "./plugins/marketing/skills/marketing-linkedin-engager-analytics",
+        "./plugins/marketing/skills/marketing-linkedin-hook-extractor",
+        "./plugins/marketing/skills/marketing-linkedin-humanizer",
+        "./plugins/marketing/skills/marketing-linkedin-interviewer",
+        "./plugins/marketing/skills/marketing-linkedin-post-writer",
+        "./plugins/marketing/skills/marketing-linkedin-profile-optimizer",
+        "./plugins/marketing/skills/marketing-linkedin-reply-handler",
+        "./plugins/marketing/skills/marketing-linkedin-repurposer",
+        "./plugins/marketing/skills/marketing-linkedin-thread-monitor",
+        "./plugins/marketing/skills/marketing-seo",
+        "./plugins/marketing/skills/marketing-seo-agentic",
+        "./plugins/marketing/skills/marketing-seo-audit",
+        "./plugins/marketing/skills/marketing-seo-backlinks",
+        "./plugins/marketing/skills/marketing-seo-cluster",
+        "./plugins/marketing/skills/marketing-seo-competitor-pages",
+        "./plugins/marketing/skills/marketing-seo-content",
+        "./plugins/marketing/skills/marketing-seo-content-brief",
+        "./plugins/marketing/skills/marketing-seo-dataforseo",
+        "./plugins/marketing/skills/marketing-seo-drift",
+        "./plugins/marketing/skills/marketing-seo-ecommerce",
+        "./plugins/marketing/skills/marketing-seo-flow",
+        "./plugins/marketing/skills/marketing-seo-geo",
+        "./plugins/marketing/skills/marketing-seo-google",
+        "./plugins/marketing/skills/marketing-seo-hreflang",
+        "./plugins/marketing/skills/marketing-seo-image-gen",
+        "./plugins/marketing/skills/marketing-seo-images",
+        "./plugins/marketing/skills/marketing-seo-local",
+        "./plugins/marketing/skills/marketing-seo-maps",
+        "./plugins/marketing/skills/marketing-seo-page",
+        "./plugins/marketing/skills/marketing-seo-plan",
+        "./plugins/marketing/skills/marketing-seo-programmatic",
+        "./plugins/marketing/skills/marketing-seo-schema",
+        "./plugins/marketing/skills/marketing-seo-sitemap",
+        "./plugins/marketing/skills/marketing-seo-sxo",
+        "./plugins/marketing/skills/marketing-seo-technical"
       ],
       "category": "marketing",
       "keywords": [
@@ -67,13 +106,14 @@
         "on-page-seo",
         "technical-seo",
         "growth"
-      ]
+      ],
+      "license": "MIT AND CC-BY-4.0"
     },
     {
       "name": "pnet-business-product",
       "source": "./plugins/business-product",
       "description": "Business and product skills for analysis, planning, documentation, research, and delivery coordination.",
-      "version": "0.1.1",
+      "version": "0.2.0",
       "author": {
         "name": "pnetcloud",
         "url": "https://github.com/pnetcloud"
@@ -108,8 +148,8 @@
     {
       "name": "pnet-core-development",
       "source": "./plugins/core-development",
-      "description": "Core software development skills spanning architecture, APIs, backend, frontend, databases, UI, docs, and platform patterns.",
-      "version": "0.1.1",
+      "description": "Core development knowledge spanning architecture, APIs, backend, frontend, PostgreSQL, TimescaleDB, Redis, Stripe, UI, and documentation.",
+      "version": "0.2.0",
       "author": {
         "name": "pnetcloud",
         "url": "https://github.com/pnetcloud"
@@ -140,7 +180,15 @@
         "./plugins/core-development/skills/core-development-ui-designer",
         "./plugins/core-development/skills/core-development-implement-design",
         "./plugins/core-development/skills/core-development-web-design-guidelines",
-        "./plugins/core-development/skills/core-development-websocket-engineer"
+        "./plugins/core-development/skills/core-development-websocket-engineer",
+        "./plugins/core-development/skills/core-development-design-postgres-tables",
+        "./plugins/core-development/skills/core-development-postgres-database-migration",
+        "./plugins/core-development/skills/core-development-redis-core",
+        "./plugins/core-development/skills/core-development-schema-exploration",
+        "./plugins/core-development/skills/core-development-setup-timescaledb-hypertables",
+        "./plugins/core-development/skills/core-development-stripe-integration-guidance",
+        "./plugins/core-development/skills/core-development-timescaledb-hyperfunctions",
+        "./plugins/core-development/skills/core-development-upgrade-stripe"
       ],
       "category": "development",
       "keywords": [
@@ -149,13 +197,14 @@
         "backend",
         "frontend",
         "api"
-      ]
+      ],
+      "license": "MIT AND Apache-2.0"
     },
     {
       "name": "pnet-qa",
       "source": "./plugins/qa",
       "description": "QA-focused skills for browser automation, Playwright workflows, and quality validation.",
-      "version": "0.1.1",
+      "version": "0.2.0",
       "author": {
         "name": "pnetcloud",
         "url": "https://github.com/pnetcloud"
@@ -177,8 +226,8 @@
     {
       "name": "pnet-infrastructure",
       "source": "./plugins/infrastructure",
-      "description": "Infrastructure and DevOps skills for cloud architecture, Kubernetes, Terraform, CI/CD, and platform operations.",
-      "version": "0.1.1",
+      "description": "Infrastructure and DevOps knowledge for cloud architecture, Kubernetes, Terraform, CI/CD, platform operations, and Cloudflare product selection.",
+      "version": "0.2.0",
       "author": {
         "name": "pnetcloud",
         "url": "https://github.com/pnetcloud"
@@ -191,7 +240,8 @@
         "./plugins/infrastructure/skills/infrastructure-gitlab-ci-standards",
         "./plugins/infrastructure/skills/infrastructure-kubernetes-specialist",
         "./plugins/infrastructure/skills/infrastructure-makefile-standards",
-        "./plugins/infrastructure/skills/infrastructure-terraform-engineer"
+        "./plugins/infrastructure/skills/infrastructure-terraform-engineer",
+        "./plugins/infrastructure/skills/infrastructure-cloudflare"
       ],
       "category": "infrastructure",
       "keywords": [
@@ -201,13 +251,14 @@
         "kubernetes",
         "terraform",
         "ci-cd"
-      ]
+      ],
+      "license": "MIT AND Apache-2.0"
     },
     {
       "name": "pnet-language-specialists",
       "source": "./plugins/language-specialists",
       "description": "Language and framework specialist skills for Go, React, and TypeScript implementation guidance.",
-      "version": "0.1.1",
+      "version": "0.2.0",
       "author": {
         "name": "pnetcloud",
         "url": "https://github.com/pnetcloud"

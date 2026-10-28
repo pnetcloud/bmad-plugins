@@ -1,13 +1,13 @@
 {
   "name": "pnet-core-development",
-  "version": "0.1.1",
-  "description": "Core software development skills spanning architecture, APIs, backend, frontend, databases, UI, docs, and platform patterns.",
+  "version": "0.2.0",
+  "description": "Core development knowledge spanning architecture, APIs, backend, frontend, PostgreSQL, TimescaleDB, Redis, Stripe, UI, and documentation.",
   "author": {
     "name": "pnetcloud",
     "url": "https://github.com/pnetcloud"
   },
   "repository": "https://github.com/pnetcloud/bmad-plugins",
-  "license": "MIT",
+  "license": "MIT AND Apache-2.0",
   "skills": [
     "./skills/core-development-api-designer",
     "./skills/core-development-backend-developer",
@@ -34,6 +34,14 @@
     "./skills/core-development-ui-designer",
     "./skills/core-development-implement-design",
     "./skills/core-development-web-design-guidelines",
-    "./skills/core-development-websocket-engineer"
+    "./skills/core-development-websocket-engineer",
+    "./skills/core-development-design-postgres-tables",
+    "./skills/core-development-postgres-database-migration",
+    "./skills/core-development-redis-core",
+    "./skills/core-development-schema-exploration",
+    "./skills/core-development-setup-timescaledb-hypertables",
+    "./skills/core-development-stripe-integration-guidance",
+    "./skills/core-development-timescaledb-hyperfunctions",
+    "./skills/core-development-upgrade-stripe"
   ]
 }

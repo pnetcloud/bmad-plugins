@@ -10,10 +10,23 @@ import json
 import os
 import re
 import stat
+import struct
 import sys
+import zlib
 from dataclasses import asdict, dataclass
 from pathlib import Path
 from urllib.parse import unquote, urlsplit
+
+try:
+    from markdown_it import MarkdownIt
+    from markdown_it.common.utils import normalizeReference
+    from markdown_it.rules_inline.backticks import backtick
+except ImportError as error:
+    raise SystemExit(
+        "Markdown scanner dependency unavailable: install scripts/requirements.txt "
+        "in an isolated environment (markdown-it-py==3.0.0, mdurl==0.1.2); "
+        "scan not performed"
+    ) from error
 
 
 NAME_RE = re.compile(r"^[a-z0-9]+(?:-[a-z0-9]+)*$")
@@ -41,6 +54,8 @@ PUBLIC_POLICY_KEYS = {
     "forbidden_domains",
     "allowed_environment_variables",
     "allowed_email_domains",
+    "reviewed_assets",
+    "allowed_email_addresses",
 }
 ENVIRONMENT_REFERENCE_RE = re.compile(
     r"\$\{(?P<braced>[A-Z][A-Z0-9_]{1,})[^}]*}|\$(?P<plain>[A-Z][A-Z0-9_]{1,})\b|"
@@ -188,12 +203,82 @@ class Finding:
 
 
 @dataclass(frozen=True)
+class ReviewedAsset:
+    skill: str
+    path: str
+    sha256: str
+    size: int
+    format: str
+
+
+@dataclass(frozen=True)
 class PublicPolicy:
     forbidden_literals: tuple[str, ...]
     forbidden_regexes: tuple[re.Pattern[str], ...]
     forbidden_domains: frozenset[str]
     allowed_environment_variables: frozenset[str]
     allowed_email_domains: frozenset[str]
+    reviewed_assets: tuple[ReviewedAsset, ...] = ()
+    allowed_email_addresses: frozenset[str] = frozenset()
+
+
+def valid_policy_email(value: object) -> bool:
+    """Accept a bare ASCII mailbox, not a display name, wildcard or domain grant."""
+    if not isinstance(value, str) or len(value) > 254:
+        return False
+    match = EMAIL_RE.fullmatch(value)
+    if match is None:
+        return False
+    local, domain = match.group("local", "domain")
+    return (
+        not local.startswith(".") and not local.endswith(".") and ".." not in local
+        and all(re.fullmatch(r"[A-Za-z0-9](?:[A-Za-z0-9-]{0,61}[A-Za-z0-9])?", label)
+                for label in domain.split("."))
+    )
+
+
+def parse_reviewed_assets(
+    data: dict[str, object], findings: list[Finding],
+) -> tuple[ReviewedAsset, ...]:
+    """Only operator policy may authorize exact reviewed bytes; never skill metadata."""
+    entries = data.get("reviewed_assets", [])
+    if not isinstance(entries, list):
+        add(findings, "blocking", "public-policy-invalid", "PUBLIC_POLICY",
+            "reviewed_assets must be a list")
+        return ()
+    assets: list[ReviewedAsset] = []
+    seen: set[tuple[str, str]] = set()
+    for index, entry in enumerate(entries, start=1):
+        valid = isinstance(entry, dict) and set(entry) == {
+            "skill", "path", "sha256", "size", "format",
+        }
+        if valid:
+            skill, path, digest, size, fmt = (
+                entry[key] for key in ("skill", "path", "sha256", "size", "format")
+            )
+            valid = (
+                isinstance(skill, str) and NAME_RE.fullmatch(skill) is not None
+                and isinstance(path, str)
+                and re.fullmatch(r"[A-Za-z0-9_.-]+(?:/[A-Za-z0-9_.-]+)*", path) is not None
+                and all(part not in {".", ".."} for part in path.split("/"))
+                and path.endswith(".png")
+                and isinstance(digest, str)
+                and re.fullmatch(r"[0-9a-fA-F]{64}", digest) is not None
+                and type(size) is int and 0 < size <= MAX_TEXT_BYTES
+                and isinstance(fmt, str) and fmt == "png"
+            )
+        if not valid:
+            add(findings, "blocking", "public-policy-invalid", "PUBLIC_POLICY",
+                f"reviewed_assets entry {index} is not an exact safe PNG descriptor")
+            continue
+        identity = (skill, path)
+        if identity in seen:
+            add(findings, "blocking", "public-policy-invalid", "PUBLIC_POLICY",
+                f"reviewed_assets entry {index} duplicates a skill/path")
+            continue
+        seen.add(identity)
+        assets.append(ReviewedAsset(skill, path, digest.lower(), size, fmt))
+    return tuple(assets)
 
 
 def add(
@@ -330,10 +415,20 @@ def load_public_policy(
             "allowed_environment_variables contains an invalid name",
         )
 
+    email_addresses = data.get("allowed_email_addresses", [])
+    if not isinstance(email_addresses, list) or not all(
+        valid_policy_email(value) for value in email_addresses
+    ):
+        add(findings, "blocking", "public-policy-invalid", "PUBLIC_POLICY",
+            "allowed_email_addresses must be a list of valid bare ASCII email addresses")
+        email_addresses = []
+    reviewed_assets = parse_reviewed_assets(data, findings)
     if any(item.severity == "blocking" for item in findings):
         return None
 
     return PublicPolicy(
+        reviewed_assets=reviewed_assets,
+        allowed_email_addresses=frozenset(email_addresses),
         forbidden_literals=tuple(literal_values),
         forbidden_regexes=tuple(compiled_regexes),
         forbidden_domains=frozenset(value.casefold().rstrip(".") for value in domain_values),
@@ -505,34 +600,113 @@ def check_local_target(
         )
 
 
-def mask_fenced_code(text: str) -> str:
-    """Replace fenced-code content with spaces while preserving offsets and lines."""
-    masked: list[str] = []
-    fence_character: str | None = None
-    fence_length = 0
+def markdown_link_view(text: str, *, fences: bool = True, inline: bool = True):
+    """Project parser-confirmed code spans onto original source offsets.
 
-    for line in text.splitlines(keepends=True):
-        content = line.rstrip("\r\n")
-        opening = re.match(r"^ {0,3}(`{3,}|~{3,})", content)
-
-        if fence_character is None:
-            if opening is None:
-                masked.append(line)
-                continue
-            fence_character = opening.group(1)[0]
-            fence_length = len(opening.group(1))
+    The maintained CommonMark parser owns block boundaries and inline syntax.
+    A rule observer delegates unchanged to its backtick rule; it records only
+    emitted code_inline tokens, not speculative/silent link-label probes.
+    No renderer, external plugin, vendored parser or fallback is involved.
+    """
+    # markdown-it normalizes newlines before parsing. Keep an explicit reverse
+    # map; diagnostics and all non-link security checks use the original text.
+    source = []
+    offsets = []
+    at = 0
+    while at < len(text):
+        offsets.append(at)
+        char = text[at]
+        if char == "\r":
+            source.append("\n")
+            at += 2 if text[at:at + 2] == "\r\n" else 1
         else:
-            closing = re.match(
-                rf"^ {{0,3}}{re.escape(fence_character)}{{{fence_length},}}[ \t]*$",
-                content,
-            )
-            if closing is not None:
-                fence_character = None
-                fence_length = 0
+            source.append("\ufffd" if char == "\0" else char)
+            at += 1
+    normalized = "".join(source)
+    lines = normalized.splitlines(keepends=True)
+    starts = []
+    at = 0
+    for line in lines:
+        starts.append(at)
+        at += len(line)
+    characters = list(text)
 
-        masked.append("".join(char if char in "\r\n" else " " for char in line))
+    def mask(start, end):
+        for pos in range(start, end):
+            if characters[pos] not in "\r\n":
+                characters[pos] = " "
 
-    return "".join(masked)
+    parser = MarkdownIt("commonmark", {"inline_definitions": True})
+    # Parse blocks first, then observe inline parsing separately for each actual
+    # inline token. Its map may follow multiline reference definitions and need
+    # not start at the first line of a surrounding paragraph/container.
+    parser.core.ruler.disable(["inline"])
+    environment = {}
+    tokens = parser.parse(normalized, environment)
+    for token in tokens:
+        if fences and token.type in {"fence", "code_block"}:
+            begin, end = token.map
+            start = starts[begin]
+            stop = starts[end] if end < len(starts) else len(normalized)
+            mask(offsets[start], offsets[stop] if stop < len(offsets) else len(text))
+        if not inline or token.type != "inline":
+            continue
+        spans = []
+
+        def observe_backticks(state, silent):
+            begin = state.pos
+            count = len(state.tokens)
+            accepted = backtick(state, silent)
+            if not silent and accepted and any(
+                item.type == "code_inline" for item in state.tokens[count:]
+            ):
+                # Image alt text can be parsed recursively from a substring.
+                # Locate that substring uniquely, or refuse to guess offsets.
+                if state.src == token.content:
+                    base = 0
+                else:
+                    base = token.content.find(state.src)
+                    if base < 0 or token.content.find(state.src, base + 1) >= 0:
+                        raise ValueError("ambiguous nested inline source map")
+                spans.append((base + begin, base + state.pos))
+            return accepted
+
+        parser.inline.ruler.at("backticks", observe_backticks)
+        parser.inline.parse(token.content, parser, environment, [])
+        if not spans:
+            continue
+        begin, end = token.map
+        content_lines = token.content.split("\n")
+        if end - begin != len(content_lines):
+            raise ValueError("inline source line map mismatch")
+        mapping = []
+        for number, content in enumerate(content_lines, begin):
+            original = lines[number].rstrip("\n")
+            column = original.find(content)
+            if column < 0 or original.find(content, column + 1) >= 0:
+                # No approximate alignment: mapping uncertainty blocks the gate.
+                raise ValueError("inline source column map is not unique")
+            mapping.extend(offsets[starts[number] + column + i]
+                           for i in range(len(content)))
+            if number + 1 < end:
+                mapping.append(offsets[starts[number] + len(original)])
+        if len(mapping) != len(token.content):
+            raise ValueError("inline source character map mismatch")
+        for begin, end in spans:
+            for index in mapping[begin:end]:
+                mask(index, index + 1)
+    definitions = [token for token in tokens if token.type == "definition"]
+    return "".join(characters), definitions
+
+
+def mask_fenced_code(text: str) -> str:
+    """Mask parser-confirmed fenced/indented code, preserving original offsets."""
+    return markdown_link_view(text, inline=False)[0]
+
+
+def mask_inline_code(text: str) -> str:
+    """Mask actual CommonMark inline code and code blocks, never across blocks."""
+    return markdown_link_view(text)[0]
 
 
 def scan_links(
@@ -541,22 +715,34 @@ def scan_links(
     text: str,
     findings: list[Finding],
 ) -> None:
-    link_text = mask_fenced_code(text)
+    try:
+        link_text, parsed_definitions = markdown_link_view(text)
+    except Exception:
+        # Parser/source-map failure is not an empty successful scan. Continue
+        # the legacy link checks on UNMASKED text and keep privacy checks active.
+        add(findings, "blocking", "markdown-parse-error", markdown_path.relative_to(root),
+            "CommonMark parsing/source mapping failed; manual review required")
+        link_text, parsed_definitions = text, []
     for match in INLINE_LINK_RE.finditer(link_text):
         target = match.group("angle") or match.group("plain")
         line = text.count("\n", 0, match.start()) + 1
         check_local_target(root, markdown_path, target, line, findings)
 
     definitions: dict[str, str] = {}
+    for token in parsed_definitions:
+        definitions[normalizeReference(token.meta["label"])] = token.meta["url"]
+        check_local_target(root, markdown_path, token.meta["url"], token.map[0] + 1, findings)
+    # Retain legacy reference-definition and UNDEFINED-reference validation.
+    # Recognized links alone cannot detect misspelled/undefined reference IDs.
     for match in REFERENCE_DEF_RE.finditer(link_text):
-        identifier = match.group("id").strip().casefold()
+        identifier = normalizeReference(match.group("id"))
         target = match.group("angle") or match.group("plain")
         definitions[identifier] = target
         line = text.count("\n", 0, match.start()) + 1
         check_local_target(root, markdown_path, target, line, findings)
 
     for match in REFERENCE_USE_RE.finditer(link_text):
-        identifier = (match.group("id") or match.group("label")).strip().casefold()
+        identifier = normalizeReference(match.group("id") or match.group("label"))
         if identifier in definitions:
             continue
         line = text.count("\n", 0, match.start()) + 1
@@ -565,7 +751,7 @@ def scan_links(
             "blocking",
             "reference-definition-missing",
             markdown_path.relative_to(root),
-            f"reference-style link has no definition: {identifier}",
+            f"reference-style link has no definition: {identifier.casefold()}",
             line,
         )
 
@@ -829,6 +1015,7 @@ def scan_public_text(
         if (
             is_reserved_example_domain(domain)
             or domain_matches(domain, policy.allowed_email_domains)
+            or match.group(0) in policy.allowed_email_addresses
         ):
             continue
         add_public_match(
@@ -933,6 +1120,142 @@ def scan_text(
         scan_public_text(relative, text, public_policy, findings)
 
 
+def validate_png(data: bytes) -> tuple[int, int]:
+    """Bounded structural validation, not visual review or a secret-free verdict.
+
+    Accept standard static PNGs only. Ancillary chunks remain operator-reviewed
+    opaque data. Bound dimensions, pixels, chunks and decompressed scanlines.
+    """
+    if not 0 < len(data) <= MAX_TEXT_BYTES or data[:8] != b"\x89PNG\r\n\x1a\n":
+        raise ValueError("invalid PNG signature or byte bound")
+    offset = 8
+    width = height = depth = color = interlace = 0
+    idat = bytearray()
+    idat_seen = False
+    palette = False
+    idat_finished = False
+    chunks = 0
+    ended = False
+    while offset < len(data):
+        chunks += 1
+        if chunks > 4096 or offset + 12 > len(data):
+            raise ValueError("truncated PNG or chunk bound exceeded")
+        size = int.from_bytes(data[offset:offset + 4], "big")
+        kind = data[offset + 4:offset + 8]
+        end = offset + 12 + size
+        if end > len(data) or re.fullmatch(rb"[A-Za-z]{4}", kind) is None or kind[2] & 32:
+            raise ValueError("invalid PNG chunk framing")
+        payload = data[offset + 8:end - 4]
+        crc = int.from_bytes(data[end - 4:end], "big")
+        if zlib.crc32(kind + payload) != crc:
+            raise ValueError("PNG chunk CRC mismatch")
+        if chunks == 1 and kind != b"IHDR":
+            raise ValueError("PNG must start with IHDR")
+        if kind == b"IHDR":
+            if chunks != 1 or size != 13:
+                raise ValueError("invalid or repeated PNG IHDR")
+            width, height, depth, color, compression, filtering, interlace = struct.unpack(
+                ">IIBBBBB", payload,
+            )
+            depths = {0: {1, 2, 4, 8, 16}, 2: {8, 16}, 3: {1, 2, 4, 8},
+                      4: {8, 16}, 6: {8, 16}}
+            if (not 0 < width <= 4096 or not 0 < height <= 4096
+                    or width * height > 4_194_304
+                    or depth not in depths.get(color, set())
+                    or compression != 0 or filtering != 0 or interlace not in {0, 1}):
+                raise ValueError("unsupported or out-of-bounds PNG IHDR")
+        elif kind == b"PLTE":
+            if palette or idat_seen or color in {0, 4} or not size or size % 3 or size > 768:
+                raise ValueError("invalid PNG palette")
+            if color == 3 and size // 3 > 2 ** depth:
+                raise ValueError("PNG palette exceeds bit depth")
+            palette = True
+        elif kind == b"IDAT":
+            if idat_finished or (color == 3 and not palette):
+                raise ValueError("invalid PNG IDAT ordering")
+            idat_seen = True
+            idat.extend(payload)
+        elif kind == b"IEND":
+            if size or not idat or end != len(data):
+                raise ValueError("invalid PNG IEND or trailing payload")
+            ended = True
+            break
+        elif not kind[0] & 32:
+            raise ValueError("unknown critical PNG chunk")
+        # APNG is outside this intentionally small static-image exception.
+        elif kind in {b"acTL", b"fcTL", b"fdAT"}:
+            raise ValueError("animated PNG is not supported")
+        if kind != b"IDAT" and idat_seen:
+            idat_finished = True
+        offset = end
+    if not ended:
+        raise ValueError("PNG is missing IEND")
+
+    channels = {0: 1, 2: 3, 3: 1, 4: 2, 6: 4}[color]
+    passes = [(0, 0, 1, 1)] if not interlace else [
+        (0, 0, 8, 8), (4, 0, 8, 8), (0, 4, 4, 8), (2, 0, 4, 4),
+        (0, 2, 2, 4), (1, 0, 2, 2), (0, 1, 1, 2),
+    ]
+    rows: list[tuple[int, int]] = []
+    for x, y, dx, dy in passes:
+        columns = max(0, (width - x + dx - 1) // dx)
+        count = max(0, (height - y + dy - 1) // dy)
+        if columns and count:
+            rows.append((count, 1 + (columns * channels * depth + 7) // 8))
+    expected = sum(count * size for count, size in rows)
+    if expected > 33_558_528:
+        raise ValueError("PNG decoded byte bound exceeded")
+    decoder = zlib.decompressobj()
+    try:
+        decoded = decoder.decompress(bytes(idat), expected + 1)
+    except zlib.error as error:
+        raise ValueError("invalid PNG image compression") from error
+    if (len(decoded) != expected or not decoder.eof
+            or decoder.unused_data or decoder.unconsumed_tail):
+        raise ValueError("PNG decoded size mismatch or trailing compressed data")
+    offset = 0
+    for count, size in rows:
+        for _ in range(count):
+            if decoded[offset] > 4:
+                raise ValueError("invalid PNG row filter")
+            offset += size
+    return width, height
+
+
+def check_reviewed_asset(
+    root: Path, path: Path, policy: PublicPolicy, findings: list[Finding],
+) -> bool:
+    """Return true for a policy-targeted file, including blocking mismatches.
+
+    Called only after normal package path, symlink and file checks. No glob,
+    source-controlled metadata, or unscoped content hash can grant approval.
+    """
+    relative = path.relative_to(root)
+    approval = next((asset for asset in policy.reviewed_assets
+                     if asset.skill == root.name and asset.path == relative.as_posix()), None)
+    if approval is None:
+        return False
+    try:
+        # Do not read an oversized replacement just to discover a hash mismatch.
+        if path.stat().st_size != approval.size or approval.size > MAX_TEXT_BYTES:
+            raise ValueError("reviewed asset byte count mismatch")
+        with path.open("rb") as stream:
+            data = stream.read(MAX_TEXT_BYTES + 1)
+        if len(data) != approval.size or hashlib.sha256(data).hexdigest() != approval.sha256:
+            raise ValueError("reviewed asset SHA-256 or byte count mismatch")
+        if approval.format != "png" or relative.suffix != ".png":
+            raise ValueError("unsupported reviewed asset format")
+        width, height = validate_png(data)
+    except (OSError, ValueError) as error:
+        add(findings, "blocking", "public-reviewed-asset-invalid", relative, str(error))
+        return True
+    add(findings, "warning", "public-reviewed-asset", relative,
+        f"operator-reviewed opaque PNG: skill={root.name}; path={relative.as_posix()}; "
+        f"sha256={approval.sha256}; size={len(data)}; dimensions={width}x{height}; "
+        "exact policy approval, not automated proof of secret absence or image safety")
+    return True
+
+
 def scan_tree(
     root: Path,
     findings: list[Finding],
@@ -983,6 +1306,12 @@ def scan_tree(
             )
 
         text, error = read_text(path)
+        if text is not None:
+            scan_text(root, path, text, findings, public_policy)
+        if public_policy is not None and check_reviewed_asset(
+            root, path, public_policy, findings,
+        ):
+            continue
         if text is None:
             add(
                 findings,
@@ -992,8 +1321,6 @@ def scan_tree(
                 error or "file cannot be inspected safely",
             )
             continue
-
-        scan_text(root, path, text, findings, public_policy)
 
 
 def scan_skill(

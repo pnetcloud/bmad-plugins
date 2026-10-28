@@ -4,6 +4,8 @@ Installable BMad plugin package for core software development and architecture s
 
 ## Included Skills
 
+34 skill entries.
+
 - `core-development-api-designer`
 - `core-development-backend-developer`
 - `core-development-data-pipeline-go`
@@ -30,6 +32,14 @@ Installable BMad plugin package for core software development and architecture s
 - `core-development-implement-design`
 - `core-development-web-design-guidelines`
 - `core-development-websocket-engineer`
+- `core-development-design-postgres-tables`
+- `core-development-postgres-database-migration`
+- `core-development-redis-core`
+- `core-development-schema-exploration`
+- `core-development-setup-timescaledb-hypertables`
+- `core-development-stripe-integration-guidance`
+- `core-development-timescaledb-hyperfunctions`
+- `core-development-upgrade-stripe`
 
 ## Contents
 
@@ -39,3 +49,16 @@ Installable BMad plugin package for core software development and architecture s
 ## Notes
 
 This plugin directory is intended to stay focused on the installable package contents.
+
+## Imported knowledge and rights
+
+Eight imports add five PostgreSQL/TimescaleDB guides, Redis guidance and two
+Stripe guides. These are static knowledge packages, not installed databases or
+SDKs. Verify server/SDK/API versions and actual host tools before use; migration,
+billing and account writes require task-specific approval. No SQL or live payment
+operation is verified by catalog registration.
+
+Aggregate package license: `MIT AND Apache-2.0`. This describes separate
+components, not a relicensing or a choice of license for every file. See the
+[third-party rights guide](../../docs/third-party-licenses.md) and each imported
+entry's `ORIGIN.md`, full `LICENSE` and applicable notices.

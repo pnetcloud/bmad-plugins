@@ -5,34 +5,22 @@ description: Comprehensive project planning and documentation generator for soft
 
 # Project Planner Skill
 
-## 执行环境
+## Purpose and selection
 
-| 路径类型 | 说明 |
-|---------|------|
-| **使用方式** | 此技能提供模板和指导，**无需本地脚本执行** |
-| **调用场景** | 当用户需要项目规划、需求文档、系统设计时自动激活 |
-| **输出格式** | Markdown 文档（requirements.md, design.md, tasks.md） |
-
-## 路径说明
-
-- **无本地路径依赖**：此技能生成文档模板，不涉及本地脚本执行
-- **生成的文档**：保存在执行命令时的当前目录（`process.cwd()`）
-- **项目上下文**：基于当前工作目录确定项目根目录
-
-This skill provides templates and guidance for generating comprehensive project planning documents that serve as blueprints for AI-assisted implementation.
-
-## Quick Start
+### Quick Start
 
 When a user wants to start a new project, generate three core documents:
 1. **Requirements Document** - User stories with acceptance criteria
 2. **Design Document** - Technical architecture and component specifications  
 3. **Implementation Plan** - Hierarchical task breakdown with requirement tracing
 
-## Why Explicit Architectural Planning Works
+
+
+### Why Explicit Architectural Planning Works
 
 Setting clear roles, responsibilities, and deliverables upfront dramatically improves project outcomes:
 
-### Benefits of Upfront Definition
+#### Benefits of Upfront Definition
 
 1. **Component Clarity** - Defining all system components first prevents scope creep and ensures complete coverage
 2. **Data Flow Visibility** - Mapping data movement early reveals integration complexities and performance bottlenecks
@@ -40,7 +28,7 @@ Setting clear roles, responsibilities, and deliverables upfront dramatically imp
 4. **Clear Boundaries** - Explicitly stating what's in/out of scope focuses effort and prevents feature drift
 5. **Measurable Success** - Specific goals and constraints enable objective progress tracking
 
-### The Architect Mindset
+#### The Architect Mindset
 
 When acting as a **Project Architect**, approach planning with:
 - **Systems Thinking** - See the whole before diving into parts
@@ -49,9 +37,35 @@ When acting as a **Project Architect**, approach planning with:
 - **Constraint Awareness** - Acknowledge limitations upfront to guide decisions
 - **Deliverable Orientation** - Know exactly what artifacts you're producing
 
-## Document Generation Workflow
 
-### 1. Project Architect Role Definition
+
+Select for new or existing software-project requirements, design and task planning; not implementation, deployment, or live project-system mutation.
+
+## Working mode
+
+### 执行环境
+
+| 路径类型 | 说明 |
+|---------|------|
+| **使用方式** | 此技能提供模板和指导，**无需本地脚本执行** |
+| **调用场景** | 当用户需要项目规划、需求文档、系统设计时自动激活 |
+| **输出格式** | Markdown 文档（requirements.md, design.md, tasks.md） |
+
+
+
+### 路径说明
+
+- **无本地路径依赖**：此技能生成文档模板，不涉及本地脚本执行
+- **生成的文档**：保存在执行命令时的当前目录（`process.cwd()`）
+- **项目上下文**：基于当前工作目录确定项目根目录
+
+This skill provides templates and guidance for generating comprehensive project planning documents that serve as blueprints for AI-assisted implementation.
+
+
+
+### Document Generation Workflow
+
+#### 1. Project Architect Role Definition
 
 When starting a project, explicitly establish Codex as the **Project Architect** with clear responsibilities:
 
@@ -63,7 +77,7 @@ When starting a project, explicitly establish Codex as the **Project Architect**
 - Establish clear project boundaries and constraints
 - Create traceable requirements to implementation tasks
 
-### 2. Initial Project Understanding
+#### 2. Initial Project Understanding
 
 Before generating documents, gather key information and architectural elements:
 
@@ -84,7 +98,7 @@ Required Architectural Elements (define upfront):
 - Success Metrics: Clear, measurable goals for the system
 ```
 
-### 3. Deliverable Definition (Set Upfront)
+#### 3. Deliverable Definition (Set Upfront)
 
 Define all deliverables explicitly before starting documentation:
 
@@ -116,7 +130,7 @@ Optional Deliverables (specify if needed):
 - Testing Strategy Document
 ```
 
-### 4. Generate Requirements Document
+#### 4. Generate Requirements Document
 
 Use the requirements template to create user-focused specifications:
 
@@ -139,7 +153,7 @@ requirements = {
 }
 ```
 
-### 5. Generate Design Document
+#### 5. Generate Design Document
 
 Create technical specifications with explicit architectural elements:
 
@@ -206,7 +220,7 @@ design = {
 }
 ```
 
-### 6. Generate Implementation Plan
+#### 6. Generate Implementation Plan
 
 Break down the project into executable tasks with clear scope boundaries:
 
@@ -241,7 +255,13 @@ tasks = {
 }
 ```
 
-## Requirements Document Template
+
+
+Confirm the project root, requested documents, and output location before writing. Ask for essential missing scope or mark assumptions explicitly. The current-directory convention above applies only when that directory is the authorized output target. Manual document generation requires no local script execution; bundled scripts are optional, not a prerequisite. Read [the package usage guide](README.md) when optional script usage is explicitly requested; inspect [the generator](scripts/generate_project_docs.py) before any separately authorized execution, since it creates directories and overwrites the three output filenames.
+
+## Focus
+
+### Requirements Document Template
 
 ```markdown
 # Requirements Document
@@ -272,7 +292,7 @@ tasks = {
 [Repeat for each requirement]
 ```
 
-### Requirements Best Practices
+#### Requirements Best Practices
 
 1. **One capability per requirement** - Each requirement should address a single feature
 2. **Testable criteria** - Every criterion must be verifiable
@@ -281,7 +301,7 @@ tasks = {
 5. **Specify all states** - Success, failure, edge cases
 6. **Number systematically** - REQ-1, REQ-2 for traceability
 
-### Acceptance Criteria Patterns
+#### Acceptance Criteria Patterns
 
 ```
 Behavior criteria:
@@ -304,9 +324,11 @@ Data criteria:
 - THE system SHALL return [data] in [format]
 ```
 
-## Design Document Template
 
-```markdown
+
+### Design Document Template
+
+````markdown
 # Design Document
 
 ## Overview
@@ -467,9 +489,9 @@ class EntityName:
 - [Authentication method if applicable]
 - [Data protection approach]
 - [Access control model]
-```
+````
 
-### Design Best Practices
+#### Design Best Practices
 
 1. **Component responsibilities** - Single, clear purpose per component
 2. **Interface first** - Define contracts before implementation
@@ -478,7 +500,9 @@ class EntityName:
 5. **Performance targets** - Specific, measurable goals
 6. **Deployment ready** - Include Docker and configuration
 
-## Implementation Plan Template
+
+
+### Implementation Plan Template
 
 ```markdown
 # Implementation Plan
@@ -505,7 +529,7 @@ class EntityName:
 [Continue for all phases]
 ```
 
-### Task Planning Best Practices
+#### Task Planning Best Practices
 
 1. **Hierarchical structure** - Phases > Tasks > Subtasks
 2. **Requirement tracing** - Link each task to requirements
@@ -514,7 +538,7 @@ class EntityName:
 5. **Atomic tasks** - Each task independently completable
 6. **Progressive implementation** - Infrastructure → Core → Features → Polish
 
-### Common Implementation Phases
+#### Common Implementation Phases
 
 ```markdown
 1. **Infrastructure Setup**
@@ -567,9 +591,11 @@ class EntityName:
    - README
 ```
 
-## Document Patterns by Project Type
 
-### Web Application (Full-Stack)
+
+### Document Patterns by Project Type
+
+#### Web Application (Full-Stack)
 
 Requirements focus:
 - User authentication and authorization
@@ -591,7 +617,7 @@ Tasks focus:
 3. Frontend components
 4. Integration and testing
 
-### Microservices System
+#### Microservices System
 
 Requirements focus:
 - Service boundaries
@@ -614,7 +640,7 @@ Tasks focus:
 4. Integration layer
 5. Orchestration setup
 
-### Data Pipeline/ETL
+#### Data Pipeline/ETL
 
 Requirements focus:
 - Data sources and formats
@@ -637,7 +663,7 @@ Tasks focus:
 4. Scheduling setup
 5. Monitoring implementation
 
-### CLI Tool/Library
+#### CLI Tool/Library
 
 Requirements focus:
 - Command structure
@@ -660,9 +686,11 @@ Tasks focus:
 4. Configuration system
 5. Documentation and examples
 
-## Generating Documents for Specific Domains
 
-### Trading/Financial Systems
+
+### Generating Documents for Specific Domains
+
+#### Trading/Financial Systems
 
 Additional requirements:
 - Risk management rules
@@ -678,7 +706,7 @@ Additional design:
 - Order routing
 - Failover strategies
 
-### Real-time Systems (Chat, Gaming, IoT)
+#### Real-time Systems (Chat, Gaming, IoT)
 
 Additional requirements:
 - Latency targets
@@ -694,7 +722,7 @@ Additional design:
 - Message queuing
 - Horizontal scaling
 
-### Machine Learning Systems
+#### Machine Learning Systems
 
 Additional requirements:
 - Model training pipeline
@@ -710,35 +738,11 @@ Additional design:
 - Serving architecture
 - A/B testing framework
 
-## Quality Checklist
 
-Before finalizing documents, verify:
 
-### Requirements Document
-- [ ] Every requirement has a clear user story
-- [ ] All acceptance criteria are testable
-- [ ] Non-functional requirements specified (performance, security)
-- [ ] Glossary covers all domain terms
-- [ ] Requirements are numbered for tracing
+### Example Usage Patterns
 
-### Design Document
-- [ ] Architecture diagram included
-- [ ] All components have clear responsibilities
-- [ ] Interfaces defined for integration points
-- [ ] Error handling strategy documented
-- [ ] Performance targets specified
-- [ ] Deployment configuration included
-
-### Implementation Plan
-- [ ] Tasks grouped into logical phases
-- [ ] Dependencies identified between tasks
-- [ ] Requirements traced to tasks
-- [ ] Tasks are atomic and completable
-- [ ] Checkbox format for progress tracking
-
-## Example Usage Patterns
-
-### Starting a New Project (With Explicit Architecture Focus)
+#### Starting a New Project (With Explicit Architecture Focus)
 
 ```
 User: "I want to build an order flow trading automation system"
@@ -780,7 +784,7 @@ First, let me establish the architectural foundation:
 This architectural blueprint will ensure nothing is overlooked during implementation."
 ```
 
-### Starting a New Project (Simple Approach)
+#### Starting a New Project (Simple Approach)
 
 ```
 User: "I want to build an order flow trading automation system"
@@ -798,7 +802,7 @@ Based on this, I'll generate:
 - Implementation plan with phases and tasks"
 ```
 
-### Expanding Existing Requirements
+#### Expanding Existing Requirements
 
 ```
 User: "Add real-time monitoring dashboard to the requirements"
@@ -815,29 +819,69 @@ Response: "I'll add dashboard requirements to your document:
 4. WHEN a trade executes, THE Dashboard SHALL reflect it within 100ms"
 ```
 
-## Common Pitfalls to Avoid
 
-### Planning Pitfalls
+
+### Common Pitfalls to Avoid
+
+#### Planning Pitfalls
 1. **Skipping architectural planning** - Jumping to requirements without mapping components first
 2. **Vague role definition** - Not establishing the architect role leads to unfocused documentation
 3. **Hidden integration points** - Discovering external dependencies during implementation
 4. **Undefined boundaries** - No clear scope leads to feature creep and timeline slippage
 5. **Missing data flow analysis** - Not mapping how data moves reveals issues late
 
-### Requirements Pitfalls
+#### Requirements Pitfalls
 1. **Over-specifying implementation** - Requirements should define "what" not "how"
 2. **Vague acceptance criteria** - Avoid "user-friendly" or "fast" without metrics
 3. **Missing error cases** - Include failure scenarios in requirements
 4. **Untraceable requirements** - Every requirement should map to tasks
 
-### Design Pitfalls
+#### Design Pitfalls
 1. **Monolithic components** - Break down large components into focused services
 2. **Circular dependencies** - Ensure task dependencies form a DAG
 3. **Missing data models** - Define core entities early
 4. **Ignoring deployment** - Include Docker/deployment from the start
 5. **Unclear component boundaries** - Each component needs explicit responsibilities
 
-## Output Format
+
+
+For domain-specific planning, select [domain templates](references/domain-templates.md); for a standalone requirements scaffold, select [the requirements asset](assets/requirements-template.md). Treat numerical targets, technologies and checked boxes in templates as illustrative, not approved requirements or completed work.
+
+## Quality checks
+
+### Quality Checklist
+
+Before finalizing documents, verify:
+
+#### Requirements Document
+- [ ] Every requirement has a clear user story
+- [ ] All acceptance criteria are testable
+- [ ] Non-functional requirements specified (performance, security)
+- [ ] Glossary covers all domain terms
+- [ ] Requirements are numbered for tracing
+
+#### Design Document
+- [ ] Architecture diagram included
+- [ ] All components have clear responsibilities
+- [ ] Interfaces defined for integration points
+- [ ] Error handling strategy documented
+- [ ] Performance targets specified
+- [ ] Deployment configuration included
+
+#### Implementation Plan
+- [ ] Tasks grouped into logical phases
+- [ ] Dependencies identified between tasks
+- [ ] Requirements traced to tasks
+- [ ] Tasks are atomic and completable
+- [ ] Checkbox format for progress tracking
+
+
+
+Verify requirement-to-design-to-task traceability and acyclic dependencies against the actual project scope. If document validation is requested, inspect [the document validator](scripts/validate_documents.py) before authorized execution and report its actual findings; its template/count heuristics do not prove feasibility, implementation, acceptance or completeness. Mark all unperformed checks honestly.
+
+## Return
+
+### Output Format
 
 Generate documents in Markdown format for easy editing and version control. Use:
 - Clear hierarchical headings (##, ###, ####)
@@ -854,3 +898,9 @@ Save documents as:
 - `tasks.md` - Implementation plan
 
 These documents serve as the foundation for AI-assisted implementation, providing clear specifications that can be referenced throughout development.
+
+Return the requested documents and their authorized paths, assumptions, source versions, checks and unresolved owner decisions. Keep plans and targets distinct from implemented and accepted outcomes.
+
+## Boundaries
+
+The architect role is a planning responsibility, not additional tools, runtime permissions or decision authority. Do not execute scripts merely to use templates; preserve existing documents unless replacement is explicitly authorized. Planning documents, example implementation phases and checked boxes do not authorize infrastructure, trading, deployment or external-system actions. Stop before unauthorized writes or when missing scope prevents a defensible plan.

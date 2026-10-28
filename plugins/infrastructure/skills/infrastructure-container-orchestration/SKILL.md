@@ -8,9 +8,15 @@ metadata:
 
 # Container Orchestration
 
+## Purpose and selection
+
 Docker and Kubernetes patterns for containerized applications.
 
-## Operating Contract
+Use for Dockerfiles, Compose, Kubernetes manifests, Helm, and container deployment patterns; do not select it for application-only changes without a container concern.
+
+## Working mode
+
+### Operating Contract
 
 - For local development and testing, discover and use the repository's existing
   container entrypoints first: `docker-compose*.yml`, Compose profiles,
@@ -20,11 +26,12 @@ Docker and Kubernetes patterns for containerized applications.
 - Before starting containers, state the selected file/profile/project name,
   required environment variables, volume impact, and cleanup command. Prefer
   health checks and logs over blind sleeps when verifying readiness.
-- For shared, staging, or production clusters, default to read-only inspection
-  (`kubectl get`, `describe`, `logs`, `helm template/diff`) and require explicit
-  approval before `apply`, `upgrade`, `delete`, restarts, or registry pushes.
 
-## Dockerfile Best Practices
+Confirm installed Docker, kubectl, Helm, and optional diff-plugin availability before using them; metadata does not install or grant tools. Read the matching linked reference for advanced Dockerfile, Kubernetes, or Helm work and the selected asset before adapting it. Inspect `scripts/build-push.sh` before any authorized build or push. Ask for missing image, registry, namespace, environment, or runtime requirements.
+
+## Focus
+
+### Dockerfile Best Practices
 
 ```dockerfile
 # Use specific version, not :latest
@@ -63,7 +70,7 @@ EXPOSE 8000
 CMD ["python", "-m", "uvicorn", "src.main:app", "--host", "0.0.0.0"]
 ```
 
-### Dockerfile Rules
+#### Dockerfile Rules
 ```
 DO:
 - Use specific base image versions
@@ -81,7 +88,7 @@ DON'T:
 - Install dev dependencies in production
 ```
 
-## Docker Compose
+### Docker Compose
 
 ```yaml
 # docker-compose.yml
@@ -123,9 +130,9 @@ volumes:
   postgres_data:
 ```
 
-## Kubernetes Basics
+### Kubernetes Basics
 
-### Deployment
+#### Deployment
 
 ```yaml
 apiVersion: apps/v1
@@ -176,7 +183,7 @@ spec:
               key: database-url
 ```
 
-### Service
+#### Service
 
 ```yaml
 apiVersion: v1
@@ -192,7 +199,7 @@ spec:
   type: ClusterIP
 ```
 
-### Ingress
+#### Ingress
 
 ```yaml
 apiVersion: networking.k8s.io/v1
@@ -216,7 +223,7 @@ spec:
               number: 80
 ```
 
-## kubectl Quick Reference
+### kubectl Quick Reference
 
 | Command | Description |
 |---------|-------------|
@@ -229,17 +236,33 @@ spec:
 | `kubectl describe pod <pod>` | Debug pod |
 | `kubectl port-forward svc/app 8080:80` | Local port forward |
 
-## Additional Resources
+### Additional Resources
 
 - `./references/dockerfile-patterns.md` - Advanced Dockerfile techniques
 - `./references/k8s-manifests.md` - Full Kubernetes manifest examples
 - `./references/helm-patterns.md` - Helm chart structure and values
 
-## Scripts
+### Scripts
 
 - `./scripts/build-push.sh` - Build and push Docker image
 
-## Assets
+### Assets
 
 - `./assets/Dockerfile.template` - Production Dockerfile template
 - `./assets/docker-compose.template.yml` - Compose starter template
+
+## Quality checks
+
+Validate the selected build/configuration with available repository checks and local rendering first. Verify probe tools exist in the image, application dependencies survive the build stages, and example values are appropriate before reuse. Report checks not run; rendering or a successful command is not observed readiness. After an authorized push or live change, read back the exact image digest or resource and observe rollout health.
+
+## Return
+
+Return the requested Dockerfile, Compose configuration, manifest, or chart with selected target/profile, source revision when available, validation results, unresolved assumptions, and any remaining rollout or cleanup owner.
+
+## Boundaries
+
+- For shared, staging, or production clusters, default to read-only inspection
+  (`kubectl get`, `describe`, `logs`, `helm template/diff`) and require explicit
+  approval before `apply`, `upgrade`, `delete`, restarts, or registry pushes.
+
+Loading this skill grants no infrastructure or registry authority. Verify context, namespace, identity, volume/data impact, observation and rollback path before authorized live changes; stop on ambiguity. Shell/exec, port forwarding, secret access, installs, and build/push scripts require their own authorized scope. Never copy placeholder credentials into a deployment or expose secrets in rendered output; use approved secret delivery.

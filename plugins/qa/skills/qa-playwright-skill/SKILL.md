@@ -3,6 +3,16 @@ name: qa-playwright-skill
 description: Complete browser automation with Playwright. Auto-detects dev servers, writes clean test scripts to /tmp. Test pages, fill forms, take screenshots, check responsive design, validate UX, test login flows, check links, automate any browser task. Use when user wants to test websites, automate browser interactions, validate web functionality, or perform any browser-based testing.
 ---
 
+# Playwright Browser Automation
+
+## Purpose and selection
+
+General-purpose browser automation skill. I'll write custom Playwright code for any automation task you request and execute it via the universal executor.
+
+Use for custom Playwright browser tests and automation, including screenshots, forms, login, responsive checks and link checks. For static analysis without browser interaction, use repository inspection rather than launching a browser.
+
+## Working mode
+
 **IMPORTANT - Path Resolution:**
 This skill can be installed in different locations (plugin system, manual installation, global, or project-specific). Before executing any commands, determine the skill directory based on where you loaded this SKILL.md file, and use that path in all commands below. Replace `"/absolute/path/to/qa-playwright-skill"` with the actual discovered path.
 
@@ -11,10 +21,6 @@ Common installation paths:
 - Plugin system: `~/.codex/plugins/marketplaces/qa-playwright-skill/skills/qa-playwright-skill`
 - Manual global: `~/.codex/skills/qa-playwright-skill`
 - Project-specific: `<project>/.codex/skills/qa-playwright-skill`
-
-# Playwright Browser Automation
-
-General-purpose browser automation skill. I'll write custom Playwright code for any automation task you request and execute it via the universal executor.
 
 **CRITICAL WORKFLOW - Follow these steps in order:**
 
@@ -34,7 +40,7 @@ General-purpose browser automation skill. I'll write custom Playwright code for 
 
 4. **Parameterize URLs** - Always make URLs configurable via environment variable or constant at top of script
 
-## How It Works
+### How It Works
 
 1. You describe what you want to test/automate
 2. I auto-detect running dev servers (or ask for URL if testing external site)
@@ -43,7 +49,7 @@ General-purpose browser automation skill. I'll write custom Playwright code for 
 5. Results displayed in real-time, browser window visible for debugging
 6. Test files auto-cleaned from /tmp by your OS
 
-## Setup (First Time)
+### Setup (First Time)
 
 ```bash
 cd "/absolute/path/to/qa-playwright-skill"
@@ -52,7 +58,7 @@ npm run setup
 
 This installs Playwright and Chromium browser. Only needed once.
 
-## Execution Pattern
+### Execution Pattern
 
 **Step 1: Detect dev servers (for localhost testing)**
 
@@ -89,9 +95,66 @@ const targetUrl = 'http://localhost:3001'; // <-- Auto-detected or from user
 cd "/absolute/path/to/qa-playwright-skill" && node run.js /tmp/playwright-test-page.js
 ```
 
-## Common Patterns
+### Inline Execution (Simple Tasks)
 
-### Test a Page (Multiple Viewports)
+For quick one-off tasks, you can execute code inline without creating files:
+
+```bash
+# Take a quick screenshot
+cd "/absolute/path/to/qa-playwright-skill" && node run.js "
+const browser = await chromium.launch({ headless: false });
+const page = await browser.newPage();
+await page.goto('http://localhost:3001');
+await page.screenshot({ path: '/tmp/quick-screenshot.png', fullPage: true });
+console.log('Screenshot saved');
+await browser.close();
+"
+```
+
+**When to use inline vs files:**
+
+- **Inline**: Quick one-off tasks (screenshot, check if element exists, get page title)
+- **Files**: Complex tests, responsive design checks, anything user might want to re-run
+
+### Tips
+
+- **CRITICAL: Detect servers FIRST** - Always run `detectDevServers()` before writing test code for localhost testing
+- **Custom headers** - Use `PW_HEADER_NAME`/`PW_HEADER_VALUE` env vars to identify automated traffic to your backend
+- **Use /tmp for test files** - Write to `/tmp/playwright-test-*.js`, never to skill directory or user's project
+- **Parameterize URLs** - Put detected/provided URL in a `targetUrl` constant at the top of every script
+- **DEFAULT: Visible browser** - Always use `headless: false` unless user explicitly asks for headless mode
+- **Headless mode** - Only use `headless: true` when user specifically requests "headless" or "background" execution
+- **Slow down:** Use `slowMo: 100` to make actions visible and easier to follow
+- **Wait strategies:** Use `waitForURL`, `waitForSelector`, `waitForLoadState` instead of fixed timeouts
+- **Error handling:** Always use try-catch for robust automation
+- **Console output:** Use `console.log()` to track progress and show what's happening
+
+### Troubleshooting
+
+**Playwright not installed:**
+
+```bash
+cd "/absolute/path/to/qa-playwright-skill" && npm run setup
+```
+
+**Module not found:**
+Ensure running from skill directory via `run.js` wrapper
+
+**Browser doesn't open:**
+Check `headless: false` and ensure display available
+
+**Element not found:**
+Add wait: `await page.waitForSelector('.element', { timeout: 10000 })`
+
+Requires Node.js, Playwright and the requested browser; headed execution also requires a display. Resolve missing dependencies before execution: run.js can automatically install Playwright/Chromium when absent, so do not invoke it without installation authority. The authored /tmp test script stays outside the package; run.js creates .temp-execution-*.js inside its own directory and removes older executor files on a later run. Do not mistake that behavior for a claim that the executor never writes there.
+
+The retained custom-header shell examples document the interface, but prefixing shell assignments to cd does not reliably export them to the following node process. When using these variables, export them in the execution shell or apply the assignments directly to node. getContextOptionsWithHeaders is injected only for executor-wrapped code without require(); a complete script must use the helpers or merge headers itself. Pass headless: false explicitly to helpers.launchBrowser for the visible default; its implementation otherwise defaults to headless.
+
+## Focus
+
+### Common Patterns
+
+#### Test a Page (Multiple Viewports)
 
 ```javascript
 // /tmp/playwright-test-responsive.js
@@ -117,7 +180,7 @@ const targetUrl = 'http://localhost:3001'; // Auto-detected
 })();
 ```
 
-### Test Login Flow
+#### Test Login Flow
 
 ```javascript
 // /tmp/playwright-test-login.js
@@ -143,7 +206,7 @@ const targetUrl = 'http://localhost:3001'; // Auto-detected
 })();
 ```
 
-### Fill and Submit Form
+#### Fill and Submit Form
 
 ```javascript
 // /tmp/playwright-test-form.js
@@ -170,7 +233,7 @@ const targetUrl = 'http://localhost:3001'; // Auto-detected
 })();
 ```
 
-### Check for Broken Links
+#### Check for Broken Links
 
 ```javascript
 const { chromium } = require('playwright');
@@ -205,7 +268,7 @@ const { chromium } = require('playwright');
 })();
 ```
 
-### Take Screenshot with Error Handling
+#### Take Screenshot with Error Handling
 
 ```javascript
 const { chromium } = require('playwright');
@@ -234,7 +297,7 @@ const { chromium } = require('playwright');
 })();
 ```
 
-### Test Responsive Design
+#### Test Responsive Design
 
 ```javascript
 // /tmp/playwright-test-responsive-full.js
@@ -276,28 +339,7 @@ const targetUrl = 'http://localhost:3001'; // Auto-detected
 })();
 ```
 
-## Inline Execution (Simple Tasks)
-
-For quick one-off tasks, you can execute code inline without creating files:
-
-```bash
-# Take a quick screenshot
-cd "/absolute/path/to/qa-playwright-skill" && node run.js "
-const browser = await chromium.launch({ headless: false });
-const page = await browser.newPage();
-await page.goto('http://localhost:3001');
-await page.screenshot({ path: '/tmp/quick-screenshot.png', fullPage: true });
-console.log('Screenshot saved');
-await browser.close();
-"
-```
-
-**When to use inline vs files:**
-
-- **Inline**: Quick one-off tasks (screenshot, check if element exists, get page title)
-- **Files**: Complex tests, responsive design checks, anything user might want to re-run
-
-## Available Helpers
+### Available Helpers
 
 Optional utility functions in `lib/helpers.js`:
 
@@ -326,7 +368,7 @@ const data = await helpers.extractTableData(page, 'table.results');
 
 See `lib/helpers.js` for full list.
 
-## Custom HTTP Headers
+### Custom HTTP Headers
 
 Configure custom headers for all HTTP requests via environment variables. Useful for:
 
@@ -334,7 +376,7 @@ Configure custom headers for all HTTP requests via environment variables. Useful
 - Getting LLM-optimized responses (e.g., plain text errors instead of styled HTML)
 - Adding authentication tokens globally
 
-### Configuration
+#### Configuration
 
 **Single header (common case):**
 
@@ -350,7 +392,7 @@ PW_EXTRA_HEADERS='{"X-Automated-By":"playwright-skill","X-Debug":"true"}' \
   cd "/absolute/path/to/qa-playwright-skill" && node run.js /tmp/my-script.js
 ```
 
-### How It Works
+#### How It Works
 
 Headers are automatically applied when using `helpers.createContext()`:
 
@@ -368,7 +410,7 @@ const context = await browser.newContext(
 );
 ```
 
-## Advanced Usage
+### Advanced Usage
 
 For comprehensive Playwright API documentation, see [API_REFERENCE.md](API_REFERENCE.md):
 
@@ -381,37 +423,22 @@ For comprehensive Playwright API documentation, see [API_REFERENCE.md](API_REFER
 - Debugging techniques
 - CI/CD integration
 
-## Tips
+### Notes
 
-- **CRITICAL: Detect servers FIRST** - Always run `detectDevServers()` before writing test code for localhost testing
-- **Custom headers** - Use `PW_HEADER_NAME`/`PW_HEADER_VALUE` env vars to identify automated traffic to your backend
-- **Use /tmp for test files** - Write to `/tmp/playwright-test-*.js`, never to skill directory or user's project
-- **Parameterize URLs** - Put detected/provided URL in a `targetUrl` constant at the top of every script
-- **DEFAULT: Visible browser** - Always use `headless: false` unless user explicitly asks for headless mode
-- **Headless mode** - Only use `headless: true` when user specifically requests "headless" or "background" execution
-- **Slow down:** Use `slowMo: 100` to make actions visible and easier to follow
-- **Wait strategies:** Use `waitForURL`, `waitForSelector`, `waitForLoadState` instead of fixed timeouts
-- **Error handling:** Always use try-catch for robust automation
-- **Console output:** Use `console.log()` to track progress and show what's happening
+- Each automation is custom-written for your specific request
+- Not limited to pre-built scripts - any browser task possible
+- Auto-detects running dev servers to eliminate hardcoded URLs
+- Test scripts written to `/tmp` for automatic cleanup (no clutter)
+- Code executes reliably with proper module resolution via `run.js`
+- Progressive disclosure - API_REFERENCE.md loaded only when advanced features needed
 
-## Troubleshooting
+## Quality checks
 
-**Playwright not installed:**
+Check the requested observable state with assertions or explicit postconditions: login destination and authenticated content, form confirmation and saved result, viewport captures, or link response status as appropriate. Inspect screenshots before making visual claims. Record target URL, revision/build if known, browser/viewports, script, actual results and checks not run; log messages and a clean process exit alone do not prove success. Re-read the exact affected target after authorized submissions or other external writes.
 
-```bash
-cd "/absolute/path/to/qa-playwright-skill" && npm run setup
-```
+## Return
 
-**Module not found:**
-Ensure running from skill directory via `run.js` wrapper
-
-**Browser doesn't open:**
-Check `headless: false` and ensure display available
-
-**Element not found:**
-Add wait: `await page.waitForSelector('.element', { timeout: 10000 })`
-
-## Example Usage
+### Example Usage
 
 ```
 User: "Test if the marketing page looks good"
@@ -443,11 +470,8 @@ User: "Use 3001"
 [Reports: ✅ Login successful, redirected to /dashboard]
 ```
 
-## Notes
+Return the requested results, reusable /tmp script path and relevant screenshot paths, with failures, scope and remaining checks. Examples above illustrate responses, not evidence that any server, login or screenshot was observed in the current task.
 
-- Each automation is custom-written for your specific request
-- Not limited to pre-built scripts - any browser task possible
-- Auto-detects running dev servers to eliminate hardcoded URLs
-- Test scripts written to `/tmp` for automatic cleanup (no clutter)
-- Code executes reliably with proper module resolution via `run.js`
-- Progressive disclosure - API_REFERENCE.md loaded only when advanced features needed
+## Boundaries
+
+Automate only authorized URLs, accounts and actions. Form submission, login state reuse and other external writes require task authority; a test request does not authorize unrelated production mutations, installation or deployment. Use approved test credentials or the available secure credential mechanism; never copy real secrets into scripts, logs or screenshots. Treat auth state and header values as sensitive, constrain their destinations, and share only necessary redacted evidence. Do not trust OS cleanup as a privacy guarantee: remove sensitive temporary artifacts when retention is no longer authorized. Missing access, display or dependencies is a blocker, not permission to bypass controls.

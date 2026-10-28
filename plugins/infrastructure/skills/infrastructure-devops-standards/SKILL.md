@@ -5,7 +5,17 @@ description: DevOps standards for CI/CD, configuration management, and pipeline 
 
 # DevOps Standards
 
-## CI/CD (GitLab)
+## Purpose and selection
+
+Apply CI/CD, configuration-management, and provider-backpressure standards to the requested pipeline or infrastructure artifact; do not introduce a new platform or IaC tool for unrelated application-only work.
+
+## Working mode
+
+Inspect the existing pipeline, deployment model, IaC/state ownership, provider operating mode, and test entrypoints first. Select only rules relevant to the requested change; ask for unresolved environment, ownership, throughput, or acceptance requirements before mutation.
+
+## Focus
+
+### CI/CD (GitLab)
 
 - Use YAML pipelines with modular, reusable configurations.
 - Select build, test, security, and deployment jobs with artifact- and
@@ -16,7 +26,7 @@ description: DevOps standards for CI/CD, configuration management, and pipeline 
   changes with a matching `resource_group`. Observe rollout health and prove
   rollback; a green job alone is not deployment verification.
 
-## Configuration Management
+### Configuration Management
 
 - Follow the repository's existing IaC tool, state, and ownership boundaries.
   Prefer Terraform for new IaC only when those boundaries permit it; introduce
@@ -31,7 +41,7 @@ description: DevOps standards for CI/CD, configuration management, and pipeline 
   inventory source, or mutation boundaries are unresolved. Do not give IaC and
   Ansible overlapping authority over the same resource properties.
 
-## Runtime Provider Limits and Backpressure
+### Runtime Provider Limits and Backpressure
 
 - When pipelines or services depend on rate-limited external providers, document
   both configured and effective throughput in one canonical unit, then expose
@@ -46,7 +56,19 @@ description: DevOps standards for CI/CD, configuration management, and pipeline 
   acknowledging source offsets, replay it from a retry scheduler or parking lot,
   and verify backlog drains before closing the change.
 
-## Testing
+## Quality checks
+
+### Testing
 
 - Test pipelines in sandbox environments.
 - Write unit tests for custom scripts or code with mocking for cloud APIs.
+
+Report actual sandbox/test results, rollout and rollback evidence, and backlog-drain observations separately from configuration or submitted jobs. Mark unavailable checks and unmeasured provider limits explicitly.
+
+## Return
+
+Return the affected pipeline/configuration changes or review, source revision when available, selected risks and checks, observed outcomes, unresolved state/ownership or provider-limit gaps, and the next validation owner.
+
+## Boundaries
+
+Loading this standard does not authorize deployments, state adoption/migration, cloud calls, provider subscription changes, or overlapping resource ownership. Require explicit target-scoped authority for external writes, protect state and secrets, and stop when source trust, environment, or mutation scope is unresolved.

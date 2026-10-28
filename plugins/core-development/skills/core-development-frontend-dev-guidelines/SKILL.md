@@ -5,11 +5,15 @@ description: Next.js 15 frontend development guidelines for React 19, TypeScript
 
 # Frontend Development Guidelines
 
-## Purpose
+## Purpose and selection
+
+Select for the stated Next.js 15/React 19 App Router stack; do not impose these layouts on non-Next.js or Pages Router projects.
+
+### Purpose
 
 Comprehensive guide for modern Next.js 15 development with React 19, emphasizing Server Components, Client Components, App Router patterns, Shadcn/ui components, proper file organization, and performance optimization.
 
-## When to Use This Skill
+### When to Use This Skill
 
 - Creating new components or pages
 - Building new features
@@ -22,9 +26,13 @@ Comprehensive guide for modern Next.js 15 development with React 19, emphasizing
 
 ---
 
-## Quick Start
+## Working mode
 
-### New Component Checklist
+Inspect the pinned framework versions, router, aliases, component library, and existing patterns before selecting the checklists or templates. Ask for missing route/data/interaction requirements. Adapt examples to actual imports and types; do not assume sample helpers exist.
+
+### Quick Start
+
+#### New Component Checklist
 
 Creating a component? Follow this checklist:
 
@@ -38,7 +46,7 @@ Creating a component? Follow this checklist:
 - [ ] Default export at bottom
 - [ ] Use Server Components for data fetching when possible
 
-### New Page Checklist
+#### New Page Checklist
 
 Creating a page? Set up this structure:
 
@@ -52,7 +60,71 @@ Creating a page? Set up this structure:
 
 ---
 
-## Import Aliases Quick Reference
+### Modern Component Template (Quick Copy)
+
+**Server Component:**
+
+```typescript
+// app/components/PostCard.tsx
+import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card'
+import type { Post } from '@/types/post'
+
+interface PostCardProps {
+  post: Post
+}
+
+export function PostCard({ post }: PostCardProps) {
+  return (
+    <Card>
+      <CardHeader>
+        <CardTitle>{post.title}</CardTitle>
+      </CardHeader>
+      <CardContent>
+        <p>{post.content}</p>
+      </CardContent>
+    </Card>
+  )
+}
+```
+
+**Client Component:**
+
+```typescript
+// app/components/PostForm.tsx
+'use client'
+
+import { useState } from 'react'
+import { Button } from '@/components/ui/button'
+import { Input } from '@/components/ui/input'
+import { createPost } from '@/app/actions/posts'
+import { cn } from '@/lib/utils'
+
+export function PostForm({ className }: { className?: string }) {
+  const [isLoading, setIsLoading] = useState(false)
+
+  async function handleSubmit(formData: FormData) {
+    setIsLoading(true)
+    await createPost(formData)
+    setIsLoading(false)
+  }
+
+  return (
+    <form action={handleSubmit} className={cn('space-y-4', className)}>
+      <Input name='title' placeholder='Post title' required />
+      <Input name='content' placeholder='Post content' required />
+      <Button type='submit' disabled={isLoading}>
+        {isLoading ? 'Creating...' : 'Create Post'}
+      </Button>
+    </form>
+  )
+}
+```
+
+---
+
+## Focus
+
+### Import Aliases Quick Reference
 
 | Alias          | Resolves To   | Example                                           |
 | -------------- | ------------- | ------------------------------------------------- |
@@ -66,7 +138,7 @@ Defined in: `tsconfig.json` paths configuration
 
 ---
 
-## Common Imports Cheatsheet
+### Common Imports Cheatsheet
 
 For a Client Component, the directive must be the first statement before imports:
 
@@ -101,9 +173,9 @@ import type { ComponentProps } from 'react'
 
 ---
 
-## Topic Guides
+### Topic Guides
 
-### 🎨 Component Patterns
+#### 🎨 Component Patterns
 
 **Server Components vs Client Components:**
 
@@ -167,7 +239,7 @@ export function PostForm() {
 
 ---
 
-### 📊 Data Fetching
+#### 📊 Data Fetching
 
 **PRIMARY PATTERN: Server Components**
 
@@ -217,7 +289,7 @@ export async function createPost(formData: FormData) {
 
 ---
 
-### 📁 File Organization
+#### 📁 File Organization
 
 **App Router Structure:**
 
@@ -249,7 +321,7 @@ hooks/
 
 ---
 
-### 🎨 Styling
+#### 🎨 Styling
 
 **Tailwind CSS + Shadcn/ui:**
 
@@ -292,7 +364,7 @@ export function Button({ variant = 'primary', className }: ButtonProps) {
 
 ---
 
-### 🛣️ Routing
+#### 🛣️ Routing
 
 **Next.js App Router - File-Based:**
 
@@ -347,7 +419,7 @@ export default async function PostPage({ params }: PostPageProps) {
 
 ---
 
-### ⏳ Loading & Error States
+#### ⏳ Loading & Error States
 
 **Loading States:**
 
@@ -405,7 +477,7 @@ export default function Error({
 
 ---
 
-### ⚡ Performance
+#### ⚡ Performance
 
 **Optimization Patterns:**
 
@@ -454,7 +526,7 @@ export default function Page() {
 
 ---
 
-### 📘 TypeScript
+#### 📘 TypeScript
 
 **Standards:**
 
@@ -492,7 +564,7 @@ export function CustomButton({
 
 ---
 
-### 🔧 Common Patterns
+#### 🔧 Common Patterns
 
 **Form Handling:**
 
@@ -542,20 +614,7 @@ export const metadata: Metadata = {
 
 ---
 
-## Core Principles
-
-1. **Server Components First**: Default to Server Components, use Client Components only when needed
-2. **App Router Structure**: Use file-based routing with `app/` directory
-3. **Shadcn/ui Components**: Use pre-built accessible components
-4. **Tailwind CSS**: Utility-first styling with `cn()` helper
-5. **TypeScript Strict**: No `any`, explicit types
-6. **Performance**: Use Server Components, optimize images, lazy load when needed
-7. **File Organization**: Features in `app/features/`, shared in `components/`
-8. **Import Aliases**: Use `@/` prefix for clean imports
-
----
-
-## Quick Reference: File Structure
+### Quick Reference: File Structure
 
 ```
 app/
@@ -587,69 +646,32 @@ hooks/
 
 ---
 
-## Modern Component Template (Quick Copy)
+## Quality checks
 
-**Server Component:**
+Run available type, lint, build, and focused route/component tests. Check Server/Client boundaries and loading/error behavior, recording scope and skipped checks; an accessible component library does not prove page conformance.
 
-```typescript
-// app/components/PostCard.tsx
-import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card'
-import type { Post } from '@/types/post'
+### Core Principles
 
-interface PostCardProps {
-  post: Post
-}
-
-export function PostCard({ post }: PostCardProps) {
-  return (
-    <Card>
-      <CardHeader>
-        <CardTitle>{post.title}</CardTitle>
-      </CardHeader>
-      <CardContent>
-        <p>{post.content}</p>
-      </CardContent>
-    </Card>
-  )
-}
-```
-
-**Client Component:**
-
-```typescript
-// app/components/PostForm.tsx
-'use client'
-
-import { useState } from 'react'
-import { Button } from '@/components/ui/button'
-import { Input } from '@/components/ui/input'
-import { createPost } from '@/app/actions/posts'
-import { cn } from '@/lib/utils'
-
-export function PostForm({ className }: { className?: string }) {
-  const [isLoading, setIsLoading] = useState(false)
-
-  async function handleSubmit(formData: FormData) {
-    setIsLoading(true)
-    await createPost(formData)
-    setIsLoading(false)
-  }
-
-  return (
-    <form action={handleSubmit} className={cn('space-y-4', className)}>
-      <Input name='title' placeholder='Post title' required />
-      <Input name='content' placeholder='Post content' required />
-      <Button type='submit' disabled={isLoading}>
-        {isLoading ? 'Creating...' : 'Create Post'}
-      </Button>
-    </form>
-  )
-}
-```
+1. **Server Components First**: Default to Server Components, use Client Components only when needed
+2. **App Router Structure**: Use file-based routing with `app/` directory
+3. **Shadcn/ui Components**: Use pre-built accessible components
+4. **Tailwind CSS**: Utility-first styling with `cn()` helper
+5. **TypeScript Strict**: No `any`, explicit types
+6. **Performance**: Use Server Components, optimize images, lazy load when needed
+7. **File Organization**: Features in `app/features/`, shared in `components/`
+8. **Import Aliases**: Use `@/` prefix for clean imports
 
 ---
 
-## Related Skills
+## Return
+
+Return the requested component, route, patch, or review with actual repository-relative files, interaction/data behavior, check results, and integration gaps. Treat examples as templates, not executed results.
+
+## Boundaries
+
+Keep changes within the requested frontend task. Server Actions need input validation and operation/resource authorization; do not expose secrets through rendered data. Dependencies, external writes, deployments, and broad router migrations require task authority. Related skill labels do not imply installed tooling.
+
+### Related Skills
 
 - **backend-dev-guidelines**: Backend API patterns that frontend consumes
 

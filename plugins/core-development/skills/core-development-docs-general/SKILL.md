@@ -5,13 +5,31 @@ description: Organize and maintain project documentation while preserving reposi
 
 # Documentation Standards (General)
 
-## Purpose
+## Purpose and selection
+
+Use for documentation organization, navigation, naming, and maintenance; not prose-only editing with no structural decision.
+
+### Purpose
 
 First follow the repository's existing documentation contract, generators, and
 navigation. When none exists, use `docs/` as the source of truth for technical,
 business, operational, and compliance knowledge.
 
-## Default Structure
+## Working mode
+
+Inspect current documentation paths, generators, navigation, and intended readers. Ask for missing audience or ownership decisions only when they block the requested organization.
+
+### Usage Guidelines
+
+- Each folder must have a `README.md` with overview and links.
+- Keep documents short, structured, and cross-linked; avoid duplication.
+- Use Markdown with headings, tables, and code blocks.
+- Follow established file naming; for new projects without a convention, use
+  lowercase kebab-case names.
+
+## Focus
+
+### Default Structure
 
 Treat this layout as a menu: create only categories required by current content
 and project needs, never empty scaffolding. Preserve established paths and
@@ -39,22 +57,26 @@ Key documents:
 - `ARCHITECTURE.md` — architecture overview
 - `API_DOCUMENTATION.md` / `API_EXAMPLES.md` — API quick access
 
-## Usage Guidelines
+### Reference
 
-- Each folder must have a `README.md` with overview and links.
-- Keep documents short, structured, and cross-linked; avoid duplication.
-- Use Markdown with headings, tables, and code blocks.
-- Follow established file naming; for new projects without a convention, use
-  lowercase kebab-case names.
+- `docs/README.md` (navigation guide)
+- `docs/SUMMARY.md` (status overview)
 
-## Best Practices
+## Quality checks
+
+Verify changed links, navigation, generated/source boundaries, and consistency with the affected code or specification. State checks not run.
+
+### Best Practices
 
 - Keep docs in sync with code changes.
 - Use ADRs inside `architecture/` for major changes.
 - Update OpenAPI schemas with each API change.
 - Maintain security and compliance checklists.
 
-## Reference
+## Return
 
-- `docs/README.md` (navigation guide)
-- `docs/SUMMARY.md` (status overview)
+Return the requested documentation change or layout proposal, affected paths, navigation/check results, and unresolved ownership or migration decisions.
+
+## Boundaries
+
+Do not relocate established documentation, overwrite generated output, or publish a site merely to apply the default layout. A proposed migration requires separate authority.

@@ -5,7 +5,15 @@ description: Provides Go patterns for type-first development with custom types, 
 
 # Go Best Practices
 
-## Type-First Development
+## Purpose and selection
+
+Apply when reading or writing Go files to preserve typed contracts, explicit dependencies, error handling, and boundary validation; do not apply Go-specific conventions to unrelated languages.
+
+## Working mode
+
+Read the module version, package APIs, callers, and existing tests before changing types. Ask for missing public behavior or failure contracts. Code blocks are partial examples, not proof of compilable integration; preserve the repository contract when adapting them.
+
+### Type-First Development
 
 Types define the contract before implementation. Follow this workflow:
 
@@ -13,6 +21,51 @@ Types define the contract before implementation. Follow this workflow:
 2. **Define function signatures** - parameters, return types, and error conditions
 3. **Implement to satisfy types** - let the compiler guide completeness
 4. **Validate at boundaries** - check inputs where data enters the system
+
+### Configuration
+
+- Load config from environment variables at startup; validate required values before use. Missing config should cause immediate exit.
+- Define a Config struct as single source of truth; avoid `os.Getenv` scattered throughout code.
+- Use sensible defaults for development; require explicit values for production secrets.
+
+#### Examples
+
+Typed config struct:
+```go
+type Config struct {
+    Port        int
+    DatabaseURL string
+    APIKey      string
+    Env         string
+}
+
+func LoadConfig() (*Config, error) {
+    dbURL := os.Getenv("DATABASE_URL")
+    if dbURL == "" {
+        return nil, fmt.Errorf("DATABASE_URL is required")
+    }
+    apiKey := os.Getenv("API_KEY")
+    if apiKey == "" {
+        return nil, fmt.Errorf("API_KEY is required")
+    }
+    port := 3000
+    if p := os.Getenv("PORT"); p != "" {
+        var err error
+        port, err = strconv.Atoi(p)
+        if err != nil {
+            return nil, fmt.Errorf("invalid PORT: %w", err)
+        }
+    }
+    return &Config{
+        Port:        port,
+        DatabaseURL: dbURL,
+        APIKey:      apiKey,
+        Env:         getEnvOrDefault("ENV", "development"),
+    }, nil
+}
+```
+
+## Focus
 
 ### Make Illegal States Unrepresentable
 
@@ -159,18 +212,18 @@ type User struct {
 }
 ```
 
-## Module Structure
+### Module Structure
 
 Prefer smaller files within packages: one type or concern per file. Split when a file handles multiple unrelated types or exceeds ~300 lines. Keep tests in `_test.go` files alongside implementation. Package boundaries define the API; internal organization is flexible.
 
-## Functional Patterns
+### Functional Patterns
 
 - Use value receivers when methods don't mutate state; reserve pointer receivers for mutation.
 - Avoid package-level mutable variables; pass dependencies explicitly via function parameters.
 - Return new structs/slices rather than mutating inputs; makes data flow explicit.
 - Use closures and higher-order functions where they simplify code (e.g., `sort.Slice`, iterators).
 
-## Instructions
+### Instructions
 
 - Return errors with context using `fmt.Errorf` and `%w` for wrapping. This preserves the error chain for debugging.
 - Return an `error` from operations that can fail; do not invent one for a
@@ -182,9 +235,8 @@ Prefer smaller files within packages: one type or concern per file. Split when a
   derive a shorter child timeout only for an explicit local budget, immediately
   `defer` its `CancelFunc`, and never extend an existing deadline.
 - Reserve `panic` for truly unrecoverable situations; prefer returning errors. Panics crash the program.
-- Add or update table-driven tests for new logic; cover edge cases (empty input, nil, boundaries).
 
-## Examples
+### Examples
 
 Explicit failure for unimplemented logic:
 ```go
@@ -230,45 +282,16 @@ func createWidget(name string) (*Widget, error) {
 }
 ```
 
-## Configuration
+## Quality checks
 
-- Load config from environment variables at startup; validate required values before use. Missing config should cause immediate exit.
-- Define a Config struct as single source of truth; avoid `os.Getenv` scattered throughout code.
-- Use sensible defaults for development; require explicit values for production secrets.
+Run the repository-supported formatter, compiler, tests, and relevant static checks for changed packages. Record commands and observed results, including checks not run; examples alone do not establish correctness.
 
-### Examples
+- Add or update table-driven tests for new logic; cover edge cases (empty input, nil, boundaries).
 
-Typed config struct:
-```go
-type Config struct {
-    Port        int
-    DatabaseURL string
-    APIKey      string
-    Env         string
-}
+## Return
 
-func LoadConfig() (*Config, error) {
-    dbURL := os.Getenv("DATABASE_URL")
-    if dbURL == "" {
-        return nil, fmt.Errorf("DATABASE_URL is required")
-    }
-    apiKey := os.Getenv("API_KEY")
-    if apiKey == "" {
-        return nil, fmt.Errorf("API_KEY is required")
-    }
-    port := 3000
-    if p := os.Getenv("PORT"); p != "" {
-        var err error
-        port, err = strconv.Atoi(p)
-        if err != nil {
-            return nil, fmt.Errorf("invalid PORT: %w", err)
-        }
-    }
-    return &Config{
-        Port:        port,
-        DatabaseURL: dbURL,
-        APIKey:      apiKey,
-        Env:         getEnvOrDefault("ENV", "development"),
-    }, nil
-}
-```
+Return the requested Go implementation or review with affected package/API, relevant revision, tests and failures, and unresolved compatibility or configuration decisions.
+
+## Boundaries
+
+Do not change exported contracts, install tooling, expose configuration secrets, run migrations, or deploy services without task authority. Stop when missing caller or failure semantics would make a safe change speculative.

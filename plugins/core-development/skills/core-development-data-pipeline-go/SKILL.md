@@ -5,17 +5,25 @@ description: ETL data pipeline patterns for Go with Temporal orchestration and K
 
 # Data Pipeline Patterns (Go + Temporal + Kafka)
 
+## Purpose and selection
+
+Use these patterns for the stated Go/Temporal/Kafka ingest tasks, not for unrelated Go code or a promise of exactly-once processing.
+
 Curated from generic ETL/stream/orchestration best practices for a stack using
 Go, `segmentio/kafka-go`, `pgx`, Temporal workflows.
 
-## When to Use
+### When to Use
 
 - Building Kafka consumer activities (for example, ProcessBatch)
 - Designing batch INSERT pipelines for append-only ingest tables
 - Implementing idempotent data processing
 - Configuring Temporal workflows for long-lived data pipelines
 
-## 1. Kafka Consumer — Manual Commit After DB Write
+## Working mode
+
+Inspect source identity, schema constraints, consumer configuration, activity timeouts, and retry policy before adapting the examples. Ask for missing durability or data-contract requirements; examples are partial patterns to integrate, not complete runnable workers.
+
+### 1. Kafka Consumer — Manual Commit After DB Write
 
 ```go
 // At-least-once: commit AFTER successful DB write.
@@ -51,7 +59,7 @@ func (a *Activities) IngestBatch(ctx context.Context, batchSize int) (int, error
 }
 ```
 
-### Anti-patterns
+#### Anti-patterns
 
 ```
 ❌ Commit offsets before DB write → data loss on crash
@@ -60,7 +68,7 @@ func (a *Activities) IngestBatch(ctx context.Context, batchSize int) (int, error
 ❌ One INSERT per message → N round-trips instead of 1
 ```
 
-## 2. Batch INSERT — pgx.Batch with ON CONFLICT
+### 2. Batch INSERT — pgx.Batch with ON CONFLICT
 
 ```go
 func (s *PgxStore) InsertRecords(ctx context.Context, records []IngestRecord) (int64, error) {
@@ -92,7 +100,7 @@ func (s *PgxStore) InsertRecords(ctx context.Context, records []IngestRecord) (i
 }
 ```
 
-### Anti-patterns
+#### Anti-patterns
 
 ```
 ❌ Individual INSERTs in a loop → N round-trips
@@ -102,7 +110,7 @@ func (s *PgxStore) InsertRecords(ctx context.Context, records []IngestRecord) (i
 ❌ SELECT * in production → specify columns explicitly
 ```
 
-## 3. Temporal Long-Lived Workflow — ContinueAsNew
+### 3. Temporal Long-Lived Workflow — ContinueAsNew
 
 ```go
 const maxIterations = 100
@@ -128,7 +136,7 @@ func IngestWorkflow(ctx workflow.Context, state IngestState) error {
 }
 ```
 
-### Anti-patterns
+#### Anti-patterns
 
 ```
 ❌ Unbounded loop without ContinueAsNew → event history grows forever
@@ -137,7 +145,50 @@ func IngestWorkflow(ctx workflow.Context, state IngestState) error {
 ❌ State lost on ContinueAsNew → always pass state forward
 ```
 
-## 4. Idempotency Checklist
+### 8. Graceful Shutdown
+
+```go
+// KafkaReader must be closed on worker shutdown
+type kafkaReaderAdapter struct {
+    reader *kafka.Reader
+}
+
+func (a *kafkaReaderAdapter) Close() error {
+    return a.reader.Close() // commits final offsets, releases consumer group
+}
+
+// Register cleanup in worker lifecycle
+defer kafkaReader.Close()
+```
+
+## Focus
+
+### 6. Source Freshness and Enrichment Budget
+
+When a pipeline depends on an external or authoritative source, treat freshness
+as a data contract instead of a universal SLA. First verify the source's
+published cadence, observed update history, and allowed lag before blocking a
+workflow on an age threshold. If the source legitimately updates slowly, surface
+`stale-but-valid` or `source-waiting` status instead of failing the pipeline.
+
+For enrichment, prefer data already present in the consumed event, batch,
+snapshot, or warehouse row. Extra network/RPC/API fetches need an explicit cost
+budget: expected call count, rate limit, timeout, retry/backoff, cache key,
+fan-out cap, and p95 impact. Lightweight lookups can run inline; heavy or
+high-fan-out lookups should move to a bounded side pipeline, prefetch table, or
+operator-approved backfill.
+
+### Related
+
+- Review the owning project's data contract for schema and ingest workflow.
+- Review its delivery stories or equivalent acceptance records.
+- Review the repository's schema or migration source of truth.
+
+## Quality checks
+
+Exercise duplicate delivery, DB failure before offset commit, commit failure after DB success, validation rejection, ContinueAsNew state transfer, and shutdown in the target test setup. Report what ran and what remains unverified.
+
+### 4. Idempotency Checklist
 
 | Layer | Technique |
 |-------|-----------|
@@ -147,7 +198,7 @@ func IngestWorkflow(ctx workflow.Context, state IngestState) error {
 | Temporal | Same Workflow ID → singleton per logical source |
 | Activity | Stateless — all state in DB/Kafka |
 
-## 5. Data Validation at Ingest
+### 5. Data Validation at Ingest
 
 ```go
 // Validate BEFORE batch INSERT — reject bad rows
@@ -165,7 +216,7 @@ func validateRecord(record *IngestRecord) error {
 }
 ```
 
-### Anti-patterns
+#### Anti-patterns
 
 ```
 ❌ Load without validation → corrupt rows in DB
@@ -173,22 +224,7 @@ func validateRecord(record *IngestRecord) error {
 ❌ uint64 → smallint without bounds check → runtime panic
 ```
 
-## 6. Source Freshness and Enrichment Budget
-
-When a pipeline depends on an external or authoritative source, treat freshness
-as a data contract instead of a universal SLA. First verify the source's
-published cadence, observed update history, and allowed lag before blocking a
-workflow on an age threshold. If the source legitimately updates slowly, surface
-`stale-but-valid` or `source-waiting` status instead of failing the pipeline.
-
-For enrichment, prefer data already present in the consumed event, batch,
-snapshot, or warehouse row. Extra network/RPC/API fetches need an explicit cost
-budget: expected call count, rate limit, timeout, retry/backoff, cache key,
-fan-out cap, and p95 impact. Lightweight lookups can run inline; heavy or
-high-fan-out lookups should move to a bounded side pipeline, prefetch table, or
-operator-approved backfill.
-
-## 7. Monitoring Checklist
+### 7. Monitoring Checklist
 
 ```
 ✅ Kafka consumer lag — growing lag = ingest slower than collect
@@ -202,24 +238,10 @@ operator-approved backfill.
 ✅ Last ingested sequence — per source, freshness indicator
 ```
 
-## 8. Graceful Shutdown
+## Return
 
-```go
-// KafkaReader must be closed on worker shutdown
-type kafkaReaderAdapter struct {
-    reader *kafka.Reader
-}
+Return the requested pipeline change or review with schema/workflow revision, processing and offset guarantees, test evidence, monitoring gaps, and any next owner for unresolved durability decisions.
 
-func (a *kafkaReaderAdapter) Close() error {
-    return a.reader.Close() // commits final offsets, releases consumer group
-}
+## Boundaries
 
-// Register cleanup in worker lifecycle
-defer kafkaReader.Close()
-```
-
-## Related
-
-- Review the owning project's data contract for schema and ingest workflow.
-- Review its delivery stories or equivalent acceptance records.
-- Review the repository's schema or migration source of truth.
+Do not advance live offsets, replay data, change retention, deploy workers, or run backfills without explicit task authority. Bound enrichment cost and stop on unknown data-loss risk.
