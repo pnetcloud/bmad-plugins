@@ -56,14 +56,20 @@ Run the passive scanner and repository validators before editing. Record line an
 
 Do not infer a weakness from personal style preference.
 
+Before selecting evidence, declare authorized sources and profiles, the time
+window, explicit exclusions, and each source's coverage status. Directory
+discovery or memory access does not authorize including private personas.
 When access is authorized, supplement chats with targeted searches of persistent
 memory and knowledge-base records relevant to the target behavior. Read selected
 records, not whole archives. In the private evidence record, distinguish explicit
 user corrections, derived summaries, historical notes, and verified current
-facts; retain source locators and freshness, deduplicate one event across stores,
-and resolve conflicts against supporting records and current technical evidence.
+facts; retain per-message timestamps, source locators, and freshness, mark
+missing provenance or timestamps as unknown, and deduplicate one event across
+stores before caps or candidate ranking. Resolve conflicts against supporting
+records and current technical evidence.
 A summary is a discovery lead, not proof of acceptance or a second independent
-observation. Report unavailable sources and do not rely on unsupported claims.
+observation. Report unavailable or partial coverage and do not rely on
+unsupported claims; ranking proves neither a defect nor complete coverage.
 For public targets, publish only rules useful without the originating user's
 preferences or project context. Keep private provenance outside the package;
 apply the publication abstraction gate to every source, including memory and

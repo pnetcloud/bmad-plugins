@@ -23,7 +23,7 @@
     "devops"
   ],
   "metadata": {
-    "version": "0.1.1",
+    "version": "0.1.2",
     "description": "Structured BMad plugin collection curated by pnetcloud."
   },
   "plugins": [
@@ -31,7 +31,7 @@
       "name": "pnet",
       "source": "./plugins/pnet",
       "description": "pNet meta-skills for improving and maintaining Agent Skills safely and efficiently.",
-      "version": "0.1.1",
+      "version": "0.1.2",
       "author": {
         "name": "pnetcloud",
         "url": "https://github.com/pnetcloud"
