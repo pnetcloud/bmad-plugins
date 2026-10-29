@@ -1,6 +1,6 @@
 {
   "name": "pnet-infrastructure",
-  "version": "0.2.0",
+  "version": "0.3.0",
   "description": "Infrastructure and DevOps knowledge for cloud architecture, Kubernetes, Terraform, CI/CD, platform operations, and Cloudflare product selection.",
   "author": {
     "name": "pnetcloud",

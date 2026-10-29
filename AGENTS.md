@@ -95,7 +95,7 @@ bmad-plugins/
 
 ## Skill Naming
 
-Use lowercase kebab-case. The standard public ID is `<plugin-slug>-<skill-slug>`. A short stable public ID may be listed explicitly in `scripts/check_skill_names.py` when preserving it is intentional.
+Use lowercase kebab-case. The standard public ID is `<plugin-slug>-<skill-slug>`. All packaged skills must use their group prefix; no unprefixed public IDs are exempt.
 
 ## Validation
 
@@ -118,7 +118,7 @@ Do not encode the absolute validator path into published skill behavior; it is a
 ## Instruction Authoring Standard
 
 For skill authoring and explicitly authorized contract migrations, follow
-[the canonical instruction standard](plugins/pnet/skills/skill-improver/references/instruction-standard.md).
+[the canonical instruction standard](plugins/pnet/skills/pnet-skill-improver/references/instruction-standard.md).
 Use its six-section entry contract while preserving the skill-specific rules,
 examples, resources, commands, public identifiers and authority gates. A uniform
 shape is not evidence of uniform behavior or a reason to discard expertise.

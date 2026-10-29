@@ -1,6 +1,6 @@
 {
   "name": "pnet",
-  "version": "0.2.0",
+  "version": "0.3.0",
   "description": "pNet meta-skills for improving and maintaining Agent Skills safely and efficiently.",
   "author": {
     "name": "pnetcloud",
@@ -9,6 +9,6 @@
   "repository": "https://github.com/pnetcloud/bmad-plugins",
   "license": "MIT",
   "skills": [
-    "./skills/skill-improver"
+    "./skills/pnet-skill-improver"
   ]
 }

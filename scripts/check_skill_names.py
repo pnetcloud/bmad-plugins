@@ -11,10 +11,6 @@ from pathlib import Path
 
 SOURCE_ROOT = Path(__file__).resolve().parent.parent
 SKILL_SLUG_RE = re.compile(r"^[a-z0-9]+(?:-[a-z0-9]+)*$")
-CANONICAL_EXCEPTIONS = {
-    ("pnet", "skill-improver"),
-    ("qa", "agent-browser"),
-}
 
 
 def plugin_manifest_paths() -> list[Path]:
@@ -75,9 +71,6 @@ def validate() -> list[str]:
                 )
 
             if skill_slug.startswith(f"{plugin_slug}-"):
-                continue
-
-            if (plugin_slug, skill_slug) in CANONICAL_EXCEPTIONS:
                 continue
 
             errors.append(

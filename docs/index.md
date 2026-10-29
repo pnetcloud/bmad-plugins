@@ -32,7 +32,7 @@ npx bmad-method install --custom-source /path/to/bmad-plugins --tools claude-cod
 
 ### `pnet`
 
-This packaged plugin ships the `skill-improver` meta-skill for bounded, security-aware improvement of existing Agent Skills.
+This packaged plugin ships the `pnet-skill-improver` meta-skill for bounded, security-aware improvement of existing Agent Skills.
 
 ### `pnet-marketing`
 
@@ -64,7 +64,7 @@ This repository contains the public distribution artifacts for installable BMad 
 
 ## Instruction Contract
 
-Packaged skills follow the [collection instruction standard](../plugins/pnet/skills/skill-improver/references/instruction-standard.md):
+Packaged skills follow the [collection instruction standard](../plugins/pnet/skills/pnet-skill-improver/references/instruction-standard.md):
 Purpose and selection, Working mode, Focus, Quality checks, Return, and Boundaries.
 The shared entry contract preserves specialist roles, concise technical standards
 and tool workflows rather than replacing them with one generic procedure.

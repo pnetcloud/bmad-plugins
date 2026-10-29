@@ -4,7 +4,7 @@ Installable pNet meta-skills for maintaining Agent Skills.
 
 ## Included Skills
 
-- `skill-improver`
+- `pnet-skill-improver`
 
 ## Contents
 

@@ -23,7 +23,7 @@
     "devops"
   ],
   "metadata": {
-    "version": "0.2.0",
+    "version": "0.3.0",
     "description": "Structured BMad plugin collection curated by pnetcloud."
   },
   "plugins": [
@@ -31,13 +31,13 @@
       "name": "pnet",
       "source": "./plugins/pnet",
       "description": "pNet meta-skills for improving and maintaining Agent Skills safely and efficiently.",
-      "version": "0.2.0",
+      "version": "0.3.0",
       "author": {
         "name": "pnetcloud",
         "url": "https://github.com/pnetcloud"
       },
       "skills": [
-        "./plugins/pnet/skills/skill-improver"
+        "./plugins/pnet/skills/pnet-skill-improver"
       ],
       "category": "developer-tools",
       "keywords": [
@@ -52,7 +52,7 @@
       "name": "pnet-marketing",
       "source": "./plugins/marketing",
       "description": "Marketing knowledge for on-page SEO implementation, SEO assessment, LinkedIn workflows, and email campaign safety; external runtimes and provider bindings are separate prerequisites.",
-      "version": "0.2.0",
+      "version": "0.3.0",
       "author": {
         "name": "pnetcloud",
         "url": "https://github.com/pnetcloud"
@@ -113,7 +113,7 @@
       "name": "pnet-business-product",
       "source": "./plugins/business-product",
       "description": "Business and product skills for analysis, planning, documentation, research, and delivery coordination.",
-      "version": "0.2.0",
+      "version": "0.3.0",
       "author": {
         "name": "pnetcloud",
         "url": "https://github.com/pnetcloud"
@@ -149,7 +149,7 @@
       "name": "pnet-core-development",
       "source": "./plugins/core-development",
       "description": "Core development knowledge spanning architecture, APIs, backend, frontend, PostgreSQL, TimescaleDB, Redis, Stripe, UI, and documentation.",
-      "version": "0.2.0",
+      "version": "0.3.0",
       "author": {
         "name": "pnetcloud",
         "url": "https://github.com/pnetcloud"
@@ -204,13 +204,13 @@
       "name": "pnet-qa",
       "source": "./plugins/qa",
       "description": "QA-focused skills for browser automation, Playwright workflows, and quality validation.",
-      "version": "0.2.0",
+      "version": "0.3.0",
       "author": {
         "name": "pnetcloud",
         "url": "https://github.com/pnetcloud"
       },
       "skills": [
-        "./plugins/qa/skills/agent-browser",
+        "./plugins/qa/skills/qa-agent-browser",
         "./plugins/qa/skills/qa-playwright-skill"
       ],
       "category": "quality",
@@ -227,7 +227,7 @@
       "name": "pnet-infrastructure",
       "source": "./plugins/infrastructure",
       "description": "Infrastructure and DevOps knowledge for cloud architecture, Kubernetes, Terraform, CI/CD, platform operations, and Cloudflare product selection.",
-      "version": "0.2.0",
+      "version": "0.3.0",
       "author": {
         "name": "pnetcloud",
         "url": "https://github.com/pnetcloud"
@@ -258,7 +258,7 @@
       "name": "pnet-language-specialists",
       "source": "./plugins/language-specialists",
       "description": "Language and framework specialist skills for Go, React, and TypeScript implementation guidance.",
-      "version": "0.2.0",
+      "version": "0.3.0",
       "author": {
         "name": "pnetcloud",
         "url": "https://github.com/pnetcloud"

@@ -1,5 +1,5 @@
 ---
-name: skill-improver
+name: pnet-skill-improver
 description: Improve, conservatively refactor, or harden an existing Agent Skill through a preservation-first, evidence-backed delta and bounded validation loop. Use when reviewing skill quality, updating stale guidance, tightening triggers or scope, reducing default-loaded context through progressive disclosure, adopting practices from external collections, or fixing unsafe and ineffective behavior without discarding useful capability.
 ---
 

@@ -1,6 +1,6 @@
 {
   "name": "pnet-qa",
-  "version": "0.2.0",
+  "version": "0.3.0",
   "description": "QA-focused skills for browser automation, Playwright workflows, and quality validation.",
   "author": {
     "name": "pnetcloud",
@@ -9,7 +9,7 @@
   "repository": "https://github.com/pnetcloud/bmad-plugins",
   "license": "MIT",
   "skills": [
-    "./skills/agent-browser",
+    "./skills/qa-agent-browser",
     "./skills/qa-playwright-skill"
   ]
 }

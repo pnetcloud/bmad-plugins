@@ -1,6 +1,6 @@
 {
   "name": "pnet-core-development",
-  "version": "0.2.0",
+  "version": "0.3.0",
   "description": "Core development knowledge spanning architecture, APIs, backend, frontend, PostgreSQL, TimescaleDB, Redis, Stripe, UI, and documentation.",
   "author": {
     "name": "pnetcloud",

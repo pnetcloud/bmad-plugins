@@ -52,18 +52,18 @@ Examples:
 
 This keeps the installed skill ID globally unique and makes it obvious which plugin owns the skill.
 
-Named third-party or branded skills may stay unprefixed when the short public ID is the more stable identifier.
+Third-party CLI names and upstream source identifiers stay unchanged; packaged skill IDs always use their group prefix.
 
 ### Canonicalized Skills
 
-The repository has been normalized so skill folders now use canonical prefixed IDs, except for branded IDs that are intentionally preserved.
+All packaged skill folders now use canonical group-prefixed IDs.
 
 - `business-product-confluence`
 - `business-product-jira`
 - `core-development-data-pipeline-go`
 - `core-development-implement-design`
-- `agent-browser`
-- `skill-improver`
+- `qa-agent-browser`
+- `pnet-skill-improver`
 
 ### Validation
 
@@ -73,7 +73,7 @@ Run the repository validator before publishing or adding new skills:
 python3 scripts/check_skill_names.py
 ```
 
-The validator enforces the canonical convention for packaged skills and allows a small explicit exception list for preserved branded IDs.
+The validator enforces the canonical convention for every packaged skill without exceptions.
 
 ## Install
 
@@ -124,7 +124,7 @@ pNet meta-skills for improving existing Agent Skills with minimal evidence-backe
 - Publish path: `plugins/pnet`
 - Packaged skill path: `plugins/pnet/skills/*`
 - Included skills: 1
-- Examples: `skill-improver`
+- Examples: `pnet-skill-improver`
 
 ### `pnet-marketing`
 
@@ -178,12 +178,13 @@ QA-oriented browser automation and testing skills.
 - Publish path: `plugins/qa`
 - Packaged skill path: `plugins/qa/skills/*`
 - Included skills: 2
-- Examples: `agent-browser`, `qa-playwright-skill`
+- Examples: `qa-agent-browser`, `qa-playwright-skill`
 
 ## Catalog and migration boundaries
 
 The seven existing plugin identities contain 105 top-level skill entries: the
-57 existing IDs remain unchanged and 48 imports use group-qualified IDs.
+55 existing IDs remain unchanged, two existing IDs adopt group prefixes, and
+48 imports use group-qualified IDs.
 
 | Plugin | Skills |
 | --- | ---: |
@@ -194,6 +195,12 @@ The seven existing plugin identities contain 105 top-level skill entries: the
 | `pnet-qa` | 2 |
 | `pnet-infrastructure` | 9 |
 | `pnet-language-specialists` | 3 |
+
+For the two existing-ID renames, use [the public ID migration map](docs/skill-id-migrations.json):
+`agent-browser` → `qa-agent-browser` and `skill-improver` → `pnet-skill-improver`.
+Update explicit consumers before switching; no duplicate active skills or runtime
+aliases are shipped, and old installations are not removed automatically. The
+`agent-browser` CLI, its commands and upstream names are unchanged.
 
 For migration from upstream skill names, use the public-only
 [old-to-new skill map](docs/imported-skill-map.json). It lists only the 48 imports,
@@ -228,7 +235,7 @@ This repository contains the public distribution artifacts for installable BMad 
 
 ## Instruction Contract
 
-Packaged skills follow the [collection instruction standard](plugins/pnet/skills/skill-improver/references/instruction-standard.md):
+Packaged skills follow the [collection instruction standard](plugins/pnet/skills/pnet-skill-improver/references/instruction-standard.md):
 Purpose and selection, Working mode, Focus, Quality checks, Return, and Boundaries.
 The shared entry contract preserves specialist roles, concise technical standards
 and tool workflows rather than replacing them with one generic procedure.

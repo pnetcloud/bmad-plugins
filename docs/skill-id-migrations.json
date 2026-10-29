@@ -1,0 +1,19 @@
+{
+  "version": 1,
+  "kind": "public-skill-id-migrations",
+  "runtime_aliases": false,
+  "migrations": [
+    {
+      "old_id": "agent-browser",
+      "new_id": "qa-agent-browser",
+      "old_path": "plugins/qa/skills/agent-browser",
+      "new_path": "plugins/qa/skills/qa-agent-browser"
+    },
+    {
+      "old_id": "skill-improver",
+      "new_id": "pnet-skill-improver",
+      "old_path": "plugins/pnet/skills/skill-improver",
+      "new_path": "plugins/pnet/skills/pnet-skill-improver"
+    }
+  ]
+}
